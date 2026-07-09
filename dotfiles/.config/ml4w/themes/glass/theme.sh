@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # ML4W Theme Glass
 
-# Set waybar
-echo "/ml4w-glass-center;/ml4w-glass-center/default" > $HOME/.config/ml4w/settings/waybar-theme.sh
-$HOME/.config/waybar/launch.sh &
-
 # Set nwg-dock-hyprland
 echo "glass" > $HOME/.config/ml4w/settings/dock-theme
 $HOME/.config/nwg-dock-hyprland/launch.sh &

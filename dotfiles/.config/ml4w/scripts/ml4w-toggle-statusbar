@@ -6,26 +6,6 @@
 #   |_|\___/ \__, |\__, |_|\___| |____/ \__\__,_|\__|\__,_|\__,_|_.__/ \__,_|_|
 #            |___/ |___/
 #
-# Toggle the statusbar used by ML4W OS. Reads the configured statusbar from
-# ~/.config/ml4w/settings/statusbar and toggles the matching bar.
+# Toggle the statusbar. Quickshell is the only statusbar.
 
-settings_file="$HOME/.config/ml4w/settings/statusbar"
-
-# Default to waybar if no setting file is present.
-statusbar="waybar"
-if [ -f "$settings_file" ]; then
-    statusbar=$(tr -d '[:space:]' < "$settings_file")
-fi
-
-case "$statusbar" in
-    quickshell)
-        qs ipc call statusbar toggle
-        ;;
-    waybar)
-        "$HOME/.config/waybar/toggle.sh"
-        ;;
-    *)
-        echo "Unknown statusbar '$statusbar' in $settings_file" >&2
-        exit 1
-        ;;
-esac
+qs ipc call statusbar toggle

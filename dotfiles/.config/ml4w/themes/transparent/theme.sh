@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # ML4W Theme Glass
 
-# Set waybar
-echo "/ml4w-transparent-centered;/ml4w-transparent-centered/default" > $HOME/.config/ml4w/settings/waybar-theme.sh
-$HOME/.config/waybar/launch.sh &
-
 # Set nwg-dock-hyprland
 echo "transparent" > $HOME/.config/ml4w/settings/dock-theme
 $HOME/.config/nwg-dock-hyprland/launch.sh &

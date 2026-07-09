@@ -121,17 +121,6 @@ run_matugen() {
     info "Matugen updated"
 }
 
-reload_waybar() {
-    if pgrep -x waybar >/dev/null; then
-        pkill -SIGUSR2 waybar
-        info "Waybar reloaded"
-    else
-        nohup bash -c "$HOME/.config/waybar/launch.sh" >/dev/null 2>&1 &
-        disown
-        info "Waybar launched"
-    fi
-}
-
 reload_nwg_dock() {
     nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" >/dev/null 2>&1 &
     disown
@@ -247,7 +236,6 @@ if "$SKIP_THEMING"; then
     info "Updating theming skipped"
 else
     run_matugen
-    reload_waybar
     reload_nwg_dock
     reload_quickshell
     reload_pywalfox

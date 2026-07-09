@@ -58,10 +58,6 @@ apply_theme() {
         qs -p $HOME/.local/share/ml4w-dotfiles-settings/quickshell ipc call theme-manager reload
         echo "ML4W Dotfiles Settings Theme updated"
 
-        # Reload Waybar
-        nohup bash -c "$HOME/.config/waybar/launch.sh" > /dev/null 2>&1 &
-        disown
-
         # Reload nwg-dock-hyprland
         nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" > /dev/null 2>&1 &
         disown
@@ -76,10 +72,6 @@ apply_theme() {
         # Update Quickshell theme
         qs ipc call theme-manager reload
         echo "Quickshell Theme updated"
-
-        # Reload nwg-dock-hyprland
-        nohup bash -c "$HOME/.config/waybar/launch.sh" > /dev/null 2>&1 &
-        disown
 
         # Reload nwg-dock-hyprland
         nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" > /dev/null 2>&1 &
