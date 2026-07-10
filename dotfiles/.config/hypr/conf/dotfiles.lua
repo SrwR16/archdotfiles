@@ -24,16 +24,6 @@ hl.window_rule({
     size = "700 600"
 })
 
--- Dotfiles Welcome App
-hl.window_rule({
-    name = "welcome-app",
-    match = {title = "Dotfiles Welcome"},
-    float = true,
-    center = true,
-    pin = true,
-    size = "700 600"
-})
-
 -- Dotfiles Settings App
 hl.window_rule({
     name = "settings-app",

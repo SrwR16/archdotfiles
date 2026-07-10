@@ -51,12 +51,7 @@ apply_theme() {
         $MATUGEN_BIN image $(cat ~/.cache/dotfiles/hyprland-dotfiles/current_wallpaper) --source-color-index 0 -m "dark"
 
         # Update Quickshell theme
-        qs ipc call theme-manager reload
         echo "Quickshell Theme updated"
-
-        # Update Dotfiles Dotfiles Settings theme
-        qs -p $HOME/.local/share/dotfiles-settings/quickshell ipc call theme-manager reload
-        echo "Dotfiles Dotfiles Settings Theme updated"
 
         # Reload nwg-dock-hyprland
         nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" > /dev/null 2>&1 &

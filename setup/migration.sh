@@ -17,23 +17,6 @@ if [ -L $NVIM_DIR ]; then
     fi
 fi
 
-# Remove legacy Dotfiles Apps
-FLATPAK_ID="com.dotfiles.welcome"
-if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
-    flatpak remove -y $FLATPAK_ID
-fi
-FLATPAK_ID="com.dotfiles.settings"
-if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
-    flatpak remove -y $FLATPAK_ID
-fi
-FLATPAK_ID="com.dotfiles.sidebar"
-if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
-    flatpak remove -y $FLATPAK_ID
-fi
-FLATPAK_ID="com.dotfiles.hyprlandinstaller"
-if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
-    flatpak remove -y $FLATPAK_ID
-fi
 
 # Remove matugen from .local/bin
 if [ -f $HOME/.local/bin/matugen ]; then
