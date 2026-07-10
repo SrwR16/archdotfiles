@@ -176,7 +176,7 @@ Rectangle {
 
   property bool showBatteryAlert: activityManager && activityManager.activeActivity && activityManager.activeActivity.type === "battery"
   property string batteryAlertMode: showBatteryAlert ? activityManager.activeActivity.data.mode : "charging"
-  property bool anyOverlayActive: showBatteryAlert || showPomodoro || showSys || showTray || showPowerSection || showAppLauncher || showAskpass || showProductivity || showVpn || showingNotification
+  property bool anyOverlayActive: showBatteryAlert || showPomodoro || showSys || showTray || showPowerSection || showAppLauncher || showAskpass || showProductivity || showVpn
 
   property string _pendingBatteryMode: ""
   property bool _suppressMorph: false
@@ -278,6 +278,7 @@ Rectangle {
   readonly property bool showingNotification: activityManager && activityManager.activeActivity && activityManager.activeActivity.type === "notification"
 
   property var _currentNotifData: showingNotification ? activityManager.activeActivity.data : null
+  property bool _notifCapsuleHovered: false
 
   // --- App launcher lifecycle ---
   onShowAppLauncherChanged: {
@@ -297,7 +298,7 @@ Rectangle {
   }
 
   // --- Notification lifecycle (via ActivityManager) ---
-  readonly property bool notifHovered: (mouseArea && mouseArea.containsMouse) || (statusCapsule && statusCapsule.isHovered) || (notifBanner && notifBanner.bannerHovered)
+  readonly property bool notifHovered: (mouseArea && mouseArea.containsMouse) || (statusCapsule && statusCapsule.isHovered) || _notifCapsuleHovered
 
   onNotifHoveredChanged: {
     if (notifHovered && activityManager) {
@@ -330,11 +331,11 @@ Rectangle {
                             : showSys ? "sys" 
                             : showPowerSection ? "powerSection" 
                             : showPomodoro ? "pomodoro" 
-                              : activityManager && activityManager.activeActivity && !clockWidget.isExpanded && !clockWidget._suppressMorph ? _queueState(activityManager.activeActivity.type)
+                              : activityManager && activityManager.activeActivity && !clockWidget.isExpanded && !clockWidget._suppressMorph ? _capsuleState(activityManager.activeActivity.type)
                              : "default"
 
-  function _queueState(type) {
-    if (type === "notification") return "notification"
+  function _capsuleState(type) {
+    if (type === "notification") return "notifCapsule"
     if (type === "battery") return "batteryAlert"
     return "default"
   }
@@ -367,10 +368,6 @@ Rectangle {
       PropertyChanges { target: clockWidget; height: 200; width: 480; radius: 28 }
     },
     State {
-      name: "notification"
-      PropertyChanges { target: clockWidget; height: Math.max(130, notifBanner.bannerHeight); width: 480; radius: 28 }
-    },
-    State {
       name: "powerSection"
       PropertyChanges { target: clockWidget; height: 160; width: 540; radius: 28 }
     },
@@ -385,6 +382,10 @@ Rectangle {
     State {
       name: "pomodoro"
       PropertyChanges { target: clockWidget; height: 76; width: 380; radius: 28 }
+    },
+    State {
+      name: "notifCapsule"
+      PropertyChanges { target: clockWidget; height: 72; width: 380; radius: 24 }
     },
     State {
       name: "batteryAlert"
@@ -1059,6 +1060,90 @@ Rectangle {
     }
   }
 
+  // --- Notification capsule (compact, below collapsed bar) ---
+  Item {
+    id: notifCapsuleOverlay
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: collapsedContent.bottom
+    anchors.bottom: parent.bottom
+
+    opacity: clockWidget.showingNotification && !clockWidget.isExpanded ? 1.0 : 0.0
+    visible: opacity > 0.0
+    Behavior on opacity { NumberAnimation { duration: 150 } }
+
+    RowLayout {
+      anchors.centerIn: parent
+      spacing: 10
+
+      NotifIcon {
+        iconSize: 28
+        appIcon: clockWidget._currentNotifData?.appIcon ?? ""
+        appName: clockWidget._currentNotifData?.appName ?? ""
+      }
+
+      ColumnLayout {
+        spacing: 0
+
+        Text {
+          text: clockWidget._currentNotifData?.appName ?? ""
+          color: Theme.subtext
+          font { family: "Inter"; pixelSize: 10; weight: 600 }
+        }
+
+        Text {
+          text: clockWidget._currentNotifData?.summary ?? ""
+          color: Theme.text
+          font { family: "Inter"; pixelSize: 12; weight: 700 }
+          elide: Text.ElideRight
+          maximumLineCount: 1
+        }
+      }
+
+      Rectangle {
+        width: 20; height: 20; radius: 10
+        color: _notifCapsuleHovered ? Theme.surfaceHover : "transparent"
+        Behavior on color { ColorAnimation { duration: 120 } }
+
+        Text {
+          anchors.centerIn: parent
+          text: "✕"
+          color: Theme.muted
+          font.pixelSize: 10
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          anchors.margins: -4
+          cursorShape: Qt.PointingHandCursor
+          hoverEnabled: true
+          onContainsMouseChanged: clockWidget._notifCapsuleHovered = containsMouse
+          onClicked: {
+            if (clockWidget.notifService && clockWidget._currentNotifData) {
+              clockWidget.notifService.dismissBanner(clockWidget._currentNotifData);
+            }
+            if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
+              clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
+            }
+          }
+        }
+      }
+    }
+
+    MouseArea {
+      anchors.fill: parent
+      cursorShape: Qt.PointingHandCursor
+      onClicked: {
+        if (clockWidget.notifService && clockWidget._currentNotifData) {
+          clockWidget.notifService.dismissBanner(clockWidget._currentNotifData);
+        }
+        if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
+          clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
+        }
+      }
+    }
+  }
+
   // --- Tray expanded overlay ---
   Item {
     id: trayExpandedContent
@@ -1184,22 +1269,7 @@ Rectangle {
     }
   }
 
-  Notifications {
-    id: notifBanner
-    anchors.centerIn: parent
 
-    notificationData: clockWidget._currentNotifData
-    pendingCount: clockWidget.activityManager ? clockWidget.activityManager.pendingCount : 0
-
-    onDismissed: (notifRef) => {
-      if (clockWidget.notifService && notifRef) {
-        clockWidget.notifService.dismissBanner(notifRef);
-      }
-      if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
-        clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
-      }
-    }
-  }
 
   PasswordAskpassDialog {
     id: askpassDialog

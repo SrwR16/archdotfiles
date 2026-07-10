@@ -192,6 +192,12 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- SDL version
 hl.env("SDL_VIDEODRIVER", "wayland")
 
+-- Graphical askpass for SSH/GPG/sudo via quickshell
+hl.env("SSH_ASKPASS", HOME .. "/.config/quickshell/scripts/quickshell-ssh-askpass")
+hl.env("SSH_ASKPASS_REQUIRE", "force")
+hl.env("SUDO_ASKPASS", HOME .. "/.config/quickshell/scripts/quickshell-askpass")
+hl.env("GPG_ASKPASS", HOME .. "/.config/quickshell/scripts/quickshell-askpass")
+
 -- Quickshell debug
 hl.env("QS_NO_RELOAD_POPUP", "1")
 

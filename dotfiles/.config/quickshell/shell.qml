@@ -93,7 +93,7 @@ ShellRoot {
         }
         
         color: "transparent"
-        WlrLayershell.exclusiveZone: 56
+        WlrLayershell.exclusiveZone: 46
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: overlayRoot.anyActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 

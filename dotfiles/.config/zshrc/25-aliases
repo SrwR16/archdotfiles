@@ -28,12 +28,12 @@ alias clock='tty-clock'
 alias system='~/.config/dotfiles/settings/systemmonitor'
 alias quick='~/.config/dotfiles/bin/quicklinks'
 alias wallpaper='~/.config/dotfiles/bin/wallpaper'
-alias settings='dotfiles-settings com.dotfiles.hyprland'
 
 # -----------------------------------------------------
 # Dotfiles Apps
 # -----------------------------------------------------
 alias wallpaper='qs -p ~/.config/quickshell/wallpaper-picker.qml &'
+alias sudo='sudo -A'
 
 # -----------------------------------------------------
 # Git
