@@ -25,7 +25,7 @@ fi
 if [ -d ~/.local/share/icons/Bibata-Modern-Classic ]; then
     rm -rf ~/.local/share/icons/Bibata-Modern-Classic
 fi
-if [ -d ~/.local/share/icons/Bibata-Modern-Amber ]; then
+if [ -d ~/.local/share/icons/Bibata-Modern-Ice ]; then
     rm -rf ~/.local/share/icons/Bibata-Modern-Ice
 fi
 

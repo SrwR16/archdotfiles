@@ -14,13 +14,10 @@ fi
 CONFIG_DIR="$HOME/.config/dotfiles-settings"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIB_FILE="$LIB_DIR/utils.sh"
-DEMO_FILE="$APP_DIR/demo/settings.json"
-
 DRY_RUN=0
 PROFILE=""
 DIRECT_ID=""
 DIRECT_VALUE=""
-CREATE_PROFILE=""
 ACTION="menu" # default action
 
 # Source utils
@@ -38,7 +35,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: dotfiles-settings [OPTIONS] [PROFILE]"
             echo "Options:"
             echo "  --test <profile>                           Start script in test mode (no files modified)"
-            echo "  --create <profile>                         Create a profile with the demo setup"
+            echo "  --create <profile>                         (removed)"
             echo "  --set --id <id> --value <value> [profile]  Set a value directly for an ID"
             echo "  --get --id <id> [profile]                  Get the current value for an ID"
             echo "  --help                                     Show this help message"
@@ -49,9 +46,8 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --create)
-            ACTION="create"
-            CREATE_PROFILE="$2"
-            shift 2
+            echo "Error: --create is not available (demo removed)."
+            exit 1
             ;;
         --set)
             ACTION="set"
@@ -86,18 +82,6 @@ fi
 
 # Ensure base config folder exists
 mkdir -p "$CONFIG_DIR"
-
-# Handle --create
-if [[ "$ACTION" == "create" ]]; then
-    if [[ -z "$CREATE_PROFILE" ]]; then
-        echo "Error: Profile name required for --create."
-        exit 1
-    fi
-    mkdir -p "$CONFIG_DIR/$CREATE_PROFILE"
-    cp "$DEMO_FILE" "$CONFIG_DIR/$CREATE_PROFILE/settings.json"
-    echo "Profile '$CREATE_PROFILE' successfully created."
-    exit 0
-fi
 
 # Validate Profile for Menu, Set, and Get actions
 if [[ -z "$PROFILE" ]]; then
