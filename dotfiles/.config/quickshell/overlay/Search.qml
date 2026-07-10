@@ -91,7 +91,7 @@ Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 32
       radius: 8
-      color: Theme.surfaceLight
+      color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25)
 
       RowLayout {
         anchors.fill: parent

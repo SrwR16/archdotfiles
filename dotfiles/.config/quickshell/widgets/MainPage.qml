@@ -148,8 +148,8 @@ ColumnLayout {
     Rectangle {
       anchors.fill: parent
       radius: 14
-      color: Theme.surfaceContainer
-      border.color: Theme.surfaceVariant
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
+      border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.15)
       border.width: 1
       visible: activePlayer?.trackTitle
       clip: true
@@ -161,7 +161,7 @@ ColumnLayout {
 
         Rectangle {
           width: 48; height: 48; radius: 10
-          color: Theme.surfaceLight; clip: true
+          color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25); clip: true
 
           Image {
             anchors.fill: parent

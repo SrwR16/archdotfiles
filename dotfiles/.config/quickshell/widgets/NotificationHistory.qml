@@ -118,7 +118,7 @@ Rectangle {
             width: parent.width
             implicitHeight: groupBody.visible ? groupBody.implicitHeight + headerRow.implicitHeight + 24 + 8 : headerRow.implicitHeight + 24
             radius: 14
-            color: Theme.surfaceLight
+            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25)
 
             property string groupAppName: modelData.appName
             property bool groupExpanded: historyRoot.isGroupExpanded(groupAppName)

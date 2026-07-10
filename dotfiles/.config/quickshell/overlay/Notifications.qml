@@ -118,7 +118,7 @@ Rectangle {
             implicitWidth: btnText.implicitWidth + 16
             implicitHeight: 22
             radius: 11
-            color: Theme.surfaceLight
+            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25)
 
             Text {
               id: btnText
