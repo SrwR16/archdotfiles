@@ -94,10 +94,162 @@ case "$DISTRO" in
     opensuse) pkg_files+=("$repo_path/setup/dependencies/packages-opensuse") ;;
 esac
 mapfile -t PKGS < <(grep -vhE '^\s*#|^\s*$' "${pkg_files[@]}" 2>/dev/null | awk '{$1=$1};1' | sort -u)
-info "Installing ${#PKGS[@]} packages..."
 if [ "$DRY_RUN" -eq 1 ]; then
+    info "Installing ${#PKGS[@]} packages..."
     echo "   + install: ${PKGS[*]}"
 else
+    # On Arch, detect installed packages that conflict with our requested list.
+    # Three cases per installed package × requested package pair:
+    #   1. Same name              → skip (it IS the requested package)
+    #   2. Provides, no conflict  → skip (already satisfied, e.g. rust provides cargo)
+    #   3. Provides + conflicts   → conflict (e.g. blueman-git, illogical-impulse-quickshell-git)
+    #   4. Conflicts only         → conflict (rare but handled)
+    REMOVE_PKGS=()    # installed packages to remove
+    SKIP_PKGS=()      # requested packages to skip
+    if [ "$DISTRO" = arch ]; then
+        mapfile -t installed_pkgs < <(pacman -Qq 2>/dev/null)
+        CONFLICT_IPKGS=()   # installed package names
+        CONFLICT_RPKGS=()   # requested package each conflicts with
+        for ipkg in "${installed_pkgs[@]}"; do
+            info="$(pacman -Qi "$ipkg" 2>/dev/null)" || continue
+            provides="$(echo "$info" | sed -n 's/^Provides *: //p')"
+            conflicts="$(echo "$info" | sed -n 's/^Conflicts With *: //p')"
+            for rpkg in "${PKGS[@]}"; do
+                [ "$ipkg" = "$rpkg" ] && continue
+                _provides_it=false
+                _conflicts_it=false
+                if [ -n "$provides" ] && [ "$provides" != "None" ]; then
+                    echo "$provides" | tr ' ' '\n' | grep -qx "$rpkg" && _provides_it=true
+                fi
+                if [ -n "$conflicts" ] && [ "$conflicts" != "None" ]; then
+                    echo "$conflicts" | tr ' ' '\n' | grep -qx "$rpkg" && _conflicts_it=true
+                fi
+                if $_provides_it; then
+                    if $_conflicts_it; then
+                        # Provides AND conflicts → real conflict (needs user decision)
+                        CONFLICT_IPKGS+=("$ipkg")
+                        CONFLICT_RPKGS+=("$rpkg")
+                    else
+                        # Provides, no conflict → already satisfied
+                        SKIP_PKGS+=("$rpkg")
+                    fi
+                    break
+                fi
+                if $_conflicts_it; then
+                    # Conflicts without providing → real conflict
+                    CONFLICT_IPKGS+=("$ipkg")
+                    CONFLICT_RPKGS+=("$rpkg")
+                    break
+                fi
+            done
+        done
+
+        if [ ${#CONFLICT_IPKGS[@]} -gt 0 ]; then
+            echo ""
+            warn "Found ${#CONFLICT_IPKGS[@]} conflicting package(s):"
+            echo ""
+            # Display unique pairs
+            declare -A _shown
+            for i in "${!CONFLICT_IPKGS[@]}"; do
+                ipkg="${CONFLICT_IPKGS[$i]}"
+                if [ -z "${_shown[$ipkg]+x}" ]; then
+                    _shown[$ipkg]=1
+                    printf "  ${YELLOW}%s${NC}  →  conflicts with  ${YELLOW}%s${NC}\n" \
+                        "$ipkg" "${CONFLICT_RPKGS[$i]}"
+                fi
+            done
+
+            choice=$(gum choose "Remove all conflicting (install stable)" "Choose for each" "Skip all (keep existing)")
+            echo ""
+
+            case "$choice" in
+                "Remove all"*)
+                    REMOVE_PKGS=("${CONFLICT_IPKGS[@]}")
+                    ;;
+                "Choose for each")
+                    declare -A _dealt
+                    for i in "${!CONFLICT_IPKGS[@]}"; do
+                        ipkg="${CONFLICT_IPKGS[$i]}"
+                        [ -n "${_dealt[$ipkg]+x}" ] && continue
+                        _dealt[$ipkg]=1
+                        rpkg="${CONFLICT_RPKGS[$i]}"
+                        if gum confirm "Remove ${ipkg} and install ${rpkg}?"; then
+                            REMOVE_PKGS+=("$ipkg")
+                        else
+                            SKIP_PKGS+=("$rpkg")
+                            info "Keeping $ipkg — $rpkg will be skipped"
+                        fi
+                    done
+                    ;;
+                "Skip all"*)
+                    for rpkg in "${CONFLICT_RPKGS[@]}"; do
+                        SKIP_PKGS+=("$rpkg")
+                    done
+                    mapfile -t SKIP_PKGS < <(printf '%s\n' "${SKIP_PKGS[@]}" | sort -u)
+                    info "Keeping existing packages — ${SKIP_PKGS[*]} will be skipped"
+                    ;;
+            esac
+
+            # Remove chosen conflicting packages
+            if [ ${#REMOVE_PKGS[@]} -gt 0 ]; then
+                mapfile -t REMOVE_PKGS < <(printf '%s\n' "${REMOVE_PKGS[@]}" | sort -u)
+
+                # Check reverse dependencies before removing
+                REVDEPS=()
+                for rp in "${REMOVE_PKGS[@]}"; do
+                    while IFS= read -r rd; do
+                        [ -z "$rd" ] && continue
+                        # Is it already in our install list (will be resolved)?
+                        in_list=false
+                        for pkg in "${PKGS[@]}"; do [ "$rd" = "$pkg" ] && in_list=true && break; done
+                        $in_list && continue
+                        # Is it in the removal list already?
+                        in_remove=false
+                        for rm in "${REMOVE_PKGS[@]}"; do [ "$rd" = "$rm" ] && in_remove=true && break; done
+                        $in_remove && continue
+                        REVDEPS+=("$rd")
+                    done < <(pactree -r -u "$rp" 2>/dev/null | tail -n +2)
+                done
+                if [ ${#REVDEPS[@]} -gt 0 ]; then
+                    mapfile -t REVDEPS < <(printf '%s\n' "${REVDEPS[@]}" | sort -u)
+                    echo ""
+                    warn "Removing ${REMOVE_PKGS[*]} would break dependencies for:"
+                    for rd in "${REVDEPS[@]}"; do
+                        echo "    $rd"
+                    done
+                    echo ""
+                    if gum confirm "Remove these too?"; then
+                        REMOVE_PKGS+=("${REVDEPS[@]}")
+                        mapfile -t REMOVE_PKGS < <(printf '%s\n' "${REMOVE_PKGS[@]}" | sort -u)
+                    else
+                        error "Cannot proceed — ${REMOVE_PKGS[*]} has unresolvable dependencies."
+                    fi
+                fi
+
+                warn "Removing: ${REMOVE_PKGS[*]}"
+                if [ -n "$aur_helper" ]; then
+                    "$aur_helper" -Rns --noconfirm "${REMOVE_PKGS[@]}"
+                else
+                    sudo pacman -Rns --noconfirm "${REMOVE_PKGS[@]}"
+                fi
+            fi
+
+            # Remove skipped packages from the install list
+            if [ ${#SKIP_PKGS[@]} -gt 0 ]; then
+                FILTERED_PKGS=()
+                for pkg in "${PKGS[@]}"; do
+                    skip=0
+                    for sp in "${SKIP_PKGS[@]}"; do
+                        [ "$pkg" = "$sp" ] && skip=1 && break
+                    done
+                    [ "$skip" -eq 0 ] && FILTERED_PKGS+=("$pkg")
+                done
+                PKGS=("${FILTERED_PKGS[@]}")
+            fi
+        fi
+    fi
+
+    info "Installing ${#PKGS[@]} packages..."
     case "$DISTRO" in
         arch)
             if [ -n "$aur_helper" ]; then

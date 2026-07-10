@@ -103,5 +103,9 @@ _checkAURHelper
 # --------------------------------------------------------------
 
 if command -v swww &> /dev/null; then
-    sudo pacman -Rns --noconfirm swww
+    if [ -n "$aur_helper" ]; then
+        "$aur_helper" -Rns --noconfirm swww
+    else
+        sudo pacman -Rns --noconfirm swww
+    fi
 fi

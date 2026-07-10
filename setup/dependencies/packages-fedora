@@ -8,7 +8,6 @@ uwsm
 python3-pip
 python3-gobject
 python3-devel
-python3-devel
 python3-setuptools
 gtk3
 gtk-layer-shell
@@ -38,8 +37,6 @@ gnome-themes-extra
 gcc
 gobject-introspection-devel
 cairo-gobject-devel
-pkg-config
-python3-devel
 gtk4
 libadwaita-devel
 lua
