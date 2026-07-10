@@ -60,7 +60,7 @@ Rectangle {
       Layout.fillWidth: true
       height: 40
       radius: 10
-      color: Theme.surface
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
 
       TextField {
         id: pwField
@@ -102,7 +102,7 @@ Rectangle {
         Layout.fillWidth: true
         height: 36
         radius: 10
-        color: Theme.surface
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
         Text {
           anchors.centerIn: parent
           text: "Cancel"

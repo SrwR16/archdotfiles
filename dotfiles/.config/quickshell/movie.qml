@@ -15,7 +15,7 @@ FloatingWindow {
 
   Rectangle {
     anchors.fill: parent
-    color: "#cc000000"
+    color: Qt.rgba(0, 0, 0, 0.7)
 
     MouseArea {
       anchors.fill: parent

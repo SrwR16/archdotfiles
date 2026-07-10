@@ -100,7 +100,7 @@ Scope {
                     id: backdropLayer
                     anchors.fill: parent
                     visible: root.backdropEnabled
-                    color: "#000000"
+                    color: Qt.rgba(0, 0, 0, root.backdropOpacity)
                     opacity: root.backdropOpacity
                     z: 0
                 }

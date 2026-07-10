@@ -61,7 +61,7 @@ RowLayout {
         // Cava Waveform Overlay on Album Art
         Rectangle {
             anchors.fill: parent
-            color: "#66000000" // Semi-transparent black overlay
+            color: Qt.rgba(0, 0, 0, 0.4)
             visible: mediaSection.mediaState === "Playing"
 
             Row {

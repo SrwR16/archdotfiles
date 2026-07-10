@@ -20,12 +20,13 @@ hl.config({
 
         blur = {
             enabled   = true,
-            size      = 4,
+            size      = 8,
             passes    = 4,
             new_optimizations = on,
             ignore_opacity = true,
             xray = true,
             vibrancy  = 0.1696,
+            noise     = 0.01,
         },
     },
 })

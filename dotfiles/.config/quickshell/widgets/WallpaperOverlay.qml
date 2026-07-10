@@ -28,8 +28,8 @@ Item {
   // Dim backdrop
   Rectangle {
     anchors.fill: parent
-    color: Theme.background
-    opacity: root.isOpen ? 0.55 : 0
+    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+    opacity: root.isOpen ? 0.85 : 0
     Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
   }
 
@@ -54,9 +54,9 @@ Item {
     width: maxWidth
     height: maxHeight
 
-    color: Theme.surface
+    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.65)
     border.width: 1
-    border.color: Theme.border
+    border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.25)
 
     transform: [
       Translate {
@@ -116,7 +116,7 @@ Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
         radius: 12
-        color: Theme.surfaceDim
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.4)
         clip: true
 
         WallpaperGrid {

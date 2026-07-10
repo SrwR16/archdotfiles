@@ -22,7 +22,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    color: Theme.overlay
+    color: Qt.rgba(0, 0, 0, 0.5)
     opacity: root.visible ? 1.0 : 0.0
     Behavior on opacity { NumberAnimation { duration: 150 } }
 
@@ -59,7 +59,7 @@ Item {
         Layout.fillWidth: true
         height: 40
         radius: 10
-        color: Theme.surface
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
 
         TextField {
           id: pwField
@@ -107,7 +107,7 @@ Item {
           Layout.fillWidth: true
           height: 36
           radius: 10
-          color: Theme.surface
+          color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
           Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.text; font { family: "Inter"; pixelSize: 12; weight: 600 } }
           MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.dismiss(); pwField.text = ""; } }
         }

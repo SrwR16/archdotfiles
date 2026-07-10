@@ -17,7 +17,9 @@ Rectangle {
   signal clearAll()
 
   radius: 16
-  color: Theme.surface
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.65)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+  border.width: 1
   clip: true
 
   function buildGroups(arr) {
@@ -149,7 +151,7 @@ Rectangle {
                   implicitWidth: countText.implicitWidth + 10
                   implicitHeight: 18
                   radius: 9
-                  color: Theme.surface
+                  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
                   visible: modelData.items.length > 1
 
                   Text {
@@ -255,7 +257,7 @@ Rectangle {
                               implicitWidth: actText.implicitWidth + 12
                               implicitHeight: 20
                               radius: 10
-                              color: Theme.surface
+                              color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
 
                               Text {
                                 id: actText
