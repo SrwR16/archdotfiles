@@ -26,7 +26,7 @@ RowLayout {
       width: 40; height: 40
       radius: 20
       anchors.centerIn: parent
-      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
     }
 
     Canvas {

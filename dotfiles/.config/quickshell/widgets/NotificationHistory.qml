@@ -17,8 +17,8 @@ Rectangle {
   signal clearAll()
 
   radius: 16
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.35)
-  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.75)
   border.width: 1
   clip: true
 
@@ -118,7 +118,7 @@ Rectangle {
             width: parent.width
             implicitHeight: groupBody.visible ? groupBody.implicitHeight + headerRow.implicitHeight + 24 + 8 : headerRow.implicitHeight + 24
             radius: 14
-            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25)
+            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.75)
 
             property string groupAppName: modelData.appName
             property bool groupExpanded: historyRoot.isGroupExpanded(groupAppName)
@@ -151,7 +151,7 @@ Rectangle {
                   implicitWidth: countText.implicitWidth + 10
                   implicitHeight: 18
                   radius: 9
-                  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
+                  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
                   visible: modelData.items.length > 1
 
                   Text {
@@ -257,7 +257,7 @@ Rectangle {
                               implicitWidth: actText.implicitWidth + 12
                               implicitHeight: 20
                               radius: 10
-                              color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
+                              color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
 
                               Text {
                                 id: actText

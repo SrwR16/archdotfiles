@@ -52,7 +52,7 @@ Item {
             anchors.fill: parent
             radius: 12
             color: isSelected
-              ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
+              ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.75)
               : "transparent"
             clip: true
 
@@ -94,7 +94,7 @@ Item {
               radius: 12
               color: "transparent"
               border.width: isHovered && !isPressed ? 2 : 0
-              border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
+              border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.75)
               Behavior on border.width { NumberAnimation { duration: 100 } }
             }
 

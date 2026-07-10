@@ -26,9 +26,9 @@ Rectangle {
 
   signal dismissed(var notifRef)
 
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.35)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
   clip: true
-  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.75)
   border.width: 1
   layer.enabled: true
   layer.samples: 4
@@ -118,7 +118,7 @@ Rectangle {
             implicitWidth: btnText.implicitWidth + 16
             implicitHeight: 22
             radius: 11
-            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.25)
+            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.75)
 
             Text {
               id: btnText
