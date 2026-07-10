@@ -41,6 +41,22 @@ source $repo_path/setup/_fonts.sh
 source $repo_path/setup/_icons.sh
 
 # --------------------------------------------------------------
+# Oh-My-Zsh custom plugins (skip if oh-my-zsh not installed yet)
+# --------------------------------------------------------------
+
+if [ -d "$HOME/.oh-my-zsh/custom/plugins" ]; then
+    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
+        git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    fi
+    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+    fi
+    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/fast-syntax-highlighting" ]; then
+        git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git "$HOME/.oh-my-zsh/custom/plugins/fast-syntax-highlighting"
+    fi
+fi
+
+# --------------------------------------------------------------
 # Create XDG Directories
 # --------------------------------------------------------------
 
