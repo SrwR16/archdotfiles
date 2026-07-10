@@ -236,18 +236,24 @@ Rectangle {
     interval: 600
     onTriggered: {
       clockWidget._suppressMorph = false
+
+      // Push pending battery alert first (highest priority)
       if (clockWidget._pendingBatteryMode && !clockWidget.showBatteryAlert) {
         var m = clockWidget._pendingBatteryMode
         clockWidget._pendingBatteryMode = ""
         clockWidget.pushBatteryAlert(m)
-      } else if (clockWidget._pendingNotifData && !clockWidget.showNotifAlert && activityManager) {
+      }
+
+      // Push pending notification (will queue behind battery alert in ActivityManager)
+      if (clockWidget._pendingNotifData && !clockWidget.showNotifAlert && activityManager) {
         var nd = clockWidget._pendingNotifData
         clockWidget._pendingNotifData = null
         activityManager.push("notification", nd, activityManager.priorityPassive, 3500)
-      } else {
-        clockWidget._pendingBatteryMode = ""
-        clockWidget._pendingNotifData = null
       }
+
+      // Clean up any remaining pending state
+      clockWidget._pendingBatteryMode = ""
+      clockWidget._pendingNotifData = null
     }
   }
 
@@ -416,7 +422,7 @@ Rectangle {
     hoverEnabled: true
 
     onClicked: (mouse) => {
-      if (clockWidget.showingNotification) return;
+      if (clockWidget.showNotifAlert) return;
       if (clockWidget.showPowerSection) {
         clockWidget.showPowerSection = false;
         return;

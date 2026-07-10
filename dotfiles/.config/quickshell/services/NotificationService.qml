@@ -15,20 +15,38 @@ Item {
   property var latestNotification: null
   property var latestNotificationData: null
   property var storedNotifications: []
+  property var _locks: ({})
 
   signal notificationReceived(var data, var notification)
+
+  function _releaseLock(lock) {
+    if (!lock) return;
+    lock.locked = false;
+    lock.destroy();
+  }
+
+  function _releaseLockById(id) {
+    if (id === undefined || id === null) return;
+    var lock = notifService._locks[id];
+    if (lock) {
+      notifService._releaseLock(lock);
+      delete notifService._locks[id];
+    }
+  }
 
   NotificationServer {
     actionsSupported: true
 
     onNotification: (notification) => {
+      var id = notification.id;
+
       var data = {
         appName: notification.appName,
         appIcon: notification.appIcon,
         summary: notification.summary,
         body: notification.body,
         urgency: notification.urgency,
-        id: notification.id,
+        id: id,
         actions: notification.actions,
         hasInlineReply: notification.hasInlineReply,
         inlineReplyPlaceholder: notification.inlineReplyPlaceholder,
@@ -45,7 +63,7 @@ Item {
         lock.locked = true;
       } catch (e) {}
 
-      data._lock = lock;
+      notifService._locks[id] = lock;
 
       if (!notifService.doNotDisturb) {
         notifService.latestNotification = notification;
@@ -55,7 +73,12 @@ Item {
 
       var arr = notifService.storedNotifications.slice();
       arr.push(data);
-      if (arr.length > 50) arr.splice(0, arr.length - 50);
+      if (arr.length > 50) {
+        var removed = arr.splice(0, arr.length - 50);
+        for (var ri = 0; ri < removed.length; ri++) {
+          notifService._releaseLockById(removed[ri].id);
+        }
+      }
       notifService.storedNotifications = arr;
     }
   }
@@ -71,17 +94,14 @@ Item {
     var itemId = item.id;
     if (itemId === undefined) return;
 
+    notifService._releaseLockById(itemId);
+
     var arr = storedNotifications.slice();
     var idx = -1;
     for (var i = 0; i < arr.length; i++) {
       if (arr[i].id === itemId) { idx = i; break; }
     }
     if (idx >= 0) {
-      var removed = arr[idx];
-      if (removed._lock) {
-        removed._lock.locked = false;
-        removed._lock.destroy();
-      }
       arr.splice(idx, 1);
     }
     storedNotifications = arr;
@@ -103,25 +123,12 @@ Item {
       latestNotification = null;
 
     // Release the lock so the notification can be freed by the server
-    var arr = storedNotifications;
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i].id === itemId && arr[i]._lock) {
-        arr[i]._lock.locked = false;
-        arr[i]._lock.destroy();
-        arr[i]._lock = null;
-        break;
-      }
-    }
+    notifService._releaseLockById(itemId);
   }
 
   function clearAll() {
-    var arr = storedNotifications.slice();
-    for (var i = 0; i < arr.length; i++) {
-      var item = arr[i];
-      if (item._lock) {
-        item._lock.locked = false;
-        item._lock.destroy();
-      }
+    for (var key in notifService._locks) {
+      notifService._releaseLockById(key);
     }
     storedNotifications = [];
     latestNotificationData = null;
