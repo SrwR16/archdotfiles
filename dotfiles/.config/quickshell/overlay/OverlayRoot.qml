@@ -53,6 +53,7 @@ Item {
             island.showPowerSection = false;
             activityManager.dismissByType("power");
             activityManager.dismissByType("battery");
+            activityManager.dismissByType("notification");
             island.showControlCenter = false;
             island.showPomodoro = false;
             island.showSys = false;
