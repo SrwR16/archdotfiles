@@ -8,7 +8,6 @@ import Quickshell
 FloatingWindow {
   id: root
   visible: true
-  flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
   color: "transparent"
   width: Screen.width
   height: Screen.height

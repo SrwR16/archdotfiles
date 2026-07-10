@@ -66,6 +66,17 @@ Rectangle {
 
   readonly property var groupedNotifs: buildGroups(storedNotifications)
 
+  function safeActions(actions) {
+    if (!actions) return [];
+    var result = [];
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i];
+      if (a && a.text != null)
+        result.push({ text: a.text, invoke: a.invoke });
+    }
+    return result;
+  }
+
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 14
@@ -245,12 +256,13 @@ Rectangle {
                         }
 
                         Flow {
-                          visible: modelData.actions && modelData.actions.length > 0
+                          readonly property var _actions: historyRoot.safeActions(modelData.actions)
+                          visible: _actions.length > 0
                           Layout.topMargin: 4
                           spacing: 6
 
                           Repeater {
-                            model: modelData.actions
+                            model: _actions
 
                             delegate: Rectangle {
                               required property var modelData
