@@ -231,23 +231,46 @@ Item {
 
     property string wifiPendingSsid: ""
     property string _wifiConnectingSsid: ""
+    property string _wifiConnectingSecurity: ""
     property bool wifiNeedsPassword: false
     property string wifiConnectError: ""
     property bool wifiConnecting: false
-    property string _wifiPendingSecurity: ""
 
     function connectToWifi(ssid, security, password) {
-        wifiConnecting = true;
-        wifiConnectError = "";
-        _wifiPendingSecurity = security;
         if (password) {
+            // Connect with explicit password
+            wifiConnecting = true;
+            wifiConnectError = "";
             wifiConnectProc.command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password];
+            wifiConnectProc.running = true;
         } else {
-            // Try saved connection first
+            // Check for saved connection first
             _wifiConnectingSsid = ssid;
-            wifiConnectProc.command = ["nmcli", "connection", "up", "id", ssid];
+            _wifiConnectingSecurity = security;
+            wifiCheckProc.command = ["sh", "-c", "nmcli -t -f NAME connection show 2>/dev/null | grep -qxF " + JSON.stringify(ssid) + "; echo $?"];
+            wifiCheckProc.running = true;
         }
-        wifiConnectProc.running = true;
+    }
+
+    Process {
+        id: wifiCheckProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var result = this.text.trim();
+                if (result === "0") {
+                    // Saved connection exists — use it
+                    controlCenter.wifiConnecting = true;
+                    controlCenter.wifiConnectError = "";
+                    controlCenter.wifiConnectProc.command = ["nmcli", "connection", "up", "id", controlCenter._wifiConnectingSsid];
+                    controlCenter.wifiConnectProc.running = true;
+                } else {
+                    // No saved connection — ask for password
+                    controlCenter.wifiConnecting = false;
+                    controlCenter.wifiPendingSsid = controlCenter._wifiConnectingSsid;
+                    controlCenter.wifiNeedsPassword = true;
+                }
+            }
+        }
     }
 
     Process {
@@ -257,14 +280,13 @@ Item {
             onStreamFinished: {
                 controlCenter.wifiConnecting = false;
                 var err = (this.text || "").toLowerCase();
-                if (err.includes("error") || err.includes("not found")) {
-                    // Saved connection not found — ask for password
-                    if (!controlCenter.wifiNeedsPassword && controlCenter._wifiConnectingSsid) {
-                        controlCenter.wifiConnectError = "";
+                if (err.includes("error")) {
+                    if (controlCenter.wifiNeedsPassword) {
+                        controlCenter.wifiConnectError = "Couldn't connect — check the password and try again.";
+                    } else {
+                        // Saved connection failed — ask for password
                         controlCenter.wifiPendingSsid = controlCenter._wifiConnectingSsid;
                         controlCenter.wifiNeedsPassword = true;
-                    } else {
-                        controlCenter.wifiConnectError = "Couldn't connect — check the password and try again.";
                     }
                 } else {
                     controlCenter.wifiConnectError = "";

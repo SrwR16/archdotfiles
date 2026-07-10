@@ -4,6 +4,7 @@ import "../services"
 import "../theme"
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Bluetooth
 
 ColumnLayout {
   spacing: 12
@@ -17,6 +18,15 @@ ColumnLayout {
   property bool audioMuted: false
   property var audioSink
   property var btAdapter
+  readonly property var _btDevices: btAdapter ? btAdapter.devices.values : []
+  readonly property string _btConnectedName: {
+    if (!btAdapter?.enabled) return "Off";
+    var d = _btDevices;
+    for (var i = 0; i < d.length; i++) {
+      if (d[i].state === BluetoothDeviceState.Connected) return d[i].name || d[i].deviceName || "Connected";
+    }
+    return "On";
+  }
   property bool nlEnabled: false
   property bool doNotDisturb: false
   property var brightnessIcon
@@ -66,7 +76,7 @@ ColumnLayout {
     ToggleTile {
       iconText: "󰂯"
       label: "Bluetooth"
-      sublabel: btAdapter?.enabled ? "On" : "Off"
+      sublabel: _btConnectedName
       active: !!btAdapter?.enabled
       expandable: true
       onTapped: toggleBluetooth()
