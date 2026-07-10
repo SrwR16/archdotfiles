@@ -393,7 +393,9 @@ Rectangle {
     },
   ]
 
-  color: Theme.background
+  color: Theme.surfaceContainer
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.4)
+  border.width: 1
 
   // Fluid morph animation for expansion/collapse (Apple-like)
   Behavior on height { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
