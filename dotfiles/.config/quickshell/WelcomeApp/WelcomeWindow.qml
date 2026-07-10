@@ -231,23 +231,7 @@ FloatingWindow {
                 enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 200; easing.type: Easing.OutQuad } }
                 exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 150; easing.type: Easing.InQuad } }
 
-                ShellMenuItem { text: qsTr("Dotfiles OS Homepage"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/SrwR16/archdotfiles"])
-                    }
-                }
-                ShellMenuItem { text: qsTr("Dotfiles OS GitHub"); onClicked: {
-                    Quickshell.execDetached(["xdg-open", "https://github.com/SrwR16/archdotfiles"])
-                    }
-                }
-                ShellMenuItem { text: qsTr("Dotfiles OS Changelog"); onClicked: {
-                    Quickshell.execDetached(["xdg-open", "https://github.com/SrwR16/archdotfiles/blob/main/CHANGELOG.md"])
-                    }
-                }
-                ShellMenuItem { text: qsTr("Dotfiles YouTube Channel"); onClicked: {
-                    Quickshell.execDetached(["xdg-open", "https://www.youtube.com/channel/UC0sUzmZ0CHvVCVrpRfGKZfw"])
-                    }
-                }
-                ShellMenuItem { text: qsTr("Get more Wallpapers"); onClicked: {
+                ShellMenuItem { text: qsTr("Dotfiles GitHub"); onClicked: {
                     Quickshell.execDetached(["xdg-open", "https://github.com/SrwR16/archdotfiles"])
                     }
                 }
@@ -260,10 +244,7 @@ FloatingWindow {
                     Quickshell.execDetached(["xdg-open", "https://wiki.hyprland.org/"])
                     }
                 }
-                ShellMenuItem { text: qsTr("Update Dotfiles OS"); onClicked: {
-                    Quickshell.execDetached(["xdg-open", "https://github.com/SrwR16/archdotfiles"])
-                    }
-                }
+
 
                 background: Rectangle {
                     implicitWidth: 180
@@ -322,7 +303,7 @@ FloatingWindow {
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "Welcome to Dotfiles OS"
+                        text: "Welcome"
                         font.family: Theme.fontFamily
                         font.pixelSize: 28
                         font.bold: true

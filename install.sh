@@ -45,21 +45,12 @@ cd "$repo_path"
 DOTINST="$repo_path/dotfiles-stable.dotinst"
 [ -f "$DOTINST" ] || error "Missing $DOTINST"
 
-# --- Distro detection -------------------------------------------------------
-if command -v pacman >/dev/null; then DISTRO=arch
-elif command -v dnf  >/dev/null; then DISTRO=fedora
-elif command -v zypper >/dev/null; then DISTRO=opensuse
-else error "Unsupported distribution (need pacman, dnf or zypper)."; fi
-info "Detected distribution: $DISTRO"
+DISTRO=arch
 [ "$DRY_RUN" -eq 1 ] && warn "DRY RUN — no changes will be made."
 
 # --- Base tools needed by this script ---------------------------------------
 if [ "$DRY_RUN" -eq 0 ]; then
-    case "$DISTRO" in
-        arch)     sudo pacman -S --needed --noconfirm git jq rsync gum ;;
-        fedora)   sudo dnf install -y git jq rsync gum ;;
-        opensuse) sudo zypper install -y git jq rsync gum ;;
-    esac
+    sudo pacman -S --needed --noconfirm git jq rsync gum
 fi
 command -v jq >/dev/null || error "jq is required."
 
@@ -75,12 +66,12 @@ info "Deploy dir : $DEPLOY_DIR"
 [ -d "$SRC_DIR" ] || error "Source dir not found: $SRC_DIR"
 
 # ===========================================================================
-# 1. Preflight (AUR helper on Arch, swww->awww, etc.)
+# 1. Preflight (AUR helper, swww->awww, etc.)
 # ===========================================================================
-info "Running preflight for $DISTRO..."
+info "Running preflight..."
 if [ "$DRY_RUN" -eq 0 ]; then
     # shellcheck disable=SC1090
-    source "$repo_path/setup/preflight-$DISTRO.sh"
+    source "$repo_path/setup/preflight-arch.sh"
 fi
 # aur_helper is exported by the Arch preflight; default to pacman otherwise.
 aur_helper="${aur_helper:-}"
@@ -89,11 +80,7 @@ aur_helper="${aur_helper:-}"
 # 2. Packages
 # ===========================================================================
 pkg_files=("$repo_path/setup/dependencies/packages")
-case "$DISTRO" in
-    arch)     pkg_files+=("$repo_path/setup/dependencies/packages-arch") ;;
-    fedora)   pkg_files+=("$repo_path/setup/dependencies/packages-fedora") ;;
-    opensuse) pkg_files+=("$repo_path/setup/dependencies/packages-opensuse") ;;
-esac
+pkg_files+=("$repo_path/setup/dependencies/packages-arch")
 mapfile -t PKGS < <(grep -vhE '^\s*#|^\s*$' "${pkg_files[@]}" 2>/dev/null | awk '{$1=$1};1' | sort -u)
 if [ "$DRY_RUN" -eq 1 ]; then
     info "Installing ${#PKGS[@]} packages..."
@@ -265,25 +252,11 @@ else
         info "  → $_need new, $_have already installed"
     fi
 
-    case "$DISTRO" in
-        arch)
-            if [ -n "$aur_helper" ]; then
-                "$aur_helper" -S --needed --noconfirm "${PKGS[@]}"
-            else
-                sudo pacman -S --needed --noconfirm "${PKGS[@]}"
-            fi ;;
-        fedora)   sudo dnf install -y "${PKGS[@]}" ;;
-        opensuse) sudo zypper install -y "${PKGS[@]}" ;;
-    esac
-fi
-
-# Prebuilt fallback binaries (eza, matugen) -> ~/.local/bin (packages win on PATH).
-run "mkdir -p \"\$HOME/.local/bin\""
-if [ -d "$repo_path/setup/packages" ]; then
-    for bin in "$repo_path"/setup/packages/*; do
-        [ -f "$bin" ] || continue
-        run "install -m 755 \"$bin\" \"\$HOME/.local/bin/$(basename "$bin")\""
-    done
+    if [ -n "$aur_helper" ]; then
+        "$aur_helper" -S --needed --noconfirm "${PKGS[@]}"
+    else
+        sudo pacman -S --needed --noconfirm "${PKGS[@]}"
+    fi
 fi
 
 # ===========================================================================
@@ -402,10 +375,10 @@ fi
 # ===========================================================================
 # 4. Post install (oh-my-posh, vendored apps, cursors, fonts, icons, xdg dirs)
 # ===========================================================================
-info "Running post-install for $DISTRO..."
+info "Running post-install..."
 if [ "$DRY_RUN" -eq 0 ]; then
     # shellcheck disable=SC1090
-    source "$repo_path/setup/post-$DISTRO.sh"
+    source "$repo_path/setup/post-arch.sh"
 fi
 
 # ===========================================================================

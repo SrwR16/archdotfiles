@@ -34,16 +34,7 @@ _checkCommandExists() {
 
 check_deps
 
-# Arch
-if [[ $(_checkCommandExists "pacman") == 0 ]]; then
-    OCR_LANGUAGE_LIST="$(pacman -Qq | grep -iE "tesseract-(ocr|data|langpack)*-" | awk -F '-' '{print $NF}')"
-# Fedora
-elif [[ $(_checkCommandExists "dnf") == 0 ]]; then
-    OCR_LANGUAGE_LIST="$(dnf list --installed | grep -iE "tesseract-(ocr|data|langpack)*-" | awk -F '-' '{print $NF}')"
-# Opensuse
-else
-    OCR_LANGUAGE_LIST="$(zypper se -i | grep -iE "tesseract-(ocr|data|langpack)*-" | awk -F '-' '{print $NF}')"
-fi
+OCR_LANGUAGE_LIST="$(pacman -Qq | grep -iE "tesseract-(ocr|data|langpack)*-" | awk -F '-' '{print $NF}')"
 
 argc() { echo $#; }
 rofi_cmd() {

@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=com.dotfiles.hyprlandsettings
-Exec=@bindir@/hyprland-settings --gapplication-service

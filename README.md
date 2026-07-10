@@ -10,7 +10,7 @@
   <img alt="Arch Linux"   src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white">
   <img alt="Hyprland"     src="https://img.shields.io/badge/Hyprland-00AAAE?style=for-the-badge&logo=wayland&logoColor=white">
   <img alt="Quickshell"   src="https://img.shields.io/badge/Quickshell-41CD52?style=for-the-badge&logo=qt&logoColor=white">
-  <img alt="Shell"        src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white">
+  <img alt="Shell"        src="https://img.shields.io/badge/Zsh-F15A24?style=for-the-badge&logo=gnubash&logoColor=white">
   <img alt="License"      src="https://img.shields.io/badge/License-GPL_3.0-blue?style=for-the-badge">
 </p>
 
@@ -44,8 +44,8 @@ local setup:
 
 <div align="center">
 
-<!-- Drop your own screenshots in here -->
-<img width="800" alt="Desktop preview — replace with your own screenshot" src="https://ml4w.com/os/screen-2140.jpg" />
+<!-- Drop your own screenshots in here (replace placeholder below) -->
+<img width="800" alt="Desktop preview" src="" />
 
 </div>
 
@@ -76,12 +76,12 @@ Then log out and back in (or run `hyprctl reload`).
 
 | Step | Action |
 |------|--------|
-| 1 | Detects the distro & installs base tools (`git jq rsync gum`) |
+| 1 | Installs base tools (`git jq rsync gum`) |
 | 2 | Sets up an AUR helper and installs all packages |
 | 3 | Deploys dotfiles to `~/.mydotfiles/` and symlinks them into `~` |
 | 4 | Builds the bundled apps locally and applies cursors/fonts/icons |
 
-Fedora and openSUSE paths exist but Arch is the primary target.
+
 
 ---
 
@@ -108,8 +108,7 @@ archdotfiles/
 │       ├── quickshell/     # the shell / bar / widgets
 │       └── dotfiles/       # scripts, settings, assets
 ├── apps/                   # vendored, locally-built apps
-├── setup/                  # packages, preflight/post, fonts, cursors, icons
-└── dev/                    # maintenance tooling (de-brand transform, sync)
+└── setup/                  # packages, preflight/post, fonts, cursors, icons
 ```
 
 ---

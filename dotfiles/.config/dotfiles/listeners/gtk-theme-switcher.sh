@@ -13,7 +13,7 @@ SETTINGS_BASENAME=$(basename "$SETTINGS_FILE")
 if ! command -v inotifywait &> /dev/null
 then
     echo "Error: inotifywait is not installed."
-    echo "Please install inotify-tools (e.g., sudo apt install inotify-tools on Debian/Ubuntu)"
+    echo "Please install inotify-tools (e.g., sudo pacman -S inotify-tools)"
     exit 1
 fi
 

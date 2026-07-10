@@ -12,9 +12,6 @@ swaync-client -rs
 # Set launcher
 echo 'rofi' > $HOME/.config/dotfiles/settings/launcher
 
-# Set walker theme
-echo 'modern' > $HOME/.config/dotfiles/settings/walker-theme
-
 # Set Window Border
 echo -e 'local name = "border-2.lua"\nload_variant(name,"windows")' > $HOME/.config/hypr/conf/window.lua
 

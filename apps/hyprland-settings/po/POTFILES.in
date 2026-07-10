@@ -1,8 +1,0 @@
-# List of source files containing translatable strings.
-# Please keep this file sorted alphabetically.
-data/com.dotfiles.hyprland.settings.desktop.in
-data/com.dotfiles.hyprland.settings.metainfo.xml.in
-data/com.dotfiles.hyprland.settings.gschema.xml
-src/main.py
-src/window.py
-src/window.ui

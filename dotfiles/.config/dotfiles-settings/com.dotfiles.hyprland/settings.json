@@ -251,7 +251,7 @@
       "type": "choose",
       "mode": "overwrite",
       "default": "rofi",
-      "options": ["rofi", "walker"]
+      "options": ["rofi"]
     }]
   }
 ]

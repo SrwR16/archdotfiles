@@ -13,22 +13,13 @@ _checkCommandExists() {
 
 _isInstalled() {
     package="$1"
-    case $install_platform in
-        arch)
-            check="$($aur_helper -Qs --color always "${package}" | grep "local" | grep "${package} ")"
-            ;;
-        fedora)
-            check="$(dnf repoquery --quiet --installed ""${package}*"")"
-            ;;
-        *) ;;
-    esac
-
+    check="$($aur_helper -Qs --color always "${package}" | grep "local" | grep "${package} ")"
     if [ -n "${check}" ]; then
-        echo 0 #'0' means 'true' in Bash
-        return #true
+        echo 0
+        return
     fi
-    echo 1 #'1' means 'false' in Bash
-    return #false
+    echo 1
+    return
 }
 
 # ------------------------------------------------------
@@ -57,32 +48,20 @@ fi
 # Install update
 # ----------------------------------------------------- 
 
-# Arch
-if _checkCommandExists "pacman"; then
-
-    yay_installed="false"
-    paru_installed="false"
-    if _checkCommandExists "yay"; then
-        yay_installed="true"
-    fi
-    if _checkCommandExists "paru"; then
-        paru_installed="true"
-    fi
-    if [[ $yay_installed == "true" ]] && [[ $paru_installed == "false" ]]; then
-        yay
-    elif [[ $yay_installed == "false" ]] && [[ $paru_installed == "true" ]]; then
-        paru -Syu --noconfirm
-    else
-        yay
-    fi
-
-# Fedora
-elif _checkCommandExists "dnf"; then
-    sudo dnf upgrade
+yay_installed="false"
+paru_installed="false"
+if _checkCommandExists "yay"; then
+    yay_installed="true"
+fi
+if _checkCommandExists "paru"; then
+    paru_installed="true"
+fi
+if [[ $yay_installed == "true" ]] && [[ $paru_installed == "false" ]]; then
+    yay
+elif [[ $yay_installed == "false" ]] && [[ $paru_installed == "true" ]]; then
+    paru -Syu --noconfirm
 else
-    echo ":: ERROR - Platform not supported"
-    echo "Press [ENTER] to close."
-    read
+    yay
 fi
 echo
 

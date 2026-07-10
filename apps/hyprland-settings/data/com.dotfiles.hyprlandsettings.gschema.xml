@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="hyprland-settings">
-	<schema id="com.dotfiles.hyprlandsettings" path="/com/dotfiles/hyprlandsettings/">
-	</schema>
-</schemalist>

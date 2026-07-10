@@ -65,30 +65,11 @@ else
     ~/.config/dotfiles/scripts/wallpaper "$(cat $CACHE_FILE)" --skip-wallpaper &
 fi
 
-# Start Dotfiles Settings App
-info "Starting Dotfiles Dotfiles Settings"
-PROFILE="com.dotfiles.hyprland" qs -p $HOME/.local/share/dotfiles-settings/quickshell &
-info "Dotfiles Dotfiles Settings started"
-
-# Start Quickshell Overview
-info "Starting Quickshell Overview"
-qs -p $HOME/.config/quickshell/overview &
-info "Quickshell Overview started"
-
 # Start Dotfiles Welcome App
 info "Starting Dotfiles Welcome App"
 if [ ! -f $HOME/.cache/dotfiles-welcome-autostart ]; then
-    timeout=30
-    count=0
     sleep 1
-    until qs ipc call welcome toggle >/dev/null 2>&1; do
-        (( count++ ))
-        if (( count >= timeout )); then
-            warn "Welcome IPC not available after ${timeout}s"
-            break
-        fi
-        sleep 1
-    done
+    qs ipc call welcome toggle 2>/dev/null || true
     info "Dotfiles Welcome started"
 else
     info "Dotfiles Welcome disabled"
