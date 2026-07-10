@@ -642,49 +642,16 @@ PanelWindow {
                     }
 
                     // --- STATUS BAR ---
-                    // Toggle the Quickshell statusbar on/off. State is the
-                    // "enabled" flag in the master statusbar.json (the
-                    // dotfiles-statusbar override when present, else the shipped
-                    // one). The switch reflects/flips that state live.
+                    // Status bar is always enabled (waybar removed).
+                    // The switch is fixed on — kept for visual consistency
+                    // with the settings wheel (reload / edit).
                     RowLayout {
                         Layout.fillWidth: true
                         Text { text: "Status Bar"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
                         ShellSwitch {
-                            id: statusbarSwitch
-                            property bool ready: false
-                            // Read the current on/off state from the "enabled" flag
-                            // in the master statusbar.json (override, else shipped).
-                            Process {
-                                id: statusbarStateProc
-                                command: ["bash", "-c", "f=~/.config/dotfiles-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/dotfiles/settings/statusbar.json; grep -q '\"enabled\"[[:space:]]*:[[:space:]]*false' \"$f\" && echo 0 || echo 1"]
-                                stdout: StdioCollector {
-                                    onStreamFinished: {
-                                        statusbarSwitch.checked = (this.text.trim() === "1")
-                                        statusbarSwitch.ready = true
-                                    }
-                                }
-                            }
-                            // Re-read the state periodically while the sidebar is
-                            // open so the switch tracks external toggles (e.g. the
-                            // SUPER+CTRL+B keybinding) live, not just on reopen.
-                            // triggeredOnStart gives the initial read on open.
-                            Timer {
-                                interval: 1000
-                                repeat: true
-                                running: root.isOpen
-                                triggeredOnStart: true
-                                onTriggered: statusbarStateProc.running = true
-                            }
-                            onClicked: {
-                                if (!ready) return;
-                                // Absolute command matching the switch's post-click
-                                // position so it always reflects the real state.
-                                let cmd = checked ? "qs ipc call statusbar enable"
-                                                  : "qs ipc call statusbar disable"
-                                console.log("Status Bar cmd: " + cmd)
-                                Quickshell.execDetached(["bash", "-c", cmd])
-                            }
+                            checked: true
+                            enabled: false
                         }
 
                         SettingsWheel {

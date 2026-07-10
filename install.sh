@@ -250,6 +250,20 @@ else
     fi
 
     info "Installing ${#PKGS[@]} packages..."
+
+    # Show what will be installed vs already up-to-date
+    if [ "$DISTRO" = arch ]; then
+        mapfile -t _inst < <(pacman -Qq 2>/dev/null)
+        _have=0
+        for _p in "${PKGS[@]}"; do
+            for _i in "${_inst[@]}"; do
+                [ "$_p" = "$_i" ] && ((_have++)) && break
+            done
+        done
+        _need=$((${#PKGS[@]} - _have))
+        info "  → $_need new, $_have already installed"
+    fi
+
     case "$DISTRO" in
         arch)
             if [ -n "$aur_helper" ]; then
@@ -274,6 +288,54 @@ fi
 # ===========================================================================
 # 3. Deploy dotfiles to $DEPLOY_DIR and symlink into $HOME
 # ===========================================================================
+
+# --- Backup prompt ----------------------------------------------------------
+DO_BACKUP=1
+if [ "$DRY_RUN" -eq 0 ] && [ -d "$DEPLOY_DIR" ]; then
+    # Count files that would be backed up
+    _would_backup=0
+    for _p in "$DEPLOY_DIR"/*; do
+        _n="$(basename "$_p")"
+        [ "$_n" = ".config" ] && continue
+        [ -e "$HOME/$_n" ] || [ -L "$HOME/$_n" ] && ((_would_backup++))
+    done
+    if [ -d "$DEPLOY_DIR/.config" ]; then
+        for _p in "$DEPLOY_DIR"/.config/*; do
+            _n="$(basename "$_p")"
+            [ -e "$HOME/.config/$_n" ] || [ -L "$HOME/.config/$_n" ] && ((_would_backup++))
+        done
+    fi
+    if [ "$_would_backup" -gt 0 ]; then
+        echo ""
+        info "Found $_would_backup existing file(s) that would be backed up"
+        if ! gum confirm "Backup existing dotfiles before deploying?"; then
+            DO_BACKUP=0
+            warn "Skipping backup — existing files will be overwritten"
+        fi
+    fi
+fi
+
+# --- Delete old backups? ----------------------------------------------------
+if [ "$DRY_RUN" -eq 0 ]; then
+    mapfile -t _old < <(find "$HOME/.mydotfiles/backups" -maxdepth 1 -type d -name "2*" 2>/dev/null | sort -r | tail -n +2)
+    if [ ${#_old[@]} -gt 0 ]; then
+        echo ""
+        info "Found ${#_old[@]} old backup(s):"
+        for _b in "${_old[@]}"; do
+            _sz="$(du -sh "$_b" 2>/dev/null | cut -f1)"
+            echo "    $(_b##*/)  ($_sz)"
+        done
+        echo ""
+        if gum confirm "Delete old backups to free space?"; then
+            for _b in "${_old[@]}"; do
+                rm -rf "$_b"
+            done
+            success "Deleted ${#_old[@]} old backup(s)"
+        fi
+    fi
+fi
+
+# --- Deploy -----------------------------------------------------------------
 info "Deploying dotfiles..."
 run "mkdir -p \"$DEPLOY_DIR\""
 
@@ -301,10 +363,14 @@ link_item() {
         return 0   # already correct
     fi
     if [ -e "$link" ] || [ -L "$link" ]; then
-        local rel="${link#"$HOME"/}"
-        run "mkdir -p \"$(dirname "$BACKUP_DIR/$rel")\""
-        run "mv \"$link\" \"$BACKUP_DIR/$rel\""
-        warn "backed up existing $link"
+        if [ "$DO_BACKUP" -eq 1 ]; then
+            local rel="${link#"$HOME"/}"
+            run "mkdir -p \"$(dirname "$BACKUP_DIR/$rel")\""
+            run "mv \"$link\" \"$BACKUP_DIR/$rel\""
+            warn "backed up existing $link"
+        else
+            run "rm -rf \"$link\""
+        fi
     fi
     run "mkdir -p \"$(dirname "$link")\""
     run "ln -sfn \"$target\" \"$link\""
