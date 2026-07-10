@@ -21,7 +21,7 @@
 		},
 		{
 			"title":"Gestures",
-			"source":".config/hypr/gesture.lua",
+			"source":".config/hypr/gestures.lua",
 			"value":true
 		},
 		{
