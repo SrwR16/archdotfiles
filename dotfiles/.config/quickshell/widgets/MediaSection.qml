@@ -33,7 +33,7 @@ RowLayout {
         width: 48
         height: 48
         radius: 12
-        color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.75)
+        color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.85)
         clip: true
 
         Image {
@@ -46,7 +46,7 @@ RowLayout {
 
             Rectangle {
                 anchors.fill: parent
-                color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.75)
+                color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.85)
                 visible: parent.status !== Image.Ready
 
                 Text {

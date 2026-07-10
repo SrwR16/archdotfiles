@@ -18,8 +18,8 @@ Rectangle {
   Layout.fillWidth: true
   Layout.preferredHeight: 56
   radius: 16
-  color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.75) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
-  border.color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.75) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.75)
+  color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+  border.color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
   border.width: 1
 
   Behavior on color { ColorAnimation { duration: 150 } }
@@ -31,7 +31,7 @@ Rectangle {
 
     Rectangle {
       width: 32; height: 32; radius: 16
-      color: tile.active ? Qt.rgba(Theme.primaryFg.r, Theme.primaryFg.g, Theme.primaryFg.b, 0.75) : Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.75)
+      color: tile.active ? Qt.rgba(Theme.primaryFg.r, Theme.primaryFg.g, Theme.primaryFg.b, 0.85) : Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.85)
 
       Text {
         anchors.centerIn: parent

@@ -9,8 +9,8 @@ import QtQuick.Layouts
 Rectangle {
   id: appLauncher
   radius: parent?.radius ?? 28
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.75)
-  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.75)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
   border.width: 1
   clip: true
   focus: true
@@ -91,7 +91,7 @@ Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 32
       radius: 8
-      color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.75)
+      color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.85)
 
       RowLayout {
         anchors.fill: parent

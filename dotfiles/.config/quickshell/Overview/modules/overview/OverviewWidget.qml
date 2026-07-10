@@ -666,7 +666,7 @@ Item {
                                     root.effectiveWorkspaceOpacity
                                 )
                                 border.width: 1
-                                border.color: ColorUtils.applyAlpha(Appearance.colors.colLayer2Border, root.glassMode ? root.glassBorderOpacity : 0.75)
+                                border.color: ColorUtils.applyAlpha(Appearance.colors.colLayer2Border, root.glassMode ? root.glassBorderOpacity : 0.85)
 
                                 Image {
                                     visible: specialWorkspaceTile.showWallpaper
