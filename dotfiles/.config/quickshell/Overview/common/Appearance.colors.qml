@@ -1,42 +1,30 @@
 
 import QtQuick
-import "../../../theme"
 
 QtObject {
     id: m3
 
-    property color m3primary: Theme.primary
-    property color m3onPrimary: Theme.onPrimary
-
-    property color m3primaryContainer: Theme.surfaceContainer
-    property color m3onPrimaryContainer: Theme.text
-
-    property color m3secondary: Theme.secondary
-    property color m3onSecondary: Theme.backgroundFg
-
-    property color m3secondaryContainer: Theme.surfaceContainer
-    property color m3onSecondaryContainer: Theme.text
-
-    property color m3background: Theme.background
-    property color m3onBackground: Theme.backgroundFg
-
-    property color m3surface: Theme.surface
-
-    property color m3surfaceContainerLow: Theme.surfaceDim
-    property color m3surfaceContainer: Theme.surfaceContainer
-    property color m3surfaceContainerHigh: Theme.surfaceBright
-    property color m3surfaceContainerHighest: Theme.surfaceVariant
-
-    property color m3onSurface: Theme.surfaceFg
-
-    property color m3surfaceVariant: Theme.surfaceVariant
-    property color m3onSurfaceVariant: Theme.surfaceVariantFg
-
-    property color m3inverseSurface: Theme.surfaceBright
-    property color m3inverseOnSurface: Theme.background
-
-    property color m3outline: Theme.outline
-    property color m3outlineVariant: Theme.outlineVariant
-
+    property color m3primary: "#E5B6F2"
+    property color m3onPrimary: "#452152"
+    property color m3primaryContainer: "#5D386A"
+    property color m3onPrimaryContainer: "#F9D8FF"
+    property color m3secondary: "#D5C0D7"
+    property color m3onSecondary: "#392C3D"
+    property color m3secondaryContainer: "#534457"
+    property color m3onSecondaryContainer: "#F2DCF3"
+    property color m3background: "#161217"
+    property color m3onBackground: "#EAE0E7"
+    property color m3surface: "#161217"
+    property color m3surfaceContainerLow: "#1F1A1F"
+    property color m3surfaceContainer: "#231E23"
+    property color m3surfaceContainerHigh: "#2D282E"
+    property color m3surfaceContainerHighest: "#383339"
+    property color m3onSurface: "#EAE0E7"
+    property color m3surfaceVariant: "#4C444D"
+    property color m3onSurfaceVariant: "#CFC3CD"
+    property color m3inverseSurface: "#EAE0E7"
+    property color m3inverseOnSurface: "#342F34"
+    property color m3outline: "#988E97"
+    property color m3outlineVariant: "#4C444D"
     property color m3shadow: "#000000"
 }

@@ -2,15 +2,11 @@ import "./widgets"
 import "./theme"
 import "./services"
 import QtQuick
-import QtQuick.Window
-import Quickshell
 
-FloatingWindow {
+Item {
   id: root
-  visible: true
-  color: "transparent"
-  width: Screen.width
-  height: Screen.height
+  anchors.fill: parent
+  signal close()
 
   Rectangle {
     anchors.fill: parent
@@ -18,7 +14,7 @@ FloatingWindow {
 
     MouseArea {
       anchors.fill: parent
-      onClicked: Qt.quit()
+      onClicked: root.close()
     }
 
     MovieWidget {

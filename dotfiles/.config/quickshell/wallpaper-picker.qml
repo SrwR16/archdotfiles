@@ -3,32 +3,29 @@ import "./widgets"
 import "./theme"
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 
-FloatingWindow {
+Item {
   id: root
-  visible: true
-  color: "transparent"
-  width: 620
-  height: 480
+  anchors.fill: parent
+  signal close()
 
   WallpaperService { id: wallpaperSvc }
 
-  Component.onCompleted: {
-    var s = root.screen
-    root.x = (s.width - width) / 2
-    root.y = (s.height - height) / 2
-    wallpaperSvc.rescan()
-  }
-
-  Keys.onEscapePressed: Qt.quit()
+  Component.onCompleted: wallpaperSvc.rescan()
 
   Rectangle {
-    anchors.fill: parent
+    anchors.centerIn: parent
+    width: 620
+    height: 480
     radius: 20
     color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
     border.width: 1
     border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+
+    MouseArea {
+      anchors.fill: parent
+      onClicked: root.close()
+    }
 
     ColumnLayout {
       anchors.fill: parent
@@ -61,7 +58,7 @@ FloatingWindow {
             anchors.fill: parent
             anchors.margins: -8
             cursorShape: Qt.PointingHandCursor
-            onClicked: Qt.quit()
+            onClicked: root.close()
           }
         }
       }
@@ -78,7 +75,7 @@ FloatingWindow {
           anchors.margins: 8
           wallpaperModel: root.wallpaperSvc.wallpapers
           wallService: root.wallpaperSvc
-          onWallpaperChosen: Qt.callLater(Qt.quit)
+          onWallpaperChosen: Qt.callLater(function() { root.close() })
         }
       }
     }
