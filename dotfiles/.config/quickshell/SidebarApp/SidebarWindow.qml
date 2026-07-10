@@ -796,33 +796,6 @@ PanelWindow {
                         Item { implicitWidth: 28 }
                     }
 
-                    // --- GAMEMODE ---
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Text { text: "Gamemode"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
-                        Item { Layout.fillWidth: true }
-                        ShellSwitch {
-                            id: gamemodeSwitch
-                            property bool ready: false
-                            Process {
-                                command: ["bash", "-c", "test -f ~/.config/dotfiles/settings/gamemode-enabled && echo 0 || echo 1"]
-                                running: root.isOpen
-                                stdout: StdioCollector {
-                                    onStreamFinished: {
-                                        console.log("Test for Gamemode: " + this.text.trim())
-                                        gamemodeSwitch.checked = (this.text.trim() === "0")
-                                        gamemodeSwitch.ready = true
-                                    }
-                                }
-                            }
-                            onClicked: {
-                                if (!ready) return;
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/hypr/scripts/gamemode.sh"])
-                            }
-                        }
-                        Item { implicitWidth: 28 }
-                    }
-
                     // --- FASTFETCH ---
                     RowLayout {
                         Layout.fillWidth: true

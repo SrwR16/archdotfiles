@@ -83,7 +83,6 @@ hl.bind(mainMod .. " + SHIFT + M", hl.dsp.exec_cmd("~/.config/dotfiles/scripts/t
 hl.bind(mainMod .. " + CTRL + S", hl.dsp.exec_cmd("qs ipc call sidebar toggle"), { description = "Open Dotfiles Sidebar widget" })
 hl.bind(mainMod .. " + CTRL + C", hl.dsp.exec_cmd("qs ipc call calendar toggle"), { description = "Open Dotfiles Calendar widget" })
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("qs ipc call statusbar focus"), { description = "Expand statusbar and focus it for keyboard navigation" })
-hl.bind(mainMod .. " + ALT + G", hl.dsp.exec_cmd("~/.config/hypr/scripts/gamemode.sh"), { description = "Toggle game mode" })
 hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("~/.config/dotfiles/scripts/power -l"), { description = "Lock Screen" })
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("~/.config/dotfiles/scripts/toggle-hyprsunset"), { description = "Toggle Hyprsunset" })
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs ipc call overview toggle"), { description = "Open window selector (overview)" })
