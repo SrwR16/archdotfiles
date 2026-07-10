@@ -54,7 +54,7 @@ Item {
     width: maxWidth
     height: maxHeight
 
-    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.25)
+    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.15)
     border.width: 1
     border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.25)
 
@@ -116,7 +116,7 @@ Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
         radius: 12
-        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.15)
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.1)
         clip: true
 
         WallpaperGrid {

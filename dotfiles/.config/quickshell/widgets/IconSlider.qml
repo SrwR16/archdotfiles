@@ -18,15 +18,15 @@ Item {
     id: track
     anchors.fill: parent
     radius: 20
-    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
-    border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.15)
+    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.12)
+    border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
     border.width: 1
 
     Rectangle {
       width: Math.max(40, parent.width * slider.value)
       height: parent.height
       radius: 20
-      color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.4)
+      color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.55)
       Behavior on width { enabled: !drag.pressed; NumberAnimation { duration: 100 } }
     }
 
