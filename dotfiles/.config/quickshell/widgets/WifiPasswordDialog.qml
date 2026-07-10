@@ -16,34 +16,39 @@ Item {
   signal dismiss()
   signal connectRequested(string ssid, string password)
 
+  readonly property real bannerWidth: 480
+  readonly property real bannerHeight: 220
+  readonly property real bannerRadius: 28
+
   Rectangle {
     anchors.fill: parent
-    visible: root.visible
     color: Theme.overlay
+    opacity: root.visible ? 1.0 : 0.0
+    Behavior on opacity { NumberAnimation { duration: 150 } }
 
     MouseArea { anchors.fill: parent; onClicked: root.dismiss() }
   }
 
   Rectangle {
-    visible: root.visible
     anchors.centerIn: parent
-    width: 320
-    height: pwCol.implicitHeight + 32
-    radius: 18
-    color: Theme.surfaceDim
-    border.color: Theme.surface
-    border.width: 1
+    width: bannerWidth
+    height: bannerHeight
+    radius: bannerRadius
+    color: Theme.background
+    clip: true
+    layer.enabled: true
+    layer.samples: 4
 
     ColumnLayout {
-      id: pwCol
+      id: content
       anchors.fill: parent
-      anchors.margins: 16
+      anchors.margins: 20
       spacing: 10
 
       Text {
         text: "Connect to " + root.pendingSsid
         color: Theme.text
-        font { family: "Inter"; pixelSize: 14; weight: 700 }
+        font { family: "Inter"; pixelSize: 13; weight: 600 }
         Layout.fillWidth: true
         elide: Text.ElideRight
       }
@@ -64,6 +69,9 @@ Item {
           placeholderTextColor: Theme.subtext
           background: null
           font { family: "Inter"; pixelSize: 13 }
+          focus: root.visible
+          Keys.onReturnPressed: submit()
+          Keys.onEscapePressed: root.dismiss()
         }
       }
 
@@ -72,7 +80,10 @@ Item {
         CheckBox {
           id: revealBtn
           text: "Show password"
-          contentItem: Text { text: revealBtn.text; color: Theme.text; opacity: 0.7; leftPadding: revealBtn.indicator.width + 6; font { family: "Inter"; pixelSize: 11 } }
+          contentItem: Text {
+            text: revealBtn.text; color: Theme.text; opacity: 0.7
+            leftPadding: revealBtn.indicator.width + 6; font { family: "Inter"; pixelSize: 11 }
+          }
         }
       }
 
@@ -98,6 +109,7 @@ Item {
           Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.text; font { family: "Inter"; pixelSize: 12; weight: 600 } }
           MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.dismiss(); pwField.text = ""; } }
         }
+
         Rectangle {
           Layout.fillWidth: true
           height: 36
@@ -108,12 +120,15 @@ Item {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             enabled: !root.connecting
-            onClicked: {
-              root.connectRequested(root.pendingSsid, pwField.text);
-            }
+            onClicked: submit()
           }
         }
       }
     }
+  }
+
+  function submit() {
+    root.connectRequested(root.pendingSsid, pwField.text);
+    pwField.text = "";
   }
 }

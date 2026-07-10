@@ -230,17 +230,23 @@ Item {
     }
 
     property string wifiPendingSsid: ""
+    property string _wifiConnectingSsid: ""
     property bool wifiNeedsPassword: false
     property string wifiConnectError: ""
     property bool wifiConnecting: false
+    property string _wifiPendingSecurity: ""
 
     function connectToWifi(ssid, security, password) {
         wifiConnecting = true;
         wifiConnectError = "";
-        const args = password
-            ? ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
-            : ["nmcli", "connection", "up", "id", ssid];
-        wifiConnectProc.command = args;
+        _wifiPendingSecurity = security;
+        if (password) {
+            wifiConnectProc.command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password];
+        } else {
+            // Try saved connection first
+            _wifiConnectingSsid = ssid;
+            wifiConnectProc.command = ["nmcli", "connection", "up", "id", ssid];
+        }
         wifiConnectProc.running = true;
     }
 
@@ -250,11 +256,21 @@ Item {
         stderr: StdioCollector {
             onStreamFinished: {
                 controlCenter.wifiConnecting = false;
-                if (this.text && this.text.toLowerCase().includes("error")) {
-                    controlCenter.wifiConnectError = "Couldn't connect — check the password and try again.";
+                var err = (this.text || "").toLowerCase();
+                if (err.includes("error") || err.includes("not found")) {
+                    // Saved connection not found — ask for password
+                    if (!controlCenter.wifiNeedsPassword && controlCenter._wifiConnectingSsid) {
+                        controlCenter.wifiConnectError = "";
+                        controlCenter.wifiPendingSsid = controlCenter._wifiConnectingSsid;
+                        controlCenter.wifiNeedsPassword = true;
+                    } else {
+                        controlCenter.wifiConnectError = "Couldn't connect — check the password and try again.";
+                    }
                 } else {
                     controlCenter.wifiConnectError = "";
                     controlCenter.wifiPendingSsid = "";
+                    controlCenter._wifiConnectingSsid = "";
+                    controlCenter.wifiNeedsPassword = false;
                     controlCenter.refreshWifi();
                     controlCenter.scanWifi();
                 }

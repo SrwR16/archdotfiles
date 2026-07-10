@@ -201,7 +201,7 @@ ScrollView {
           onClicked: {
             if (modelData.active) return;
             if (modelData.security && modelData.security !== "--") {
-              requestPassword(modelData.ssid);
+              connectToWifi(modelData.ssid, modelData.security, "");
             } else {
               connectToWifi(modelData.ssid, modelData.security || "", "");
             }
