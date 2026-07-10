@@ -34,7 +34,7 @@ require("conf.misc")
 require("conf.keybinding")
 require("conf.windowrule")
 require("conf.animation")
-require("conf.ml4w")
+require("conf.dotfiles")
 
 -- CUSTOM
 local f = io.open(os.getenv("HOME") .. "/.config/hypr/custom.lua", "r")

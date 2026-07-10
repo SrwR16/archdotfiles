@@ -17,20 +17,20 @@ if [ -L $NVIM_DIR ]; then
     fi
 fi
 
-# Remove legacy ML4W Apps
-FLATPAK_ID="com.ml4w.welcome"
+# Remove legacy Dotfiles Apps
+FLATPAK_ID="com.dotfiles.welcome"
 if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
     flatpak remove -y $FLATPAK_ID
 fi
-FLATPAK_ID="com.ml4w.settings"
+FLATPAK_ID="com.dotfiles.settings"
 if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
     flatpak remove -y $FLATPAK_ID
 fi
-FLATPAK_ID="com.ml4w.sidebar"
+FLATPAK_ID="com.dotfiles.sidebar"
 if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
     flatpak remove -y $FLATPAK_ID
 fi
-FLATPAK_ID="com.ml4w.dotfilesinstaller"
+FLATPAK_ID="com.dotfiles.hyprlandinstaller"
 if flatpak info "$FLATPAK_ID" > /dev/null 2>&1; then
     flatpak remove -y $FLATPAK_ID
 fi
@@ -47,10 +47,10 @@ if [ -f $HOME/.config/hypr/conf/windowrules/default52.conf ]; then
     info "default52.conf windowrule removed."
 fi
 
-if [ -f $HOME/.config/ml4w/settings/wallpaper-effect.sh ]; then
-    mv $HOME/.config/ml4w/settings/wallpaper-effect.sh $HOME/.config/ml4w/settings/wallpaper-effect
+if [ -f $HOME/.config/dotfiles/settings/wallpaper-effect.sh ]; then
+    mv $HOME/.config/dotfiles/settings/wallpaper-effect.sh $HOME/.config/dotfiles/settings/wallpaper-effect
 fi
 
-if [ -f $HOME/.config/ml4w/settings/wallpaper-automation.sh ]; then
-    mv $HOME/.config/ml4w/settings/wallpaper-automation.sh $HOME/.config/ml4w/settings/wallpaper-automation
+if [ -f $HOME/.config/dotfiles/settings/wallpaper-automation.sh ]; then
+    mv $HOME/.config/dotfiles/settings/wallpaper-automation.sh $HOME/.config/dotfiles/settings/wallpaper-automation
 fi

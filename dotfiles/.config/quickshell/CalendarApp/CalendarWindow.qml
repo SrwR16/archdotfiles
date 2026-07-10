@@ -137,8 +137,8 @@ PanelWindow {
         }
     }
 
-    // Styled ML4W Button for the "Today" action
-    component ML4WButton: Button {
+    // Styled Dotfiles Button for the "Today" action
+    component ShellButton: Button {
         background: Rectangle {
             color: "transparent"
             border.color: Theme.primary
@@ -300,7 +300,7 @@ PanelWindow {
                     }
                 }
 
-                ML4WButton {
+                ShellButton {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Today"

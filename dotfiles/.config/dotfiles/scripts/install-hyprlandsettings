@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+echo ":: The script will install the Dotfiles Hyprland Settings app."
+echo ":: Please note: The app requires Flatpak and flatpak-builder."
+if gum confirm "Do you want to proceed?"; then
+    dotfiles_app="com.dotfiles.hyprlandsettings"
+    app_dir="$HOME/.local/share/dotfiles/apps/hyprland-settings"
+    manifest="$app_dir/$dotfiles_app.json"
+
+    if [ ! -f "$manifest" ]; then
+        echo "ERROR: Vendored manifest not found at $manifest"
+        exit 1
+    fi
+    if ! command -v flatpak-builder >/dev/null 2>&1; then
+        echo "ERROR: flatpak-builder is required. Install it with: sudo pacman -S flatpak-builder"
+        exit 1
+    fi
+
+    # Ensure flathub is available for the GNOME runtime/sdk.
+    if ! flatpak remotes | grep -q flathub; then
+        sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    fi
+
+    echo ":: Building and installing $dotfiles_app from the local source"
+    flatpak-builder --user --install --force-clean \
+        "$HOME/.cache/dotfiles/flatpak-build/hyprland-settings" \
+        "$manifest"
+fi

@@ -77,7 +77,7 @@ PanelWindow {
     }
 
     Process {
-        command: ["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-command-exists hyprmod"]
+        command: ["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/command-exists hyprmod"]
         running: root.visible
 
         stdout: StdioCollector {
@@ -89,7 +89,7 @@ PanelWindow {
     }
 
     // --- REUSABLE COMPONENTS ---
-    component ML4WMenuItem: MenuItem {
+    component ShellMenuItem: MenuItem {
         id: control
         contentItem: Text {
             text: control.text
@@ -106,7 +106,7 @@ PanelWindow {
         }
     }
 
-    component ML4WButton: Button {
+    component ShellButton: Button {
         Layout.fillWidth: true
         background: Rectangle {
             color: "transparent"
@@ -125,7 +125,7 @@ PanelWindow {
         }
     }
 
-    component ML4WSwitch: Switch {
+    component ShellSwitch: Switch {
         Layout.alignment: Qt.AlignVCenter
         implicitWidth: 48
         implicitHeight: 26
@@ -256,7 +256,7 @@ PanelWindow {
                 ActionIcon {
                     iconSrc: "../shared/icons/darklight.svg"
                     onClicked: {
-                        Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-toggle-theme"])
+                        Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/toggle-theme"])
                     }
                 }
 
@@ -264,7 +264,7 @@ PanelWindow {
                     iconSrc: "../shared/icons/picker.svg"
                     onClicked: {
                         root.isOpen = false
-                        Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/settings/hyprpicker.sh"])
+                        Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/settings/hyprpicker.sh"])
                     }
                 }
 
@@ -286,22 +286,22 @@ PanelWindow {
                 Layout.fillWidth: true
                 spacing: 10
 
-                ML4WButton {
+                ShellButton {
                     text: "Welcome"
                     onClicked: {
                         root.isOpen = false
                         Quickshell.execDetached(["bash", "-c", "qs ipc call welcome toggle"])
                     }
                 }
-                ML4WButton {
+                ShellButton {
                     text: "Settings"
                     onClicked: {
                         root.isOpen = false
-                        // Quickshell.execDetached(["kitty", "--class", "dotfiles-floating", "-e", "ml4w-dotfiles-settings", "com.ml4w.dotfiles"])
-                        Quickshell.execDetached(["bash", "-c", "qs -p " + Quickshell.env("HOME") + "/.local/share/ml4w-dotfiles-settings/quickshell ipc call settings toggle"])
+                        // Quickshell.execDetached(["kitty", "--class", "dotfiles-floating", "-e", "dotfiles-settings", "com.dotfiles.hyprland"])
+                        Quickshell.execDetached(["bash", "-c", "qs -p " + Quickshell.env("HOME") + "/.local/share/dotfiles-settings/quickshell ipc call settings toggle"])
                     }
                 }
-                ML4WButton {
+                ShellButton {
                     text: "HyprMod"
                     visible: root.isHyprlandSettingsInstalled
                     onClicked: {
@@ -644,20 +644,20 @@ PanelWindow {
                     // --- STATUS BAR ---
                     // Toggle the Quickshell statusbar on/off. State is the
                     // "enabled" flag in the master statusbar.json (the
-                    // ml4w-statusbar override when present, else the shipped
+                    // dotfiles-statusbar override when present, else the shipped
                     // one). The switch reflects/flips that state live.
                     RowLayout {
                         Layout.fillWidth: true
                         Text { text: "Status Bar"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: statusbarSwitch
                             property bool ready: false
                             // Read the current on/off state from the "enabled" flag
                             // in the master statusbar.json (override, else shipped).
                             Process {
                                 id: statusbarStateProc
-                                command: ["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"enabled\"[[:space:]]*:[[:space:]]*false' \"$f\" && echo 0 || echo 1"]
+                                command: ["bash", "-c", "f=~/.config/dotfiles-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/dotfiles/settings/statusbar.json; grep -q '\"enabled\"[[:space:]]*:[[:space:]]*false' \"$f\" && echo 0 || echo 1"]
                                 stdout: StdioCollector {
                                     onStreamFinished: {
                                         statusbarSwitch.checked = (this.text.trim() === "1")
@@ -696,11 +696,11 @@ PanelWindow {
                                 padding: 8
 
                                 // Only offer "Edit Settings" once the user has an
-                                // ml4w-statusbar override file to edit; the shipped
+                                // dotfiles-statusbar override file to edit; the shipped
                                 // statusbar.json is not meant to be edited directly.
                                 property bool overrideExists: false
                                 Process {
-                                    command: ["bash", "-c", "[ -f ~/.config/ml4w-statusbar/statusbar.json ] && echo 1 || echo 0"]
+                                    command: ["bash", "-c", "[ -f ~/.config/dotfiles-statusbar/statusbar.json ] && echo 1 || echo 0"]
                                     running: root.isOpen
                                     stdout: StdioCollector {
                                         onStreamFinished: {
@@ -710,19 +710,19 @@ PanelWindow {
                                 }
 
                                 background: Rectangle { color: Theme.background; border.color: Theme.primary; border.width: 1; radius: 8 }
-                                ML4WMenuItem { text: "Reload Status Bar"; onClicked: {
-                                        Quickshell.execDetached(["bash", "-c", "~/.config/ml4w/scripts/ml4w-reload-statusbar"])
+                                ShellMenuItem { text: "Reload Status Bar"; onClicked: {
+                                        Quickshell.execDetached(["bash", "-c", "~/.config/dotfiles/scripts/reload-statusbar"])
                                     }
                                 }
-                                ML4WMenuItem {
+                                ShellMenuItem {
                                     text: "Edit Settings"
                                     visible: statusbarMenu.overrideExists
                                     height: visible ? implicitHeight : 0
                                     onClicked: {
                                         root.isOpen = false
-                                        // Edit the master file: the ml4w-statusbar override when it
+                                        // Edit the master file: the dotfiles-statusbar override when it
                                         // exists, otherwise the shipped statusbar.json.
-                                        Quickshell.execDetached(["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; ~/.config/ml4w/settings/editor.sh \"$f\""])
+                                        Quickshell.execDetached(["bash", "-c", "f=~/.config/dotfiles-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/dotfiles/settings/statusbar.json; ~/.config/dotfiles/settings/editor.sh \"$f\""])
                                     }
                                 }
                             }
@@ -734,15 +734,15 @@ PanelWindow {
                         Layout.fillWidth: true
                         Text { text: "Statusbar Expanded"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: statusbarExpandedSwitch
                             property bool ready: false
                             // Read the current state from the "alwaysExpanded" flag
-                            // in the master file: the ml4w-statusbar override when it
+                            // in the master file: the dotfiles-statusbar override when it
                             // exists, otherwise the shipped statusbar.json. A missing
                             // file or flag counts as off.
                             Process {
-                                command: ["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"alwaysExpanded\"[[:space:]]*:[[:space:]]*true' \"$f\" && echo 1 || echo 0"]
+                                command: ["bash", "-c", "f=~/.config/dotfiles-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/dotfiles/settings/statusbar.json; grep -q '\"alwaysExpanded\"[[:space:]]*:[[:space:]]*true' \"$f\" && echo 1 || echo 0"]
                                 running: root.isOpen
                                 stdout: StdioCollector {
                                     onStreamFinished: {
@@ -772,11 +772,11 @@ PanelWindow {
                         Layout.fillWidth: true
                         Text { text: "Dock"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: dockSwitch
                             property bool ready: false
                             Process {
-                                command: ["bash", "-c", "test -f ~/.config/ml4w/settings/dock-disabled && echo 0 || echo 1"]
+                                command: ["bash", "-c", "test -f ~/.config/dotfiles/settings/dock-disabled && echo 0 || echo 1"]
                                 running: root.isOpen
                                 stdout: StdioCollector {
                                     onStreamFinished: {
@@ -789,8 +789,8 @@ PanelWindow {
                             onClicked: {
                                 if (!ready) return;
                                 let fileCmd = checked
-                                ? "rm -f ~/.config/ml4w/settings/dock-disabled"
-                                : "touch ~/.config/ml4w/settings/dock-disabled"
+                                ? "rm -f ~/.config/dotfiles/settings/dock-disabled"
+                                : "touch ~/.config/dotfiles/settings/dock-disabled"
                                 console.log("Dock cmd: " + fileCmd)
                                 Quickshell.execDetached(["bash", "-c", fileCmd + "; " + Quickshell.env("HOME") + "/.config/nwg-dock-hyprland/launch.sh"])
                             }
@@ -803,11 +803,11 @@ PanelWindow {
                         Layout.fillWidth: true
                         Text { text: "Dock Autohide"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: dockAutohideSwitch
                             property bool ready: false
                             Process {
-                                command: ["bash", "-c", "test -f ~/.config/ml4w/settings/dock-autohide && echo 1 || echo 0"]
+                                command: ["bash", "-c", "test -f ~/.config/dotfiles/settings/dock-autohide && echo 1 || echo 0"]
                                 running: root.isOpen
                                 stdout: StdioCollector {
                                     onStreamFinished: {
@@ -820,8 +820,8 @@ PanelWindow {
                             onClicked: {
                                 if (!ready) return;
                                 let fileCmd = checked
-                                ? "mkdir -p ~/.config/ml4w/settings && touch ~/.config/ml4w/settings/dock-autohide"
-                                : "rm -f ~/.config/ml4w/settings/dock-autohide"
+                                ? "mkdir -p ~/.config/dotfiles/settings && touch ~/.config/dotfiles/settings/dock-autohide"
+                                : "rm -f ~/.config/dotfiles/settings/dock-autohide"
                                 console.log("Dock Autohide cmd: " + fileCmd)
                                 Quickshell.execDetached(["bash", "-c", fileCmd + "; " + Quickshell.env("HOME") + "/.config/nwg-dock-hyprland/launch.sh"])
                             }
@@ -834,11 +834,11 @@ PanelWindow {
                         Layout.fillWidth: true
                         Text { text: "Gamemode"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: gamemodeSwitch
                             property bool ready: false
                             Process {
-                                command: ["bash", "-c", "test -f ~/.config/ml4w/settings/gamemode-enabled && echo 0 || echo 1"]
+                                command: ["bash", "-c", "test -f ~/.config/dotfiles/settings/gamemode-enabled && echo 0 || echo 1"]
                                 running: root.isOpen
                                 stdout: StdioCollector {
                                     onStreamFinished: {
@@ -861,11 +861,11 @@ PanelWindow {
                         Layout.fillWidth: true
                         Text { text: "Fastfetch"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
-                        ML4WSwitch {
+                        ShellSwitch {
                             id: fastfetchSwitch
                             property bool ready: false
                             Process {
-                                command: ["bash", "-c", "test -f ~/.config/ml4w/settings/hide-fastfetch && echo 1 || echo 0"]
+                                command: ["bash", "-c", "test -f ~/.config/dotfiles/settings/hide-fastfetch && echo 1 || echo 0"]
                                 running: root.isOpen
                                 stdout: StdioCollector {
                                     onStreamFinished: {
@@ -877,7 +877,7 @@ PanelWindow {
                             }
                             onClicked: {
                                 if (!ready) return;
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-toggle-fastfetch"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/toggle-fastfetch"])
                             }
                         }
                         Item { implicitWidth: 28 }
@@ -894,7 +894,7 @@ PanelWindow {
                             iconSrc: "../shared/icons/wallpaper.svg"
                             onClicked: {
                                 root.isOpen = false
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-wallpaper-app"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/wallpaper-app"])
                             }
                         }
                     }
@@ -908,7 +908,7 @@ PanelWindow {
                             iconSrc: "../shared/icons/theme.svg"
                             onClicked: {
                                 root.isOpen = false
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/themes/themes.sh"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/themes/themes.sh"])
                             }
                         }
                         SettingsWheel {
@@ -921,17 +921,17 @@ PanelWindow {
                                 padding: 8
 
                                 background: Rectangle { color: Theme.background; border.color: Theme.primary; border.width: 1; radius: 8 }
-                                ML4WMenuItem { text: "Set GTK Theme"; onClicked: {
+                                ShellMenuItem { text: "Set GTK Theme"; onClicked: {
                                         root.isOpen = false
                                         Quickshell.execDetached(["nwg-look"])
                                     }
                                 }
-                                ML4WMenuItem { text: "Set QT Theme"; onClicked: {
+                                ShellMenuItem { text: "Set QT Theme"; onClicked: {
                                         root.isOpen = false
                                         Quickshell.execDetached(["qt6ct"])
                                     }
                                 }
-                                ML4WMenuItem { text: "Refresh GTK Theme"; onClicked: {
+                                ShellMenuItem { text: "Refresh GTK Theme"; onClicked: {
                                         root.isOpen = false
                                         Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/hypr/scripts/gtk.sh"])
                                     }

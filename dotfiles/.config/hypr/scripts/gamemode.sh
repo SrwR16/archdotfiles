@@ -7,31 +7,31 @@
 # 
 
 
-ml4w_cache_folder="$HOME/.cache/ml4w/hyprland-dotfiles"
+dotfiles_cache_folder="$HOME/.cache/dotfiles/hyprland-dotfiles"
 
 # Notifications
-source "$HOME/.config/ml4w/scripts/ml4w-notification-handler"
+source "$HOME/.config/dotfiles/scripts/notification-handler"
 APP_NAME="System"
 NOTIFICATION_ICON="joystick"
 
-if [ -f $HOME/.config/ml4w/settings/gamemode-enabled ]; then
-  if [ -f $ml4w_cache_folder/restart-wpauto ]; then
-    rm $ml4w_cache_folder/restart-wpauto
-    $HOME/.config/ml4w/scripts/ml4w-wallpaper-automation &
+if [ -f $HOME/.config/dotfiles/settings/gamemode-enabled ]; then
+  if [ -f $dotfiles_cache_folder/restart-wpauto ]; then
+    rm $dotfiles_cache_folder/restart-wpauto
+    $HOME/.config/dotfiles/scripts/wallpaper-automation &
   fi
   hyprctl reload
-  rm $HOME/.config/ml4w/settings/gamemode-enabled
+  rm $HOME/.config/dotfiles/settings/gamemode-enabled
   notify_user --a "${APP_NAME}" \
             --i "${NOTIFICATION_ICON}" \
             --s "Gamemode deactivated" \
             --m "Animations and blur are now enabled."
 else
-  if [ -f $ml4w_cache_folder/wallpaper-automation ]; then
-    touch $ml4w_cache_folder/restart-wpauto
-    $HOME/.config/ml4w/scripts/ml4w-wallpaper-automation
+  if [ -f $dotfiles_cache_folder/wallpaper-automation ]; then
+    touch $dotfiles_cache_folder/restart-wpauto
+    $HOME/.config/dotfiles/scripts/wallpaper-automation
   fi
   hyprctl eval "activate_gamemode()"
-  touch $HOME/.config/ml4w/settings/gamemode-enabled
+  touch $HOME/.config/dotfiles/settings/gamemode-enabled
   notify_user --a "${APP_NAME}" \
           --i "${NOTIFICATION_ICON}" \
           --s "Gamemode activated" \

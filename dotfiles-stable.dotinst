@@ -1,0 +1,113 @@
+{
+	"name": "Hyprland Dotfiles (STABLE)",
+	"id": "com.dotfiles.hyprland.stable",
+	"description": "Advanced configuration for the dynamic tiling window manager Hyprland.",
+	"version":"2.14.0",
+	"author": "Stephan Raabe",
+	"homepage": "https://github.com/SrwR16/archdotfiles",
+	"dependencies": "https://github.com/SrwR16/archdotfiles",
+	"source": "https://github.com/SrwR16/archdotfiles.git",
+	"subfolder": "dotfiles",
+	"restore":[
+		{
+			"title":"Dotfiles OS Settings",
+			"source":".config/dotfiles/settings",
+			"value":true
+		},
+		{
+			"title":"Input",
+			"source":".config/hypr/input.lua",
+			"value":true
+		},
+		{
+			"title":"Gestures",
+			"source":".config/hypr/gesture.lua",
+			"value":true
+		},
+		{
+			"title":"Monitor Setup (NWG Displays)",
+			"source":".config/hypr/monitors.lua",
+			"value":true
+		},
+		{
+			"title":"Hyprland GUI (HyprMod)",
+			"source":".config/hypr/hyprland-gui.lua",
+			"value":true
+		},
+		{
+			"title":"Monitor Variant",
+			"source":".config/hypr/conf/monitor.lua",
+			"value":true
+		},
+		{
+			"title":"Waypaper",
+			"source":".config/waypaper",
+			"value":true
+		},
+		{
+			"title":"Hyprsunset",
+			"source":".config/hypr/hyprsunset.conf",
+			"value":true
+		},
+		{
+			"title":"Hypridle",
+			"source":".config/hypr/hypridle.conf",
+			"value":true
+		},
+		{
+			"title":"Keybindings",
+			"source":".config/hypr/conf/keybinding.lua",
+			"value":true
+		},
+		{
+			"title":"Environment",
+			"source":".config/hypr/conf/environment.lua",
+			"value":true
+		},
+		{
+			"title":"Layout",
+			"source":".config/hypr/conf/layout.lua",
+			"value":true
+		},
+		{
+			"title":"Windowrules",
+			"source":".config/hypr/conf/windowrule.lua",
+			"value":true
+		},
+		{
+			"title":"Animation",
+			"source":".config/hypr/conf/animation.lua",
+			"value":true
+		},
+		{
+			"title":"Decoration",
+			"source":".config/hypr/conf/decoration.lua",
+			"value":true
+		},
+		{
+			"title":"Window",
+			"source":".config/hypr/conf/window.lua",
+			"value":true
+		},
+		{
+			"title":"Workspaces",
+			"source":".config/hypr/workspaces.lua",
+			"value":true
+		},
+		{
+			"title":"GTK 3",
+			"source":".config/gtk-3.0",
+			"value":true
+		},
+		{
+			"title":"GTK 4",
+			"source":".config/gtk-4.0",
+			"value":true
+		},
+		{
+			"title":"GTK 2",
+			"source":".gtkrc-2.0",
+			"value":true
+		}
+	]
+}

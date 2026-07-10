@@ -24,7 +24,7 @@ Rectangle {
 
     // Every button gets the same accent-filled circle on hover/selection.
     // (colorize only controls whether the icon itself is recolored, so the
-    // ML4W logo keeps its own colors while still matching the others.)
+    // Dotfiles logo keeps its own colors while still matching the others.)
     color: btn.active ? Theme.primary : "transparent"
 
     // Fade the accent circle in on hover/selection and out again on leave.

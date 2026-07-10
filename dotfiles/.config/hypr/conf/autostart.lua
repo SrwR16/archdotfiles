@@ -3,7 +3,7 @@ hl.on("hyprland.start", function ()
 
     -- Read wallpaper app setting
     local wallpaper_app = "quickshell"
-    local f = io.open(HOME .. "/.config/ml4w/settings/wallpaper-app", "r")
+    local f = io.open(HOME .. "/.config/dotfiles/settings/wallpaper-app", "r")
     if f then
         wallpaper_app = f:read("*l"):match("^%s*(.-)%s*$")
         f:close()
@@ -23,18 +23,18 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("hyprctl setcursor Bibata-Modern-Ice 24")
 
     -- Start listeners
-    hl.exec_cmd("~/.config/ml4w/listeners.sh --startall")
+    hl.exec_cmd("~/.config/dotfiles/listeners.sh --startall")
 
     -- Start polkit daemon
     hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
 
-    -- Restore wallpaper (skip for quickshell — handled inside ml4w-autostart)
+    -- Restore wallpaper (skip for quickshell — handled inside autostart)
     if wallpaper_app ~= "quickshell" then
-        hl.exec_cmd("~/.config/ml4w/scripts/ml4w-wallpaper-app --restore")
+        hl.exec_cmd("~/.config/dotfiles/scripts/wallpaper-app --restore")
     end
 
     -- Autostart scripts
-    hl.exec_cmd("~/.config/ml4w/scripts/ml4w-autostart > ~/.mydotfiles/ml4w-autostart.log 2>&1")
+    hl.exec_cmd("~/.config/dotfiles/scripts/autostart > ~/.mydotfiles/autostart.log 2>&1")
 
     -- Load GTK settings
     hl.exec_cmd("~/.config/hypr/scripts/gtk.sh")

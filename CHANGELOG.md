@@ -52,7 +52,7 @@ Version 2.12.0
 --------------------------------------------------------
 - Flatpaks ML4W Welcome App, Settings App, Sidebar App and Calendar App replaced with Quickshell
 - wlogout replaced with a Quickshell widget
-- ML4W Hyprland Settings app can be installed optionally from the Welcome app or as described here: https://github.com/mylinuxforwork/hyprland-settings
+- ML4W Hyprland Settings app can be installed optionally from the Welcome app or as described here: https://github.com/SrwR16/archdotfiles
 - New snapshot script for timeshift and grub-btrfs ~/.config/ml4w/scripts/ml4w-snapshot supporting Arch, Fedora based distros and openSuse Tumbleweed
 - New pacman update script for Arch to enable colors, parallel downloads and ILoveCandy ~/.config/ml4w/scripts/ml4w-pacman
 - New keybinding to toggle the active window to floating and pin: SUPER+ALT+T
@@ -62,7 +62,7 @@ Version 2.12.0
 Version 2.11.1
 --------------------------------------------------------
 - Compatible with Hyprland 0.54.x
-- Neovim configuration moved to own repository https://github.com/mylinuxforwork/ml4w-nvim 
+- Neovim configuration moved to own repository https://github.com/SrwR16/ml4w-nvim 
 - Install the ML4W nvim configuration from the Welcome App in Settings/Options or with ~/.config/ml4w/scripts/ml4w-install-nvim
 - New default icon theme kora-pgrey
 - Switched back to Bibata Cursor Theme
@@ -129,7 +129,7 @@ Version 2.9.9.3
 - Improved Waybar modern theme and new minimal version
 - Reduced border size to 2px
 - Border size of NWG Dock Hyprland can be modified in ~/.config/ml4w/settings/dock-border.css
-- Walker can be optionally activated as system-wide launcher (except screenshot). https://mylinuxforwork.github.io/dotfiles/configuration/walker
+- Walker can be optionally activated as system-wide launcher (except screenshot). https://SrwR16.github.io/dotfiles/configuration/walker
 - New default wallpaper
 - Arch setup script checks for installed AUR helper (yay or paru)
 
@@ -147,7 +147,7 @@ Version 2.9.9.1
 - Wallust removed as color generator. Not needed anymore for kitty colors.
 - Fish configuration added and shell selection script extended.
 - New default wallpaper
-- New sidepad feature to move windows to the right side of the screen. https://mylinuxforwork.github.io/dotfiles/usage/sidepad
+- New sidepad feature to move windows to the right side of the screen. https://SrwR16.github.io/dotfiles/usage/sidepad
 - New focus script: Select window and switch to workspace with CTRL + Tab
 - New Sidebar App layout with Light/Dark theme toggle button
 
@@ -169,16 +169,16 @@ Version 2.9.8.8
 
 Version 2.9.8.7
 --------------------------------------------------------
-- New Wiki launched under https://mylinuxforwork.github.io/dotfiles/
-- Configuration prepared for Dotfiles Installer https://mylinuxforwork.github.io/dotfiles-installer/ with setup scripts for Arch Linux, Fedora and openSuse Tumbleweed
+- New Wiki launched under https://SrwR16.github.io/dotfiles/
+- Configuration prepared for Dotfiles Installer https://SrwR16.github.io/dotfiles-installer/ with setup scripts for Arch Linux, Fedora and openSuse Tumbleweed
 - All ML4W apps are following now the GTK4 Theme. Please make sure that the ml4w-repo is added to your system and all ml4w flatpaks are installed system wide, not user
 - Improved waybar modern theme
 - Installation of Sequoia Theme removed from the installation script 
 - You can restore the standard SDDM Theme and install your custom display manager individually.
-- How to install Sequoia Theme guide on ML4W Dotfiles Wiki https://github.com/mylinuxforwork/dotfiles/wiki/Customize-sddm
+- How to install Sequoia Theme guide on ML4W Dotfiles Wiki https://github.com/SrwR16/archdotfiles/wiki/Customize-sddm
 - Wallust for terminal color generation
 - New immediate screenshot keybindings: `SUPER+ALT+F` for fullscreen, `SUPER+ALT+S` for area screenshot
-- AUR packages of ML4W Dotfiles removed. Please use the install script from https://mylinuxforwork.github.io/dotfiles/
+- AUR packages of ML4W Dotfiles removed. Please use the install script from https://SrwR16.github.io/dotfiles/
 - Default Wallpaper folder moved to `~/.config/ml4w/wallpapers` and new default wallpaper
 
 Version 2.9.8.6
@@ -214,7 +214,7 @@ Version 2.9.8.2
 --------------------------------------------------------
 - ML4W Hyprland Settings App converted to Flatpak
 - Add uwsm for Arch Linux distributions
-- Now with nwg-displays support (https://github.com/mylinuxforwork/dotfiles/wiki/Monitor-Configuration)
+- Now with nwg-displays support (https://github.com/SrwR16/archdotfiles/wiki/Monitor-Configuration)
 - Tiled Windows can be swapped now with SUPER+ALT+Arrowkey
 - Added floating class for Ghostty ml4w.dotfiles.floating (--class=ml4w.dotfiles.floating)
 - Add power profiles daemon module to waybar
@@ -268,7 +268,7 @@ Version 2.9.7.1
 
 Version 2.9.7.0
 --------------------------------------------------------
-- Fedora support added. Please see the installation instruction on https://github.com/mylinuxforwork/dotfiles/wiki
+- Fedora support added. Please see the installation instruction on https://github.com/SrwR16/archdotfiles/wiki
 - One command installation added for Fedora and Arch based distributions
 - New default wallpaper added
 
@@ -346,17 +346,17 @@ Version 2.9.5
 - New wallpaper effects added. Right click on waybar wallpaper icon
 
 Version 2.9.4
-https://github.com/mylinuxforwork/dotfiles/milestone/1?closed=1
+https://github.com/SrwR16/archdotfiles/milestone/1?closed=1
 --------------------------------------------------------
 - EWW replaced with AGS. New ML4W Sidebar based on AGS
-- New hook.sh and post.sh installation scripts. https://github.com/mylinuxforwork/dotfiles/wiki/Hook-and-Post-Installation-Scripts
-- Add Flatpak installation option to the installation script https://github.com/mylinuxforwork/dotfiles/issues/43
+- New hook.sh and post.sh installation scripts. https://github.com/SrwR16/archdotfiles/wiki/Hook-and-Post-Installation-Scripts
+- Add Flatpak installation option to the installation script https://github.com/SrwR16/archdotfiles/issues/43
 - Position of dunst can be changed in the ML4W Dotfiles App
 - Screenshot script based on grimblast.
 - New screenshot editor pinta added to package list. Editor can be changed in the ML4W Dotfiles app and in dotfiles/.settings/screenshot-editor.sh
 
 Version 2.9.3
-https://github.com/mylinuxforwork/dotfiles/blob/main/CHANGELOG.md
+https://github.com/SrwR16/archdotfiles/blob/main/CHANGELOG.md
 --------------------------------------------------------
 - ML4W .bashrc can be extended by adding a file .bashrc_custom in your home directory to create custom aliases and more
 - Adding Missioncontrol as new systeminfo app

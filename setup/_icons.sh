@@ -4,7 +4,7 @@
 # Icons
 # --------------------------------------------------------------
 
-TEMP_DIR=$(mktemp -d -t ml4w-icons-XXXXXX)
+TEMP_DIR=$(mktemp -d -t icons-XXXXXX)
 ICON_DIR="$HOME/.local/share/icons/"
 mkdir -p $ICON_DIR
 git clone --depth 1 https://github.com/bikass/kora.git $TEMP_DIR

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+if [ -f $HOME/.config/dotfiles/settings/hide-fastfetch ]; then
+    echo ":: Show fastfetch"
+    rm $HOME/.config/dotfiles/settings/hide-fastfetch
+else
+    echo ":: Hide fastfetch"
+    touch $HOME/.config/dotfiles/settings/hide-fastfetch
+fi

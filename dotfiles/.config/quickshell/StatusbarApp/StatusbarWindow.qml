@@ -34,11 +34,11 @@ PanelWindow {
     // --- USER SETTINGS ---
     // One of two files is the "master" that feeds the settings object below:
     //
-    //   1. ~/.config/ml4w-statusbar/statusbar.json — the user override. When this
+    //   1. ~/.config/dotfiles-statusbar/statusbar.json — the user override. When this
     //      file EXISTS it is the master: every value is read from it and the
     //      Sidebar switches write their changes (enabled / alwaysExpanded) back
     //      into it. The shipped file is ignored while it exists.
-    //   2. ~/.config/ml4w/settings/statusbar.json — the shipped fallback, used
+    //   2. ~/.config/dotfiles/settings/statusbar.json — the shipped fallback, used
     //      only when the override file is absent. It carries the dynamic state
     //      the SidebarApp writes (bar.enabled and bar.alwaysExpanded).
     //
@@ -68,7 +68,7 @@ PanelWindow {
     // off so a missing override does not log an error on every startup/reload.
     FileView {
         id: overrideFile
-        path: Quickshell.env("HOME") + "/.config/ml4w-statusbar/statusbar.json"
+        path: Quickshell.env("HOME") + "/.config/dotfiles-statusbar/statusbar.json"
         blockLoading: true
         printErrors: false
         onLoaded: { root.overrideExists = true; root.applySettings() }
@@ -81,7 +81,7 @@ PanelWindow {
     //   qs ipc call statusbar reload
     FileView {
         id: settingsFile
-        path: Quickshell.env("HOME") + "/.config/ml4w/settings/statusbar.json"
+        path: Quickshell.env("HOME") + "/.config/dotfiles/settings/statusbar.json"
         blockLoading: true
         onLoaded: root.applySettings()
     }
@@ -263,7 +263,7 @@ PanelWindow {
             }
         }
     }
-    Component { id: cLogo;       Ml4wLogoModule {} }
+    Component { id: cLogo;       LogoModule {} }
     Component { id: cPower;      PowerModule {} }
     Component { id: cVolume;     VolumeModule {} }
     Component {

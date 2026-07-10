@@ -1,53 +1,139 @@
-# ML4W OS - Dotfiles for Hyprland
+<div align="center">
 
-An advanced configuration of Hyprland for Arch Linux based distributions. Full featured desktop environment based on the dynamic tiling window manager Hyprland with adaptive material color themes based on the selected wallpaper for all components. Including a comprehensive selection of apps with the ability to customize the configuration to your personal needs.
+# 🌆 Sarwar's ArchDotfiles
 
-<img width="2560" height="1440" alt="image" src="https://ml4w.com/os/screen-2140.jpg" />
+### A lean, self-contained Hyprland desktop for Arch Linux
 
-## Installation and Documentation
+*Adaptive Material-You theming · Quickshell-only bar · one local `install.sh`*
 
-You can find all installation options in the documentation of the ML4W OS for Hyprland here:<br><b>https://ml4w.com/os/</b>
+<p>
+  <img alt="Arch Linux"   src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white">
+  <img alt="Hyprland"     src="https://img.shields.io/badge/Hyprland-00AAAE?style=for-the-badge&logo=wayland&logoColor=white">
+  <img alt="Quickshell"   src="https://img.shields.io/badge/Quickshell-41CD52?style=for-the-badge&logo=qt&logoColor=white">
+  <img alt="Shell"        src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white">
+  <img alt="License"      src="https://img.shields.io/badge/License-GPL_3.0-blue?style=for-the-badge">
+</p>
 
-### Quick Installation
+</div>
 
-Copy one of the following commands into your terminal:
+---
+
+## ✨ Overview
+
+**Sarwar's ArchDotfiles** is a personal, opinionated configuration of the
+[Hyprland](https://hyprland.org/) tiling compositor. It began as a fork of the
+excellent **ML4W** dotfiles and was then reshaped into a lightweight, fully
+local setup:
+
+- 🪶 **Quickshell only** — Waybar is completely removed to cut idle memory.
+- 📦 **Fully self-contained** — everything installs from one `install.sh`; no
+  external dotfiles installer, no remote repos pulled at install time.
+- 🎨 **Material-You theming** — colors adapt to your wallpaper across every
+  component via [matugen](https://github.com/InioX/matugen).
+- 🔗 **Safe, idempotent deploy** — your customized settings are preserved and
+  existing files are backed up before anything is linked.
+
+> [!NOTE]
+> The Quickshell config shipped here is inherited from the ML4W base. I'm
+> gradually replacing it with **my own Quickshell shell** — expect this area to
+> change.
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+<!-- Drop your own screenshots in here -->
+<img width="800" alt="Desktop preview — replace with your own screenshot" src="https://ml4w.com/os/screen-2140.jpg" />
+
+</div>
+
+---
+
+## 🚀 Installation
+
+> [!WARNING]
+> Intended for a fresh-ish Arch (or Arch-based) system running Hyprland.
+> The installer backs up any files it replaces to
+> `~/.mydotfiles/backups/<timestamp>/`, but review before running on a
+> heavily customized setup.
 
 ```sh
-bash <(curl -s https://ml4w.com/os/stable) # Stable Release
+git clone https://github.com/SrwR16/archdotfiles.git
+cd archdotfiles
+
+# Preview exactly what would happen — changes nothing:
+./install.sh --dry-run
+
+# Install / update:
+./install.sh
 ```
 
-```sh
-bash <(curl -s https://ml4w.com/os/rolling) # Rolling Release (only Hyprland 0.55.x)
+Then log out and back in (or run `hyprctl reload`).
+
+**What the installer does**
+
+| Step | Action |
+|------|--------|
+| 1 | Detects the distro & installs base tools (`git jq rsync gum`) |
+| 2 | Sets up an AUR helper and installs all packages |
+| 3 | Deploys dotfiles to `~/.mydotfiles/` and symlinks them into `~` |
+| 4 | Builds the bundled apps locally and applies cursors/fonts/icons |
+
+Fedora and openSUSE paths exist but Arch is the primary target.
+
+---
+
+## 🧩 What makes this fork different
+
+- **No Waybar** — the Quickshell `StatusbarApp` is the one and only bar.
+- **De-branded** — paths, scripts and components use neutral names
+  (`~/.config/dotfiles`, `dotfiles-settings`, `Shell*` QML wrappers).
+- **Vendored apps** — the settings app, nvim config, SDDM theme and Hyprland
+  settings app all live under [`apps/`](apps/) and build locally.
+- **Zero install-time network dependency** on any dotfiles/settings upstream.
+
+---
+
+## 📁 Repository layout
+
 ```
-Arch, Fedora and openSuse Tumblweed are directly supported.
+archdotfiles/
+├── install.sh              # local, self-contained installer (stable)
+├── dotfiles-stable.dotinst # profile manifest (id, restore list)
+├── dotfiles/               # the actual config, symlinked into ~
+│   └── .config/
+│       ├── hypr/           # Hyprland config
+│       ├── quickshell/     # the shell / bar / widgets
+│       └── dotfiles/       # scripts, settings, assets
+├── apps/                   # vendored, locally-built apps
+├── setup/                  # packages, preflight/post, fonts, cursors, icons
+└── dev/                    # maintenance tooling (de-brand transform, sync)
+```
 
-### Test and install with the ML4W OS Live ISO
+---
 
-Test the ML4W OS without risk on your computer or in a Virtual Machine with the ML4W Live ISO.
+## 🙏 Credits & Thanks
 
-<a href="https://ml4w.com/iso/ml4w-os/ml4w-os-2.14.0-x86_64.iso">Download the ML4W ISO</a>
+This configuration stands on the shoulders of **[ML4W](https://github.com/mylinuxforwork)**
+by **Stephan Raabe** — the original ML4W Hyprland dotfiles are the base of my
+Linux customization, and this fork would not exist without that work. Huge
+thanks for building and openly sharing such a polished desktop. 💙
 
-You can install the ML4W OS on your hard drive with the command `sudo install-ml4w-os` (BETA).
+Also inspired by the wider Hyprland ricing community:
 
-## Special Thanks
+- [JaKooLit/Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
+- [prasanthrangan/hyprdots](https://github.com/prasanthrangan/hyprdots)
+- [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
+- [Shanu-Kumawat/quickshell-overview](https://github.com/Shanu-Kumawat/quickshell-overview)
 
-I want to say thank you to all contributors of the ML4W OS and all other Developers who are creating awesome configurations for our favorite Tiling Window Manager Hyprland. Your support, the testing of every version and all your valuable Pull Requests with improvements and bug fixes have repeatedly improved the overall project and increased its relevance and quality.
+---
 
-Special Thanks do to...
+## 📄 License
 
-https://github.com/Affanmm for the great and professional ML4W Logo Design and much more.
-https://github.com/harilvfs for supporting me in creating the new Wiki https://ml4w.com/os/
-https://github.com/dwilliam62 for all your support and testings since the start of the Project
-and so many more...
+Released under the **GPL-3.0** license. See [LICENSE](LICENSE).
 
-## Inspirations
-
-The following projects have inspired me:
-
-- https://github.com/JaKooLit/Hyprland-Dots
-- https://github.com/prasanthrangan/hyprdots
-- https://github.com/sudo-harun/dotfiles
-- https://github.com/dianaw353/hyprland-configuration-rootfs
-- https://www.youtube.com/@saneAspect
-
-and many more...
+<div align="center">
+<sub>Built on Arch, tiled with Hyprland. ⌘</sub>
+</div>

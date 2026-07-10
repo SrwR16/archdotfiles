@@ -6,6 +6,6 @@ BarButton {
     iconSrc: "../shared/icons/terminal.svg"
     onClicked: {
         Quickshell.execDetached(["bash", "-c",
-            Quickshell.env("HOME") + "/.config/ml4w/settings/terminal.sh"])
+            Quickshell.env("HOME") + "/.config/dotfiles/settings/terminal.sh"])
     }
 }

@@ -77,8 +77,8 @@ PanelWindow {
         function isOpen(): bool { return root.isOpen }
     }
 
-    property string defaultWallpaperFolder: Quickshell.env("HOME") + "/.config/ml4w/wallpapers"
-    property string wallpaperSettingFile: Quickshell.env("HOME") + "/.config/ml4w/settings/wallpaper-folder"
+    property string defaultWallpaperFolder: Quickshell.env("HOME") + "/.config/dotfiles/wallpapers"
+    property string wallpaperSettingFile: Quickshell.env("HOME") + "/.config/dotfiles/settings/wallpaper-folder"
 
     // Start as default in case file does not exist
     property string wallpaperFolder: defaultWallpaperFolder
@@ -107,7 +107,7 @@ PanelWindow {
     }
 
     property string defaultTransitionEffect: "simple"
-    property string transitionEffectSettingFile: Quickshell.env("HOME") + "/.config/ml4w/settings/wallpaper-transition-effect"
+    property string transitionEffectSettingFile: Quickshell.env("HOME") + "/.config/dotfiles/settings/wallpaper-transition-effect"
     property var transitionEffects: ["simple", "left", "right", "top", "bottom", "center", "any", "random", "none"]
     property string transitionEffect: defaultTransitionEffect
 
@@ -153,7 +153,7 @@ PanelWindow {
     }
 
     // --- REUSABLE COMPONENTS ---
-    component ML4WMenuItem: MenuItem {
+    component ShellMenuItem: MenuItem {
         id: control
         contentItem: Text {
             text: control.text
@@ -193,13 +193,13 @@ PanelWindow {
         }
     }
 
-    component ML4WComboBox: ComboBox {
-        id: ml4wComboBox
+    component ShellComboBox: ComboBox {
+        id: dotfilesComboBox
         delegate: ItemDelegate {
             id: itemDelegate
-            width: ml4wComboBox.width
+            width: dotfilesComboBox.width
             contentItem: Text {
-                text: ml4wComboBox.textRole ? (modelData[ml4wComboBox.textRole] ?? "") : modelData
+                text: dotfilesComboBox.textRole ? (modelData[dotfilesComboBox.textRole] ?? "") : modelData
                 color: itemDelegate.highlighted ? Theme.background : Theme.primary
                 font.family: Theme.fontFamily
                 font.pixelSize: 14
@@ -211,12 +211,12 @@ PanelWindow {
                 color: itemDelegate.highlighted ? Theme.primary : "transparent"
                 radius: 4
             }
-            highlighted: ml4wComboBox.highlightedIndex === index
+            highlighted: dotfilesComboBox.highlightedIndex === index
         }
         contentItem: Text {
             leftPadding: 12
-            rightPadding: ml4wComboBox.indicator.width + 12
-            text: ml4wComboBox.displayText
+            rightPadding: dotfilesComboBox.indicator.width + 12
+            text: dotfilesComboBox.displayText
             font.family: Theme.fontFamily
             font.pixelSize: 14
             color: Theme.primary
@@ -226,8 +226,8 @@ PanelWindow {
         }
         indicator: Canvas {
             id: canvas
-            x: ml4wComboBox.width - width - 12
-            y: (ml4wComboBox.height - height) / 2
+            x: dotfilesComboBox.width - width - 12
+            y: (dotfilesComboBox.height - height) / 2
             width: 12
             height: 8
             contextType: "2d"
@@ -256,16 +256,16 @@ PanelWindow {
             radius: 10
         }
         popup: Popup {
-            y: ml4wComboBox.height + 2
-            width: ml4wComboBox.width
+            y: dotfilesComboBox.height + 2
+            width: dotfilesComboBox.width
             implicitHeight: contentItem.contentHeight > 250 ? 250 : contentItem.contentHeight
             padding: 4
 
             contentItem: ListView {
                 clip: true
                 implicitHeight: contentHeight
-                model: ml4wComboBox.popup.visible ? ml4wComboBox.delegateModel : null
-                currentIndex: ml4wComboBox.highlightedIndex
+                model: dotfilesComboBox.popup.visible ? dotfilesComboBox.delegateModel : null
+                currentIndex: dotfilesComboBox.highlightedIndex
 
                 ScrollIndicator.vertical: ScrollIndicator { }
             }
@@ -278,14 +278,14 @@ PanelWindow {
         }
     }
 
-    component ML4WCheckBox : CheckBox {
-        id: ml4wCheckBox
+    component ShellCheckBox : CheckBox {
+        id: dotfilesCheckBox
         spacing: 10
         indicator: Rectangle {
             implicitWidth: 18
             implicitHeight: 18
-            x: ml4wCheckBox.leftPadding
-            y: (ml4wCheckBox.height - height) / 2
+            x: dotfilesCheckBox.leftPadding
+            y: (dotfilesCheckBox.height - height) / 2
             radius: 4
             border.color: Theme.primary
             border.width: 1
@@ -295,16 +295,16 @@ PanelWindow {
                 height: 8
                 anchors.centerIn: parent
                 color: Theme.primary
-                visible: ml4wCheckBox.checked
+                visible: dotfilesCheckBox.checked
             }
         }
         contentItem: Text {
-            text: ml4wCheckBox.text
+            text: dotfilesCheckBox.text
             font.family: Theme.fontFamily
             color: Theme.primary
             font.pixelSize: 14
             verticalAlignment: Text.AlignVCenter
-            leftPadding: ml4wCheckBox.indicator.width + ml4wCheckBox.spacing
+            leftPadding: dotfilesCheckBox.indicator.width + dotfilesCheckBox.spacing
         }
     }
 
@@ -392,38 +392,38 @@ PanelWindow {
                             radius: 8 
                         }
                         
-                        ML4WMenuItem { 
+                        ShellMenuItem { 
                             text: "Random Wallpaper"
                             onClicked: {
                                 root.isOpen = false
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-wallpaper --random"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/wallpaper --random"])
                             } 
                         }
                         
-                        ML4WMenuItem { 
+                        ShellMenuItem { 
                             text: "Wallpaper Effects"
                             onClicked: {
                                 root.isOpen = false
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-wallpaper-effects"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/wallpaper-effects"])
                             } 
                         }
 
-                        ML4WMenuItem { 
+                        ShellMenuItem { 
                             text: "Clear Wallpaper Cache"
                             onClicked: {
                                 root.isOpen = false
-                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-clear-wallpaper-cache"])
+                                Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/dotfiles/scripts/clear-wallpaper-cache"])
                             } 
                         }
 
-                        ML4WMenuItem { 
+                        ShellMenuItem { 
                             text: "Reload Images"
                             onClicked: {
                                 folderLoader.running = true;
                             } 
                         }
 
-                        ML4WMenuItem {
+                        ShellMenuItem {
                             text: advancedSettingsLabel()
                             onClicked: {
                                 advancedOptions.visible = !advancedOptions.visible
@@ -502,7 +502,7 @@ PanelWindow {
                         Accessible.role: Accessible.StaticText
                     }
 
-                    ML4WComboBox {
+                    ShellComboBox {
                         id: transitionEffectComboBox
                         model: root.transitionEffects
                         currentIndex: root.transitionEffects.indexOf(root.transitionEffect)
@@ -529,7 +529,7 @@ PanelWindow {
                             Accessible.role: Accessible.StaticText
                         }
 
-                        ML4WComboBox {
+                        ShellComboBox {
                             id: outputMonitorSelector
                             model: monitorModel
                             textRole: "name"
@@ -562,7 +562,7 @@ PanelWindow {
                             Accessible.role: Accessible.StaticText
                         }
 
-                        ML4WComboBox {
+                        ShellComboBox {
                             id: wallpaperPositioningSelector
                             model: [
                                 "center",
@@ -578,7 +578,7 @@ PanelWindow {
                     }
                 }
 
-                ML4WCheckBox {
+                ShellCheckBox {
                     id: shouldUpdateTheming
                     checked: true
                     text: "Update theming from wallpaper"
@@ -739,7 +739,7 @@ PanelWindow {
                             cursorShape: Qt.PointingHandCursor
                             
                             onClicked: {
-                                let scriptPath = Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-wallpaper";
+                                let scriptPath = Quickshell.env("HOME") + "/.config/dotfiles/scripts/wallpaper";
                                 let options = ""
                                 if (advancedOptions.visible) {
                                     const outputSelection = outputMonitorSelector.currentValue

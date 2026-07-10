@@ -36,10 +36,14 @@ sudo zypper --non-interactive --gpg-auto-import-keys install quickshell
 curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
 
 # --------------------------------------------------------------
-# ML4W Settings App
+# Vendored apps (no network) + Dotfiles Settings App (local build)
 # --------------------------------------------------------------
 
-bash <(curl -s https://raw.githubusercontent.com/mylinuxforwork/ml4w-dotfiles-settings/main/setup.sh)
+apps_runtime="$HOME/.local/share/dotfiles/apps"
+mkdir -p "$apps_runtime"
+cp -rf "$repo_path/apps/." "$apps_runtime/"
+mkdir -p "$HOME/.local/bin"
+make -C "$repo_path/apps/dotfiles-settings" install
 
 # --------------------------------------------------------------
 # Cargo

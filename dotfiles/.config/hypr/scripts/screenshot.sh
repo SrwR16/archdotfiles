@@ -16,11 +16,11 @@ SAVE_DIR="$HOME/Pictures"
 SAVE_FILENAME="screenshot_$(date +%d%m%Y_%H%M%S).jpg"
 
 # Load Settings
-if [ -f ~/.config/ml4w/settings/screenshot-folder ]; then
-    SAVE_DIR=$(cat ~/.config/ml4w/settings/screenshot-folder)
+if [ -f ~/.config/dotfiles/settings/screenshot-folder ]; then
+    SAVE_DIR=$(cat ~/.config/dotfiles/settings/screenshot-folder)
 fi
-if [ -f ~/.config/ml4w/settings/screenshot-filename ]; then
-    SAVE_FILENAME=$(cat ~/.config/ml4w/settings/screenshot-filename)
+if [ -f ~/.config/dotfiles/settings/screenshot-filename ]; then
+    SAVE_FILENAME=$(cat ~/.config/dotfiles/settings/screenshot-filename)
 fi
 
 eval screenshot_folder="$SAVE_DIR"
@@ -40,12 +40,12 @@ case $extension in
 esac
 
 # Notifications
-source "$HOME/.config/ml4w/scripts/ml4w-notification-handler"
+source "$HOME/.config/dotfiles/scripts/notification-handler"
 APP_NAME="Screen Capture"
 NOTIFICATION_ICON="camera-photo-symbolic"
 
 # Screenshot Editor
-export GRIMBLAST_EDITOR="$(cat ~/.config/ml4w/settings/screenshot-editor)"
+export GRIMBLAST_EDITOR="$(cat ~/.config/dotfiles/settings/screenshot-editor)"
 
 # Quick instant mode: full screen
 take_instant_full() {

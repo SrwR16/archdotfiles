@@ -19,11 +19,11 @@ fi
 
 # Determine the action based on the window's title
 case "$ACTIVE_TITLE" in
-    "ML4W Welcome")
+    "Dotfiles Welcome")
         qs ipc call welcome toggle
         ;;
-    "ML4W Dotfiles Settings")
-        qs -p $HOME/.local/share/ml4w-dotfiles-settings/quickshell ipc call settings toggle
+    "Dotfiles Dotfiles Settings")
+        qs -p $HOME/.local/share/dotfiles-settings/quickshell ipc call settings toggle
         ;;
     *)
         # Updated for Hyprland 0.55+ Lua dispatcher syntax

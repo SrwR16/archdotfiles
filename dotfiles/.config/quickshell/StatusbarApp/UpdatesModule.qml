@@ -6,9 +6,9 @@ import QtQuick.Layouts
 import qs.CustomTheme
 
 // Shows the number of pending system updates next to a package icon. The count
-// comes from ml4w-check-system-updates (the same script the Waybar module
+// comes from check-system-updates (the same script the Waybar module
 // uses), polled every 30 minutes. The module hides itself completely while no
-// updates are available; clicking it launches the ML4W update routine.
+// updates are available; clicking it launches the Dotfiles update routine.
 Rectangle {
     id: updates
 
@@ -26,7 +26,7 @@ Rectangle {
     // Run the module's action (mouse click or keyboard Return).
     function activate(): void {
         Quickshell.execDetached(["bash", "-c",
-            Quickshell.env("HOME") + "/.config/ml4w/settings/installupdates.sh"])
+            Quickshell.env("HOME") + "/.config/dotfiles/settings/installupdates.sh"])
     }
 
     // Hidden (and collapsed to zero size) when there is nothing to update.
@@ -101,7 +101,7 @@ Rectangle {
     Process {
         id: updatesProc
         command: ["bash", "-c",
-            Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-check-system-updates"]
+            Quickshell.env("HOME") + "/.config/dotfiles/scripts/check-system-updates"]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {
