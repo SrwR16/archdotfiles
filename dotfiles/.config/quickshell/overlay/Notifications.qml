@@ -26,8 +26,10 @@ Rectangle {
 
   signal dismissed(var notifRef)
 
-  color: Theme.background
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.65)
   clip: true
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+  border.width: 1
   layer.enabled: true
   layer.samples: 4
 

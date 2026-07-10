@@ -393,8 +393,8 @@ Rectangle {
     },
   ]
 
-  color: Theme.surfaceContainer
-  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.4)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.25)
   border.width: 1
 
   // Fluid morph animation for expansion/collapse (Apple-like)
