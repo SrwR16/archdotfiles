@@ -65,12 +65,3 @@ else
     ~/.config/dotfiles/scripts/wallpaper "$(cat $CACHE_FILE)" --skip-wallpaper &
 fi
 
-# Start Dotfiles Welcome App
-info "Starting Dotfiles Welcome App"
-if [ ! -f $HOME/.cache/dotfiles-welcome-autostart ]; then
-    sleep 1
-    qs ipc call welcome toggle 2>/dev/null || true
-    info "Dotfiles Welcome started"
-else
-    info "Dotfiles Welcome disabled"
-fi

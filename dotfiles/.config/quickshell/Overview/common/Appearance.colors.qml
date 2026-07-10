@@ -1,41 +1,42 @@
 
 import QtQuick
+import "../../../theme"
 
 QtObject {
     id: m3
 
-    property color m3primary: "#ffb5a1"
-    property color m3onPrimary: "#561f10"
+    property color m3primary: Theme.primary
+    property color m3onPrimary: Theme.onPrimary
 
-    property color m3primaryContainer: "#723524"
-    property color m3onPrimaryContainer: "#ffdbd1"
+    property color m3primaryContainer: Theme.surfaceContainer
+    property color m3onPrimaryContainer: Theme.text
 
-    property color m3secondary: "#e7bdb2"
-    property color m3onSecondary: "#442a23"
+    property color m3secondary: Theme.secondary
+    property color m3onSecondary: Theme.backgroundFg
 
-    property color m3secondaryContainer: "#5d4038"
-    property color m3onSecondaryContainer: "#ffdbd1"
+    property color m3secondaryContainer: Theme.surfaceContainer
+    property color m3onSecondaryContainer: Theme.text
 
-    property color m3background: "#1a110f"
-    property color m3onBackground: "#f1dfda"
+    property color m3background: Theme.background
+    property color m3onBackground: Theme.backgroundFg
 
-    property color m3surface: "#1a110f"
+    property color m3surface: Theme.surface
 
-    property color m3surfaceContainerLow: "#231917"
-    property color m3surfaceContainer: "#271d1b"
-    property color m3surfaceContainerHigh: "#322825"
-    property color m3surfaceContainerHighest: "#3d3230"
+    property color m3surfaceContainerLow: Theme.surfaceDim
+    property color m3surfaceContainer: Theme.surfaceContainer
+    property color m3surfaceContainerHigh: Theme.surfaceBright
+    property color m3surfaceContainerHighest: Theme.surfaceVariant
 
-    property color m3onSurface: "#f1dfda"
+    property color m3onSurface: Theme.surfaceFg
 
-    property color m3surfaceVariant: "#53433f"
-    property color m3onSurfaceVariant: "#d8c2bc"
+    property color m3surfaceVariant: Theme.surfaceVariant
+    property color m3onSurfaceVariant: Theme.surfaceVariantFg
 
-    property color m3inverseSurface: "#f1dfda"
-    property color m3inverseOnSurface: "#392e2b"
+    property color m3inverseSurface: Theme.surfaceBright
+    property color m3inverseOnSurface: Theme.background
 
-    property color m3outline: "#a08c88"
-    property color m3outlineVariant: "#53433f"
+    property color m3outline: Theme.outline
+    property color m3outlineVariant: Theme.outlineVariant
 
     property color m3shadow: "#000000"
 }

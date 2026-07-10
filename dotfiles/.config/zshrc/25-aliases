@@ -33,11 +33,7 @@ alias settings='dotfiles-settings com.dotfiles.hyprland'
 # -----------------------------------------------------
 # Dotfiles Apps
 # -----------------------------------------------------
-alias dotfiles='qs ipc call welcome toggle'
-alias settings='qs -p ~/.local/share/dotfiles-settings/quickshell ipc call settings toggle'
-alias calendar='qs ipc call calendar toggle'
-alias hyprland='flatpak run com.dotfiles.hyprlandsettings'
-alias sidebar='qs ipc call sidebar toggle'
+alias wallpaper='qs -p ~/.config/quickshell/wallpaper-picker.qml &'
 
 # -----------------------------------------------------
 # Git

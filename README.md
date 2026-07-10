@@ -25,7 +25,7 @@
 excellent **ML4W** dotfiles and was then reshaped into a lightweight, fully
 local setup:
 
-- 🪶 **Quickshell only** — Waybar is completely removed to cut idle memory.
+- 🪶 **Dynamic Island bar** — a compact, animated top panel that expands on demand with media controls, system status, and notifications.
 - 📦 **Fully self-contained** — everything installs from one `install.sh`; no
   external dotfiles installer, no remote repos pulled at install time.
 - 🎨 **Material-You theming** — colors adapt to your wallpaper across every
@@ -33,19 +33,13 @@ local setup:
 - 🔗 **Safe, idempotent deploy** — your customized settings are preserved and
   existing files are backed up before anything is linked.
 
-> [!NOTE]
-> The Quickshell config shipped here is inherited from the ML4W base. I'm
-> gradually replacing it with **my own Quickshell shell** — expect this area to
-> change.
-
 ---
 
 ## 📸 Screenshots
 
 <div align="center">
 
-<!-- Drop your own screenshots in here (replace placeholder below) -->
-<img width="800" alt="Desktop preview" src="" />
+<img width="800" alt="Desktop preview" src="dotfiles/.config/quickshell/screenshots/2026-07-01-175541_hyprshot.png" />
 
 </div>
 
@@ -87,11 +81,9 @@ Then log out and back in (or run `hyprctl reload`).
 
 ## 🧩 What makes this fork different
 
-- **No Waybar** — the Quickshell `StatusbarApp` is the one and only bar.
-- **De-branded** — paths, scripts and components use neutral names
-  (`~/.config/dotfiles`, `dotfiles-settings`, `Shell*` QML wrappers).
-- **Vendored apps** — the settings app, nvim config, SDDM theme and Hyprland
-  settings app all live under [`apps/`](apps/) and build locally.
+- **Dynamic Island bar** — compact top panel with media controls, system status, notifications, and control center overlay.
+- **Quickshell-based** — all shell widgets are QML, no Waybar.
+- **Vendored apps** — nvim config and SDDM theme live under [`apps/`](apps/) and build locally.
 - **Zero install-time network dependency** on any dotfiles/settings upstream.
 
 ---
