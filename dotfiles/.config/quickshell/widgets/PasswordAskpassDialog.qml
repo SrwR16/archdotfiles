@@ -34,7 +34,7 @@ Rectangle {
   readonly property real bannerHeight: 200
   readonly property real bannerRadius: 28
 
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.12)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.35)
   border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
   border.width: 1
   clip: true
@@ -60,7 +60,7 @@ Rectangle {
       Layout.fillWidth: true
       height: 40
       radius: 10
-        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.15)
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
 
       TextField {
         id: pwField
@@ -102,7 +102,7 @@ Rectangle {
         Layout.fillWidth: true
         height: 36
         radius: 10
-      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.15)
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2)
         Text {
           anchors.centerIn: parent
           text: "Cancel"

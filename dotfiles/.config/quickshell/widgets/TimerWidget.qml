@@ -46,8 +46,8 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             width: 200; height: 200
             
-            Rectangle { anchors.fill: parent; radius: 100; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.12) }
-            Rectangle { width: 180; height: 180; radius: 90; anchors.centerIn: parent; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.12) }
+            Rectangle { anchors.fill: parent; radius: 100; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2) }
+            Rectangle { width: 180; height: 180; radius: 90; anchors.centerIn: parent; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.2) }
 
             Canvas {
                 id: progressCanvas
