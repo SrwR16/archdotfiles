@@ -331,14 +331,8 @@ Rectangle {
                             : showSys ? "sys" 
                             : showPowerSection ? "powerSection" 
                             : showPomodoro ? "pomodoro" 
-                              : activityManager && activityManager.activeActivity && !clockWidget.isExpanded && !clockWidget._suppressMorph ? _capsuleState(activityManager.activeActivity.type)
-                             : "default"
-
-  function _capsuleState(type) {
-    if (type === "notification") return "notifCapsule"
-    if (type === "battery") return "batteryAlert"
-    return "default"
-  }
+                            : clockWidget.showBatteryAlert && !clockWidget.isExpanded && !clockWidget._suppressMorph ? "batteryAlert"
+                              : "default"
 
   state: morphState
 
@@ -382,10 +376,6 @@ Rectangle {
     State {
       name: "pomodoro"
       PropertyChanges { target: clockWidget; height: 76; width: 380; radius: 28 }
-    },
-    State {
-      name: "notifCapsule"
-      PropertyChanges { target: clockWidget; height: 72; width: 380; radius: 24 }
     },
     State {
       name: "batteryAlert"
@@ -453,14 +443,88 @@ Rectangle {
     property real leftWidth: media.playing ? visualizerContainer.width + 12 : 0
     property real rightWidth: (PomodoroService.sessionState !== "Idle" ? pomodoroRow.implicitWidth + 12 : 0) + (privacyContainer.targetWidth > 0 ? privacyContainer.targetWidth + 12 : 0)
     property real maxSide: Math.max(leftWidth, rightWidth)
-    property real contentWidth: collapsedClockText.implicitWidth + maxSide * 2
+    property real contentWidth: (clockWidget.showingNotification ? notifInlineRow.implicitWidth : collapsedClockText.implicitWidth) + maxSide * 2
 
+    // Clock text (hidden when notification shows)
     Text {
       id: collapsedClockText
       anchors.centerIn: parent
       text: Qt.formatDateTime(clock.date, "h:mm AP")
       color: Theme.text
       font { family: "Inter"; pixelSize: 14; weight: 500 }
+      visible: !clockWidget.showingNotification
+    }
+
+    // Inline notification text (replaces clock when active)
+    RowLayout {
+      id: notifInlineRow
+      anchors.centerIn: parent
+      spacing: 8
+      visible: clockWidget.showingNotification && !clockWidget.isExpanded
+
+      NotifIcon {
+        iconSize: 18
+        appIcon: clockWidget._currentNotifData?.appIcon ?? ""
+        appName: clockWidget._currentNotifData?.appName ?? ""
+      }
+
+      ColumnLayout {
+        spacing: 0
+        Layout.maximumWidth: 200
+
+        Text {
+          text: clockWidget._currentNotifData?.appName ?? ""
+          color: Theme.subtext
+          font { family: "Inter"; pixelSize: 9; weight: 600 }
+        }
+
+        Text {
+          text: clockWidget._currentNotifData?.summary ?? ""
+          color: Theme.text
+          font { family: "Inter"; pixelSize: 12; weight: 700 }
+          elide: Text.ElideRight
+          maximumLineCount: 1
+        }
+      }
+
+      Rectangle {
+        width: 18; height: 18; radius: 9
+        color: _notifCapsuleHovered ? Theme.surfaceHover : "transparent"
+        Behavior on color { ColorAnimation { duration: 120 } }
+
+        Text {
+          anchors.centerIn: parent
+          text: "✕"
+          color: Theme.muted
+          font.pixelSize: 9
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          anchors.margins: -4
+          cursorShape: Qt.PointingHandCursor
+          hoverEnabled: true
+          onContainsMouseChanged: clockWidget._notifCapsuleHovered = containsMouse
+          onClicked: {
+            if (clockWidget.notifService && clockWidget._currentNotifData) {
+              clockWidget.notifService.dismissBanner(clockWidget._currentNotifData);
+            }
+            if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
+              clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
+            }
+          }
+        }
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+          clockWidget.isPinned = true;
+          clockWidget.isExpanded = true;
+          if (clockWidget.activityManager) clockWidget.activityManager.dismissAll();
+        }
+      }
     }
 
     Item {
@@ -1058,90 +1122,6 @@ Rectangle {
         font.family: "Inter"
         font.pixelSize: 13
         font.weight: 600
-      }
-    }
-  }
-
-  // --- Notification capsule (compact, below collapsed bar) ---
-  Item {
-    id: notifCapsuleOverlay
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: collapsedContent.bottom
-    anchors.bottom: parent.bottom
-
-    opacity: clockWidget.showingNotification && !clockWidget.isExpanded ? 1.0 : 0.0
-    visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
-
-    RowLayout {
-      anchors.centerIn: parent
-      spacing: 10
-
-      NotifIcon {
-        iconSize: 28
-        appIcon: clockWidget._currentNotifData?.appIcon ?? ""
-        appName: clockWidget._currentNotifData?.appName ?? ""
-      }
-
-      ColumnLayout {
-        spacing: 0
-
-        Text {
-          text: clockWidget._currentNotifData?.appName ?? ""
-          color: Theme.subtext
-          font { family: "Inter"; pixelSize: 10; weight: 600 }
-        }
-
-        Text {
-          text: clockWidget._currentNotifData?.summary ?? ""
-          color: Theme.text
-          font { family: "Inter"; pixelSize: 12; weight: 700 }
-          elide: Text.ElideRight
-          maximumLineCount: 1
-        }
-      }
-
-      Rectangle {
-        width: 20; height: 20; radius: 10
-        color: _notifCapsuleHovered ? Theme.surfaceHover : "transparent"
-        Behavior on color { ColorAnimation { duration: 120 } }
-
-        Text {
-          anchors.centerIn: parent
-          text: "✕"
-          color: Theme.muted
-          font.pixelSize: 10
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          anchors.margins: -4
-          cursorShape: Qt.PointingHandCursor
-          hoverEnabled: true
-          onContainsMouseChanged: clockWidget._notifCapsuleHovered = containsMouse
-          onClicked: {
-            if (clockWidget.notifService && clockWidget._currentNotifData) {
-              clockWidget.notifService.dismissBanner(clockWidget._currentNotifData);
-            }
-            if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
-              clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
-            }
-          }
-        }
-      }
-    }
-
-    MouseArea {
-      anchors.fill: parent
-      cursorShape: Qt.PointingHandCursor
-      onClicked: {
-        if (clockWidget.notifService && clockWidget._currentNotifData) {
-          clockWidget.notifService.dismissBanner(clockWidget._currentNotifData);
-        }
-        if (clockWidget.activityManager && clockWidget.activityManager.activeActivity) {
-          clockWidget.activityManager.dismiss(clockWidget.activityManager.activeActivity.id);
-        }
       }
     }
   }
