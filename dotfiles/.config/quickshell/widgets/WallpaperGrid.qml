@@ -94,7 +94,7 @@ Item {
               radius: 12
               color: "transparent"
               border.width: isHovered && !isPressed ? 2 : 0
-              border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5)
+              border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
               Behavior on border.width { NumberAnimation { duration: 100 } }
             }
 
