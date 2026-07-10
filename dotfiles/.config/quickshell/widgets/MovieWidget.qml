@@ -151,8 +151,8 @@ Item {
 
     // --- SHARED DISK I/O HELPER ---
     function saveJsonToCache(filename, dataObj) {
-        let jsStr = JSON.stringify(dataObj).replace(/'/g, "'\\''")
-        Quickshell.execDetached(["bash", "-c", "echo '" + jsStr + "' > " + window.moviesCache + "/" + filename])
+        let jsStr = JSON.stringify(dataObj)
+        Quickshell.execDetached(["bash", "-c", "printf '%s' \"$1\" > " + window.moviesCache + "/" + filename, "_", jsStr])
     }
 
     // --- PERSISTENT CACHE IO ---
@@ -295,7 +295,12 @@ Item {
                     }
                     if (s.currentView === "series" && s.selectedImdbId) {
                         window.pendingSeriesFocusRestore = true
-                        fetchSeriesData(s.selectedImdbId, s.currentSeason || 1, "", "", true)
+                        if (s.isMovieDetail) {
+                            window.isMovieDetail = true
+                            loadMovieDetails(s.selectedImdbId, s.selectedTitle || "", s.selectedPoster || "")
+                        } else {
+                            fetchSeriesData(s.selectedImdbId, s.currentSeason || 1, "", "", true)
+                        }
                     }
                     window.stateRestored = true
                 } catch(e) {
@@ -326,7 +331,8 @@ Item {
             selectedTitle: window.selectedTitle, selectedPoster: window.selectedPoster,
             selectedDescription: window.selectedDescription, currentSeason: window.currentSeason,
             isSourceModalOpen: window.isSourceModalOpen, checkingState: window.checkingState,
-            pendingMedia: window.pendingMedia, foundSourceName: window.foundSourceName
+            pendingMedia: window.pendingMedia, foundSourceName: window.foundSourceName,
+            isMovieDetail: window.isMovieDetail
         })
     }
 
@@ -346,15 +352,18 @@ Item {
     }
 
     function saveTrendingCache() {
-        if (cachedTrendingMovies.count === 0 || cachedTrendingTv.count === 0) return
         let cacheObj = { moviesLastFetch: window.trendingMoviesLastFetch, tvLastFetch: window.trendingTvLastFetch, movies: [], tv: [] }
-        for (let i = 0; i < cachedTrendingMovies.count; i++) {
-            let m = cachedTrendingMovies.get(i)
-            cacheObj.movies.push({ imdbId: m.imdbId, title: m.title, poster: m.poster, type: m.type, year: m.year, rating: m.rating || 0, popularity: i })
+        if (cachedTrendingMovies.count > 0) {
+            for (let i = 0; i < cachedTrendingMovies.count; i++) {
+                let m = cachedTrendingMovies.get(i)
+                cacheObj.movies.push({ imdbId: m.imdbId, title: m.title, poster: m.poster, type: m.type, year: m.year, rating: m.rating || 0, popularity: i })
+            }
         }
-        for (let i = 0; i < cachedTrendingTv.count; i++) {
-            let t = cachedTrendingTv.get(i)
-            cacheObj.tv.push({ imdbId: t.imdbId, title: t.title, poster: t.poster, type: t.type, year: t.year, rating: t.rating || 0, popularity: i })
+        if (cachedTrendingTv.count > 0) {
+            for (let i = 0; i < cachedTrendingTv.count; i++) {
+                let t = cachedTrendingTv.get(i)
+                cacheObj.tv.push({ imdbId: t.imdbId, title: t.title, poster: t.poster, type: t.type, year: t.year, rating: t.rating || 0, popularity: i })
+            }
         }
         saveJsonToCache("qs_trending_cache.json", cacheObj)
     }
@@ -380,9 +389,9 @@ Item {
         } else {
             watchlistModel.insert(0, item)
         }
-        let ids = window.watchlistIds
-        ids[item.imdbId] = !ids[item.imdbId]
-        if (!ids[item.imdbId]) delete ids[item.imdbId]
+        let ids = { ...window.watchlistIds }
+        if (ids[item.imdbId]) delete ids[item.imdbId]
+        else ids[item.imdbId] = true
         window.watchlistIds = ids
         saveWatchlist()
     }
@@ -799,8 +808,7 @@ Item {
 
     function copyStreamLink(idx) {
         let url = buildSourceUrl(idx)
-        let esc = url.replace(/'/g, "'\\''")
-        Quickshell.execDetached(["bash", "-c", "printf '%s' '" + esc + "' | wl-copy"])
+        Quickshell.execDetached(["bash", "-c", "printf '%s' \"$1\" | wl-copy", "_", url])
         window.currentCheckIndex = idx
         window.linkCopiedToast = true
         toastResetTimer.restart()
@@ -1125,6 +1133,7 @@ Item {
         window.selectedDirector = ""
         window.similarTitles = []
         window.isMovieDetail = true
+        window.mediaType = "movie"
         window.currentView = "series"
         window.forceActiveFocus()
         window.isLoadingSeries = true
