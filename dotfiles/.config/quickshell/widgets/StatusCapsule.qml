@@ -9,7 +9,7 @@ import Quickshell.Bluetooth
 
 Rectangle {
     id: statusCapsule
-    color: capsuleMouseArea.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.45) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.55)
+    color: capsuleMouseArea.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.3) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.35)
     radius: 12
     height: 24
     width: layout.implicitWidth + 24

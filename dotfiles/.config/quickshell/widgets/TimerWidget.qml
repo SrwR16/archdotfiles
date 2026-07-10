@@ -47,7 +47,7 @@ Item {
             width: 200; height: 200
             
             Rectangle { anchors.fill: parent; radius: 100; color: Theme.surfaceContainer }
-            Rectangle { width: 180; height: 180; radius: 90; anchors.centerIn: parent; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5) }
+            Rectangle { width: 180; height: 180; radius: 90; anchors.centerIn: parent; color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.3) }
 
             Canvas {
                 id: progressCanvas

@@ -185,7 +185,7 @@ ScrollView {
       Layout.fillWidth: true
       Layout.preferredHeight: 48
       radius: 12
-      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.3)
 
       RowLayout {
         anchors.fill: parent

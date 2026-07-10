@@ -175,7 +175,9 @@ Rectangle {
   property string productivityPage: "time"
 
   property bool showBatteryAlert: activityManager && activityManager.activeActivity && activityManager.activeActivity.type === "battery"
-  property string batteryAlertMode: showBatteryAlert ? activityManager.activeActivity.data.mode : "charging"
+  property string _lastBatteryMode: "charging"
+  property string batteryAlertMode: showBatteryAlert ? (activityManager.activeActivity.data.mode || _lastBatteryMode) : _lastBatteryMode
+  onShowBatteryAlertChanged: { if (showBatteryAlert) _lastBatteryMode = activityManager.activeActivity.data.mode || "charging" }
   property bool anyOverlayActive: showBatteryAlert || showNotifAlert || showPomodoro || showSys || showTray || showPowerSection || showAppLauncher || showAskpass || showProductivity || showVpn
 
   property string _pendingBatteryMode: ""
@@ -399,7 +401,7 @@ Rectangle {
     },
   ]
 
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.3)
   border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.25)
   border.width: 1
 
