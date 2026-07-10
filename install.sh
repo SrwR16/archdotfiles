@@ -14,6 +14,7 @@
 #   ./install.sh --dry-run  # show what would happen, change nothing
 # -----------------------------------------------------------------------------
 set -euo pipefail
+trap 'error "Failed at line $LINENO: $BASH_COMMAND"' ERR
 
 # --- Colors / UI ------------------------------------------------------------
 BLUE='\033[0;34m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
@@ -257,7 +258,7 @@ else
         _have=0
         for _p in "${PKGS[@]}"; do
             for _i in "${_inst[@]}"; do
-                [ "$_p" = "$_i" ] && ((_have++)) && break
+                [ "$_p" = "$_i" ] && _have=$((_have + 1)) && break
             done
         done
         _need=$((${#PKGS[@]} - _have))
@@ -297,12 +298,12 @@ if [ "$DRY_RUN" -eq 0 ] && [ -d "$DEPLOY_DIR" ]; then
     for _p in "$DEPLOY_DIR"/*; do
         _n="$(basename "$_p")"
         [ "$_n" = ".config" ] && continue
-        [ -e "$HOME/$_n" ] || [ -L "$HOME/$_n" ] && ((_would_backup++))
+        [ -e "$HOME/$_n" ] || [ -L "$HOME/$_n" ] && _would_backup=$((_would_backup + 1))
     done
     if [ -d "$DEPLOY_DIR/.config" ]; then
         for _p in "$DEPLOY_DIR"/.config/*; do
             _n="$(basename "$_p")"
-            [ -e "$HOME/.config/$_n" ] || [ -L "$HOME/.config/$_n" ] && ((_would_backup++))
+            [ -e "$HOME/.config/$_n" ] || [ -L "$HOME/.config/$_n" ] && _would_backup=$((_would_backup + 1))
         done
     fi
     if [ "$_would_backup" -gt 0 ]; then
@@ -323,7 +324,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
         info "Found ${#_old[@]} old backup(s):"
         for _b in "${_old[@]}"; do
             _sz="$(du -sh "$_b" 2>/dev/null | cut -f1)"
-            echo "    $(_b##*/)  ($_sz)"
+            echo "    ${_b##*/}  ($_sz)"
         done
         echo ""
         if gum confirm "Delete old backups to free space?"; then
