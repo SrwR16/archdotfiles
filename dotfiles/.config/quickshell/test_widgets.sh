@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# test_widgets.sh — smoke-test the ported MovieWidget + WallpaperPicker
+# test_widgets.sh — smoke-test the ported MovieWidget + WallpaperWidget
 #                  against THIS repo's quickshell config.
 #
 # Run from anywhere:  bash /path/to/test_widgets.sh
@@ -44,13 +44,13 @@ balance() {
 
 # ---------------------------------------------------------------------------
 sec "File presence"
-for f in movies/MovieWidget.qml wallpaper/WallpaperPicker.qml widgets/MatugenColors.qml; do
+for f in movies/MovieWidget.qml wallpaper/WallpaperWidget.qml widgets/MatugenColors.qml; do
   [ -f "$f" ] && ok "exists: $f" || bad "MISSING: $f"
 done
 
 # ---------------------------------------------------------------------------
 sec "External-dependency removal (quickshellinspire leftovers)"
-for f in movies/MovieWidget.qml wallpaper/WallpaperPicker.qml widgets/MatugenColors.qml; do
+for f in movies/MovieWidget.qml wallpaper/WallpaperWidget.qml widgets/MatugenColors.qml; do
   if grep -q "qs_manager.sh\|qs_colors.json" "$f"; then
     bad "$f still references qs_manager.sh / qs_colors.json"
   else
@@ -63,9 +63,9 @@ sec "Close mechanism follows this shell (root.overlayView = \"island\")"
 grep -q 'root.overlayView = "island"' movies/MovieWidget.qml \
   && ok "MovieWidget closes via root.overlayView" \
   || bad "MovieWidget does not close via root.overlayView"
-grep -q 'root.overlayView = "island"' wallpaper/WallpaperPicker.qml \
-  && ok "WallpaperPicker closes via root.overlayView" \
-  || bad "WallpaperPicker does not close via root.overlayView"
+grep -q 'root.overlayView = "island"' wallpaper/WallpaperWidget.qml \
+  && ok "WallpaperWidget closes via root.overlayView" \
+  || bad "WallpaperWidget does not close via root.overlayView"
 
 # ---------------------------------------------------------------------------
 sec "MatugenColors uses this repo's theme source"
@@ -80,7 +80,7 @@ fi
 
 # ---------------------------------------------------------------------------
 sec "Bracket / quote balance (catches half-typed tokens / Repeater typos)"
-for f in movies/MovieWidget.qml wallpaper/WallpaperPicker.qml; do
+for f in movies/MovieWidget.qml wallpaper/WallpaperWidget.qml; do
   balance "$f" '{' '}' "braces"
   balance "$f" '(' ')' "parens"
   balance "$f" '[' ']' "brackets"
@@ -99,16 +99,16 @@ for b in mpvpaper matugen magick curl jq hyprctl inotifywait python3; do
 done
 # awww is the wallpaper backend; the `swww` package is Provided by awww
 # (there is no standalone `swww` binary), so `awww img` is what applies
-# static images. WallpaperPicker must call `awww img`, not `swww img`.
+# static images. WallpaperWidget must call `awww img`, not `swww img`.
 if command -v awww >/dev/null 2>&1; then
   ok "tool present: awww (wallpaper backend; provides swww)"
 else
   bad "tool MISSING: awww — static-image wallpaper apply (awww img) will no-op"
 fi
-if grep -q 'swww img' wallpaper/WallpaperPicker.qml; then
-  bad "WallpaperPicker still calls the dead 'swww img' (no swww binary exists; awww provides it)"
+if grep -q 'swww img' wallpaper/WallpaperWidget.qml; then
+  bad "WallpaperWidget still calls the dead 'swww img' (no swww binary exists; awww provides it)"
 else
-  ok "WallpaperPicker applies wallpaper via awww img"
+  ok "WallpaperWidget applies wallpaper via awww img"
 fi
 
 # ---------------------------------------------------------------------------

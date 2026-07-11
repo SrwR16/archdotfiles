@@ -129,7 +129,7 @@ ShellRoot {
             focus: true
 
             // Layout dimensions per widget — matching quickshellinspire WindowRegistry.js
-            readonly property bool isMovie: root.overlayView === "movies"
+            readonly property bool isMovie: root.overlayView === "movies" || root.overlayView === "wallpaper"
             readonly property int boxW: isMovie ? 1370 : Screen.width
             readonly property int boxH: isMovie ? 850 : 650
             readonly property int boxX: isMovie ? Math.floor((Screen.width / 2) - (boxW / 2)) : 0
@@ -164,7 +164,7 @@ ShellRoot {
                 id: wallpaperLoader
                 anchors.fill: parent
                 active: root.overlayView === "wallpaper"
-                source: "wallpaper/WallpaperPicker.qml"
+                source: "wallpaper/WallpaperWidget.qml"
                 visible: active
                 focus: active
             }
