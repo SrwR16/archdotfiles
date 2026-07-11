@@ -108,7 +108,7 @@ link_astronaut_config() {
     # Create a world-readable, user-owned dir for the generated config + background
     # so the 'sddm' greeter (which can't read ~/.cache) can load them.
     sudo mkdir -p "$SDDM_DOTFILES_DIR"
-    sudo chown "$USER:$USER" "$SDDM_DOTFILES_DIR"
+    sudo chown "$(id -u):$(id -g)" "$SDDM_DOTFILES_DIR"
     chmod 755 "$SDDM_DOTFILES_DIR"
     # Seed a sane default config if matugen hasn't generated one yet, so the
     # greeter never falls back to a broken/blank screen.
