@@ -198,11 +198,13 @@ Rectangle {
                   model: modelData.items
 
                   delegate: Rectangle {
+                    id: notifCard
                     required property var modelData
                     width: parent.width
                     implicitHeight: notifRow.implicitHeight + 16
                     radius: 10
                     color: "transparent"
+                    readonly property var _actions: historyRoot.safeActions(modelData.actions)
 
                     RowLayout {
                       id: notifRow
@@ -256,13 +258,12 @@ Rectangle {
                         }
 
                         Flow {
-                          readonly property var _actions: historyRoot.safeActions(modelData.actions)
-                          visible: _actions.length > 0
+                          visible: notifCard._actions.length > 0
                           Layout.topMargin: 4
                           spacing: 6
 
                           Repeater {
-                            model: _actions
+                            model: notifCard._actions
 
                             delegate: Rectangle {
                               required property var modelData

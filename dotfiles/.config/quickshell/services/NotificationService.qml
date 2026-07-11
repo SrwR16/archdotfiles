@@ -40,6 +40,14 @@ Item {
     onNotification: (notification) => {
       var id = notification.id;
 
+      var actionList = notification.actions.map(function (a) {
+        return {
+          identifier: a ? a.identifier : "",
+          text: a ? a.text : "",
+          invoke: function () { if (a) a.invoke(); }
+        };
+      });
+
       var data = {
         appName: notification.appName,
         appIcon: notification.appIcon,
@@ -47,7 +55,7 @@ Item {
         body: notification.body,
         urgency: notification.urgency,
         id: id,
-        actions: notification.actions,
+        actions: actionList,
         hasInlineReply: notification.hasInlineReply,
         inlineReplyPlaceholder: notification.inlineReplyPlaceholder,
         timestamp: Date.now()
