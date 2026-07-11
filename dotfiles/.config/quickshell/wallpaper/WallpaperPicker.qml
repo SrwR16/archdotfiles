@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtQuick.Effects
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
@@ -18,29 +19,46 @@ Item {
     Caching { id: paths }
     MatugenColors { id: _theme }
     WallpaperService { id: wpSvc }
+    Scaler { id: scaler; currentWidth: Screen.width }
 
-    // --- theme tokens (mirrors MovieWidget) ---
+    // --- design tokens (match MovieWidget) ---
+    readonly property color base:      _theme.base
     readonly property color mantle:    _theme.mantle
     readonly property color crust:     _theme.crust
-    readonly property color base:      _theme.base
     readonly property color text:      _theme.text
     readonly property color subtext0:  _theme.subtext0
     readonly property color subtext1:  _theme.subtext1
     readonly property color surface0:  _theme.surface0
     readonly property color surface1:  _theme.surface1
     readonly property color surface2:  _theme.surface2
-    readonly property color accent:    _theme.mauve || "#cba6f7"
+    readonly property color mauve:     _theme.mauve || "#cba6f7"
+    readonly property color blue:      _theme.blue || "#89b4fa"
     readonly property color green:     _theme.green || "#a6e3a1"
     readonly property color red:       _theme.red || "#f38ba8"
-    readonly property string fontUI: ".AppleSystemUIFont, SF Pro Display, Inter, Segoe UI, sans-serif"
-    function s(v) { return Math.max(1, Math.round(v * (Screen.width / 1920))) }
+    readonly property string fontUI: ".AppleSystemUIFont, SF Pro Display, SF Pro Text, Inter, Segoe UI, sans-serif"
+    readonly property color shadowColor: Qt.rgba(0, 0, 0, 0.38)
+    readonly property color hairline: Qt.rgba(text.r, text.g, text.b, 0.08)
+    readonly property color accent: mauve
+    function rXS() { return s(8) }
+    function rSM() { return s(12) }
+    function rMD() { return s(16) }
+    function rLG() { return s(20) }
+    function rXL() { return s(28) }
+    function s(val) { return scaler.s(val) }
+
+    // --- ANIMATIONS & FOCUS (match MovieWidget) ---
+    property real introPhase: 0
+    NumberAnimation on introPhase {
+        id: introPhaseAnim
+        from: 0; to: 1; duration: 800; easing.type: Easing.OutQuart; running: true
+    }
 
     // --- state ---
     property string tab: "local"                 // "local" | "online"
     property string baseDir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
     property string currentFolder: baseDir
-    property string selectedPath: ""             // local file of current selection (preview / direct apply)
-    property string selectedUrl: ""               // full image url when selection is from online search
+    property string selectedPath: ""
+    property string selectedUrl: ""
     property bool   selectedIsVideo: false
     property bool   searchRunning: false
     property bool   themeOn: true
@@ -69,7 +87,6 @@ Item {
         window.showStatus = true
         statusTimer.restart()
     }
-
     function runStatic(p) {
         if (window.themeOn) wpSvc.applyWallpaper(p)
         else Quickshell.execDetached(["awww", "img", p])
@@ -94,7 +111,6 @@ Item {
         runStatic(window.selectedPath)
     }
     function closePanel() { root.overlayView = "island" }
-
     function runSearch(q) {
         q = (q || "").trim()
         if (!q) return
@@ -111,7 +127,6 @@ Item {
         onTriggered: window.showStatus = false
     }
 
-    // local file listing
     FolderListModel {
         id: localModel
         folder: toFileUrl(window.currentFolder)
@@ -122,7 +137,6 @@ Item {
                       "*.JPG","*.JPEG","*.PNG","*.WEBP","*.MP4","*.WEBM","*.MOV",
                       "*.mp4","*.webm","*.mov"]
     }
-    // subfolder listing for the sidebar
     FolderListModel {
         id: foldersModel
         folder: toFileUrl(window.baseDir)
@@ -147,7 +161,7 @@ Item {
                     if (parts.length >= 2 && parts[0])
                         window.searchModel.append({ path: parts[0], url: parts[1] })
                 }
-                if (window.searchModel.count === 0) showToast("No results for “" + searchProc.query + "”")
+                if (window.searchModel.count === 0) showToast("No results for \"" + searchProc.query + "\"")
             }
         }
         stderr: StdioCollector {
@@ -159,14 +173,8 @@ Item {
         property string targetPath
         property string fullUrl
         running: false
-        stdout: StdioCollector {
-            onStreamFinished: { runStatic(saveProc.targetPath) }
-        }
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (this.text.trim()) showToast("Download failed")
-            }
-        }
+        stdout: StdioCollector { onStreamFinished: { runStatic(saveProc.targetPath) } }
+        stderr: StdioCollector { onStreamFinished: { if (this.text.trim()) showToast("Download failed") } }
     }
 
     Component.onCompleted: {
@@ -178,26 +186,23 @@ Item {
         if (event.key === Qt.Key_Escape) { closePanel(); event.accepted = true }
     }
 
-    // ---------------- backdrop ----------------
+    // ---------------- full-screen sheet (matches MovieWidget) ----------------
     Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.55)
-        MouseArea {
-            anchors.fill: parent
-            onClicked: closePanel()
-        }
-    }
-
-    // ---------------- panel ----------------
-    Rectangle {
-        anchors.centerIn: parent
-        width: Math.min(s(1180), Screen.width * 0.94)
-        height: Math.min(s(760), Screen.height * 0.92)
-        radius: s(26)
-        color: mantle
-        border.color: Qt.rgba(text.r, text.g, text.b, 0.10)
+        id: mainBg
+        width: parent.width; height: parent.height
+        anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
+        radius: window.rXL()
+        color: Qt.rgba(window.base.r, window.base.g, window.base.b, 0.96)
+        border.color: window.hairline
         border.width: 1
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true; shadowColor: window.shadowColor
+            shadowBlur: 0.8; shadowVerticalOffset: 8; shadowOpacity: 0.35
+        }
         clip: true
+        transform: Translate { y: (1 - window.introPhase) * window.s(50) }
+        opacity: window.introPhase
 
         ColumnLayout {
             anchors.fill: parent
@@ -206,71 +211,118 @@ Item {
             // ---------- header ----------
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: s(58)
-                Layout.leftMargin: s(20); Layout.rightMargin: s(16)
-                spacing: s(12)
+                Layout.preferredHeight: window.s(64)
+                Layout.leftMargin: window.s(22); Layout.rightMargin: window.s(18)
+                Layout.topMargin: window.s(8)
+                spacing: window.s(14)
 
                 Text {
                     text: "Wallpapers"
                     color: text
                     font.family: fontUI
-                    font.pixelSize: s(20)
+                    font.pixelSize: s(22)
                     font.weight: Font.DemiBold
                 }
-                Text {
-                    text: "· " + (window.tab === "local"
-                        ? (window.currentFolder === window.baseDir ? "All" : window.currentFolder.split("/").pop())
-                        : "Online")
-                    color: subtext0
-                    font.family: fontUI
-                    font.pixelSize: s(13)
-                }
 
-                Item { Layout.fillWidth: true }
-
-                // tab toggles
-                Row {
-                    spacing: s(4)
-                    Repeater {
-                        model: [["local","Local"], ["online","Online"]]
-                        delegate: Rectangle {
-                            width: s(64); height: s(30)
-                            radius: s(15)
-                            color: window.tab === modelData[0] ? accent : surface0
+                // segmented control: Local | Online (matches Movies/TV)
+                Rectangle {
+                    Layout.preferredWidth: s(180); Layout.preferredHeight: s(36)
+                    radius: rLG(); color: surface0
+                    Rectangle {
+                        id: tabHighlight
+                        width: parent.width / 2 - s(4); height: parent.height - s(6)
+                        y: s(3); radius: rMD(); color: text
+                        property real targetX: window.tab === "local" ? s(3) : (parent.width / 2 + s(1))
+                        property real actualX: targetX
+                        Behavior on actualX { NumberAnimation { duration: 340; easing.type: Easing.OutExpo } }
+                        x: actualX
+                        layer.enabled: true
+                        layer.effect: MultiEffect {
+                            shadowEnabled: true; shadowColor: shadowColor
+                            shadowBlur: 0.6; shadowVerticalOffset: 2; shadowOpacity: 0.28
+                        }
+                    }
+                    RowLayout {
+                        anchors.fill: parent; spacing: 0
+                        MouseArea {
+                            Layout.fillWidth: true; Layout.fillHeight: true
+                            onClicked: window.tab = "local"
                             Text {
-                                anchors.centerIn: parent
-                                text: modelData[1]
-                                color: window.tab === modelData[0] ? "#11111b" : subtext0
+                                anchors.centerIn: parent; text: "Local"
                                 font.family: fontUI
-                                font.pixelSize: s(12)
-                                font.weight: Font.Medium
+                                font.weight: window.tab === "local" ? Font.DemiBold : Font.Medium
+                                font.pixelSize: s(13)
+                                color: window.tab === "local" ? base : subtext0
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: window.tab = modelData[0]
+                        }
+                        MouseArea {
+                            Layout.fillWidth: true; Layout.fillHeight: true
+                            onClicked: window.tab = "online"
+                            Text {
+                                anchors.centerIn: parent; text: "Online"
+                                font.family: fontUI
+                                font.weight: window.tab === "online" ? Font.DemiBold : Font.Medium
+                                font.pixelSize: s(13)
+                                color: window.tab === "online" ? base : subtext0
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }
                 }
 
+                Item { Layout.fillWidth: true }
+
+                // online search bar
+                TextField {
+                    id: searchField
+                    visible: window.tab === "online"
+                    Layout.preferredWidth: s(240); Layout.preferredHeight: s(36)
+                    placeholderText: "Search wallpapers…"
+                    color: text
+                    font.family: fontUI
+                    font.pixelSize: s(13)
+                    background: Rectangle {
+                        radius: rLG(); color: surface0
+                        border.color: parent.activeFocus ? surface2 : surface1
+                        border.width: 1
+                    }
+                    onAccepted: runSearch(text)
+                }
+                Rectangle {
+                    visible: window.tab === "online"
+                    width: s(36); height: s(36); radius: rLG()
+                    color: searchBtnMouse.containsMouse ? surface1 : surface0
+                    border.color: surface1; border.width: 1
+                    Text { anchors.centerIn: parent; text: "🔍"; font.pixelSize: s(14) }
+                    MouseArea {
+                        id: searchBtnMouse
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: runSearch(searchField.text)
+                    }
+                }
+
+                // close button (matches MovieWidget ✕)
                 Rectangle {
                     width: s(32); height: s(32); radius: s(16)
-                    color: surface0
+                    color: closeMouse.containsMouse ? surface2 : "transparent"
                     Text {
                         anchors.centerIn: parent
                         text: "✕"; color: text
                         font.pixelSize: s(13); font.weight: Font.Bold
                     }
                     MouseArea {
+                        id: closeMouse
                         anchors.fill: parent
+                        hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: closePanel()
                     }
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Qt.rgba(text.r, text.g, text.b, 0.08) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: hairline }
 
             // ---------- body ----------
             RowLayout {
@@ -280,50 +332,16 @@ Item {
 
                 // ----- sidebar -----
                 ColumnLayout {
-                    Layout.preferredWidth: s(232)
+                    Layout.preferredWidth: s(240)
                     Layout.fillHeight: true
-                    Layout.leftMargin: s(14); Layout.rightMargin: s(10)
-                    Layout.topMargin: s(12); Layout.bottomMargin: s(12)
+                    Layout.leftMargin: s(16); Layout.rightMargin: s(12)
+                    Layout.topMargin: s(14); Layout.bottomMargin: s(14)
                     spacing: s(8)
 
-                    // search box (online) / folder note (local)
-                    TextField {
-                        Layout.fillWidth: true
-                        visible: window.tab === "online"
-                        placeholderText: "Search wallpapers…"
-                        color: text
-                        font.family: fontUI
-                        font.pixelSize: s(13)
-                        background: Rectangle {
-                            radius: s(10); color: surface0
-                            border.color: parent.activeFocus ? surface2 : surface1
-                            border.width: 1
-                        }
-                        onAccepted: runSearch(text)
-                    }
-
-                    Button {
-                        Layout.fillWidth: true
-                        visible: window.tab === "online"
-                        text: window.searchRunning ? "Searching…" : "Search"
-                        enabled: !window.searchRunning
-                        onClicked: runSearch(searchField.text)
-                        background: Rectangle {
-                            radius: s(10); color: parent.hovered ? surface1 : surface0
-                            border.color: surface1; border.width: 1
-                        }
-                        contentItem: Text {
-                            text: parent.text; color: text; font.family: fontUI
-                            font.pixelSize: s(13); horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                    }
-
-                    // "All Wallpapers" entry
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: s(34)
-                        radius: s(9)
+                        radius: rMD()
                         color: (window.tab === "local" && window.currentFolder === window.baseDir) ? surface1 : "transparent"
                         Text {
                             anchors.left: parent.left; anchors.leftMargin: s(12)
@@ -341,7 +359,7 @@ Item {
 
                     Text {
                         visible: window.tab === "local"
-                        text: "Folders"
+                        text: "FOLDERS"
                         color: subtext0
                         font.family: fontUI; font.pixelSize: s(11)
                         font.weight: Font.DemiBold
@@ -359,7 +377,7 @@ Item {
                         delegate: Rectangle {
                             width: ListView.view.width
                             height: s(30)
-                            radius: s(8)
+                            radius: rSM()
                             color: window.currentFolder === model.filePath ? surface1 : "transparent"
                             Text {
                                 anchors.left: parent.left; anchors.leftMargin: s(10)
@@ -380,18 +398,22 @@ Item {
 
                     Item { Layout.fillHeight: true; visible: window.tab === "local" }
 
-                    Button {
+                    Rectangle {
                         Layout.fillWidth: true
-                        text: "Browse…"
-                        onClicked: folderDialog.open()
-                        background: Rectangle {
-                            radius: s(10); color: parent.hovered ? surface1 : surface0
-                            border.color: surface1; border.width: 1
+                        Layout.preferredHeight: s(34)
+                        radius: rMD()
+                        color: browseMouse.containsMouse ? surface1 : surface0
+                        border.color: surface1; border.width: 1
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Browse…"
+                            color: text; font.family: fontUI; font.pixelSize: s(12.5)
                         }
-                        contentItem: Text {
-                            text: parent.text; color: text; font.family: fontUI
-                            font.pixelSize: s(12.5); horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        MouseArea {
+                            id: browseMouse
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: folderDialog.open()
                         }
                     }
 
@@ -405,7 +427,7 @@ Item {
                     }
                 }
 
-                Rectangle { Layout.fillHeight: true; Layout.preferredWidth: 1; color: Qt.rgba(text.r, text.g, text.b, 0.08) }
+                Rectangle { Layout.fillHeight: true; Layout.preferredWidth: 1; color: hairline }
 
                 // ----- grid -----
                 Item {
@@ -415,15 +437,14 @@ Item {
                     GridView {
                         id: grid
                         anchors.fill: parent
-                        anchors.margins: s(14)
-                        cellWidth: s(184); cellHeight: s(152)
+                        anchors.margins: s(16)
+                        cellWidth: s(184); cellHeight: s(154)
                         model: window.tab === "local" ? localModel : searchModel
                         delegate: WallDelegate {}
                         clip: true
                         ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: s(8) }
                     }
 
-                    // empty state
                     Text {
                         anchors.centerIn: parent
                         width: parent.width * 0.7
@@ -440,17 +461,17 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Qt.rgba(text.r, text.g, text.b, 0.08) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: hairline }
 
             // ---------- footer ----------
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: s(70)
-                Layout.leftMargin: s(16); Layout.rightMargin: s(16)
+                Layout.preferredHeight: s(72)
+                Layout.leftMargin: s(18); Layout.rightMargin: s(18)
                 spacing: s(12)
 
                 Rectangle {
-                    width: s(46); height: s(46); radius: s(10)
+                    width: s(46); height: s(46); radius: rMD()
                     color: surface0
                     clip: true
                     Image {
@@ -487,14 +508,13 @@ Item {
                     }
                 }
 
-                // theme toggle
                 Rectangle {
                     width: s(86); height: s(34); radius: s(17)
                     color: window.themeOn ? accent : surface0
                     Text {
                         anchors.centerIn: parent
                         text: "Theme"
-                        color: window.themeOn ? "#11111b" : subtext0
+                        color: window.themeOn ? base : subtext0
                         font.family: fontUI; font.pixelSize: s(11.5); font.weight: Font.Medium
                     }
                     MouseArea {
@@ -504,19 +524,24 @@ Item {
                     }
                 }
 
-                Button {
-                    text: window.selectedIsVideo ? "Set Video" : "Set Wallpaper"
-                    enabled: window.selectedPath !== "" || window.selectedUrl !== ""
-                    onClicked: applySelection()
-                    background: Rectangle {
-                        radius: s(10)
-                        color: parent.enabled ? (parent.hovered ? Qt.lighter(accent, 1.12) : accent) : surface1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: parent.enabled ? "#11111b" : subtext0
+                Rectangle {
+                    Layout.preferredWidth: s(150); Layout.preferredHeight: s(38)
+                    radius: rLG()
+                    color: (window.selectedPath !== "" || window.selectedUrl !== "")
+                        ? (setBtnMouse.containsMouse ? Qt.lighter(accent, 1.12) : accent)
+                        : surface1
+                    Text {
+                        anchors.centerIn: parent
+                        text: window.selectedIsVideo ? "Set Video" : "Set Wallpaper"
+                        color: (window.selectedPath !== "" || window.selectedUrl !== "") ? base : subtext0
                         font.family: fontUI; font.pixelSize: s(13); font.weight: Font.DemiBold
-                        horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                    }
+                    MouseArea {
+                        id: setBtnMouse
+                        anchors.fill: parent
+                        enabled: (window.selectedPath !== "" || window.selectedUrl !== "")
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: applySelection()
                     }
                 }
             }
@@ -545,56 +570,95 @@ Item {
     }
 
     component WallDelegate: Rectangle {
+        id: card
         readonly property string _src:   model.fileURL ? model.fileURL : (model.path ? model.path : "")
         readonly property string _apply: model.filePath ? model.filePath : (model.path ? model.path : "")
         readonly property string _full:  model.url ? model.url : ""
         property bool _vid: isVideoPath(_apply)
+        property bool _sel: window.selectedPath === _apply
         width: GridView.view.cellWidth; height: GridView.view.cellHeight
         color: "transparent"
 
         Rectangle {
-            id: card
+            id: inner
             anchors.fill: parent
-            anchors.margins: s(6)
-            radius: s(12)
-            color: surface0
+            anchors.margins: s(8)
+            radius: rMD()
+            color: crust
             clip: true
-            scale: hov.containsMouse ? 1.04 : 1.0
-            Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+            scale: hov.containsMouse ? 1.045 : 1.0
+            Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutExpo } }
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true; shadowColor: shadowColor
+                shadowBlur: hov.containsMouse ? 0.7 : 0.35
+                shadowVerticalOffset: hov.containsMouse ? 6 : 2
+                shadowOpacity: hov.containsMouse ? 0.4 : 0.2
+                Behavior on shadowBlur { NumberAnimation { duration: 220 } }
+                Behavior on shadowVerticalOffset { NumberAnimation { duration: 220 } }
+                Behavior on shadowOpacity { NumberAnimation { duration: 220 } }
+            }
 
             Image {
+                id: img
                 anchors.fill: parent
                 source: _src
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                smooth: true
+                cache: true
+                sourceSize.width: s(240); sourceSize.height: s(160)
+                visible: status === Image.Ready
             }
             Rectangle {
-                id: scrim
                 anchors.fill: parent
-                color: Qt.rgba(0, 0, 0, 0)
-                Behavior on color { ColorAnimation { duration: 140 } }
-                states: State {
-                    when: hov.containsMouse
-                    PropertyChanges { target: scrim; color: Qt.rgba(0, 0, 0, 0.28) }
+                color: surface0
+                visible: _src === "" || img.status === Image.Error || img.status === Image.Null
+                Column {
+                    anchors.centerIn: parent
+                    spacing: s(6)
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: _vid ? "▶" : "🖼"; font.pixelSize: s(22) }
+                    Text {
+                        width: parent.width
+                        text: _apply.split("/").pop() || "Unknown"
+                        color: subtext0
+                        font.family: fontUI; font.pixelSize: s(11)
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                        maximumLineCount: 3; elide: Text.ElideRight
+                    }
                 }
             }
             Rectangle {
-                anchors.fill: parent
-                radius: s(12)
-                color: "transparent"
-                border.width: window.selectedPath === _apply ? s(3) : 0
-                border.color: accent
+                anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+                height: parent.height * 0.5
+                visible: img.status === Image.Ready
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.82) }
+                }
             }
             Text {
-                visible: _vid
-                text: "▶"; color: "#ffffff"; font.pixelSize: s(22)
-                anchors.centerIn: parent
+                anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+                anchors.margins: s(8)
+                visible: img.status === Image.Ready
+                text: _apply.split("/").pop()
+                color: "#ffffff"
+                font.family: fontUI; font.weight: Font.DemiBold; font.pixelSize: s(11)
+                wrapMode: Text.Wrap; maximumLineCount: 2; elide: Text.ElideRight; lineHeight: 1.15
+            }
+            Rectangle {
+                anchors.fill: parent
+                radius: rMD()
+                color: "transparent"
+                border.width: _sel ? s(3) : 0
+                border.color: accent
             }
             MouseArea {
                 id: hov
                 anchors.fill: parent
                 hoverEnabled: true
-                acceptedButtons: Qt.LeftButton
+                cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     window.selectedPath = _apply
                     window.selectedUrl = _full
