@@ -15,7 +15,7 @@ Item {
     Repeater {
       model: [
         { icon: "", color: Theme.error,     cmd: ["sh", "-c", "loginctl terminate-user $USER"], label: "Logout"  },
-        { icon: "", color: Theme.secondary, cmd: ["hyprlock"],                                    label: "Lock"    },
+        { icon: "", color: Theme.secondary, cmd: ["sh", "-c", "~/.config/dotfiles/scripts/power -l"], label: "Lock"    },
         { icon: "", color: Theme.tertiary,  cmd: ["systemctl", "suspend"],                        label: "Sleep"   },
         { icon: "", color: Theme.warning,   cmd: ["systemctl", "reboot"],                         label: "Reboot"  },
         { icon: "", color: Theme.error,     cmd: ["systemctl", "poweroff"],                       label: "Shutdown" },

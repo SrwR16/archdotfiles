@@ -85,7 +85,7 @@
         },
         {
           "label": "",
-          "command": "hyprlock"
+          "command": "~/.config/dotfiles/scripts/power -l"
         }
       ]
     }

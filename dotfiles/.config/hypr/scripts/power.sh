@@ -48,7 +48,7 @@ fi
 if [[ "$1" == "lock" ]]; then
 	echo ":: Lock"
 	sleep 0.5
-	hyprlock
+	~/.config/dotfiles/scripts/power -l
 fi
 
 if [[ "$1" == "reboot" ]]; then
