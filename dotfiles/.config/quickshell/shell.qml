@@ -70,6 +70,23 @@ ShellRoot {
         Component.onCompleted: applyThemeColors(parseColors(text()))
     }
 
+    // Reliable fresh read of theme/colors.json. FileView.text() can serve a
+    // stale cached copy after matugen rewrites the file atomically (inotify
+    // misses the rename), so the IPC reload must re-read from disk directly.
+    Process {
+        id: readColorsProc
+        running: false
+        command: ["cat", Quickshell.shellPath("theme/colors.json")]
+        stdout: StdioCollector {
+            onStreamFinished: applyThemeColors(parseColors(this.text))
+        }
+    }
+
+    function reloadColors() {
+        readColorsProc.running = false
+        readColorsProc.running = true
+    }
+
     // Full-screen PanelWindow — like quickshellinspire, never resizes.
     // Island mode:  masked to island area, exclusive zone
     // Widget mode:  bounding box clips to widget, click-outside closes
@@ -202,8 +219,18 @@ ShellRoot {
         // via the matugen post_hook, and acts as a reliable fallback in case
         // the file watcher misses matugen's atomic rewrite.
         function reload() {
-            applyThemeColors(parseColors(themeFileWatcher.text()))
+            reloadColors()
         }
+    }
+
+    // Safety net: matugen's post_hook may fire before quickshell is ready to
+    // receive IPC (e.g. on boot), leaving the stale committed palette applied.
+    // Re-sync from disk shortly after startup.
+    Timer {
+        interval: 4000
+        running: true
+        repeat: false
+        onTriggered: reloadColors()
     }
 
     IpcHandler {
