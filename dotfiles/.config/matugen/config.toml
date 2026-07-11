@@ -4,6 +4,13 @@
 input_path = '~/.config/matugen/templates/colors.json'
 output_path = '~/.config/dotfiles/colors/colors.json'
 
+# Live Quickshell "island" palette. Running matugen directly (not just via the
+# wallpaper pipeline) now regenerates theme/colors.json, which shell.qml watches
+# and pushes into the Theme singleton — so the island updates on every matugen run.
+[templates.quickshell_theme]
+input_path = '~/.config/matugen/templates/quickshell-colors.json'
+output_path = '~/.config/quickshell/theme/colors.json'
+
 [templates.quickshell_colors]
 input_path = '~/.config/matugen/templates/colors.json'
 output_path = '~/.config/hypr/scripts/quickshell/qs_colors.json'
@@ -48,9 +55,13 @@ output_path = '~/.cache/wal/colors.json'
 input_path = '~/.config/matugen/templates/sequences'
 output_path = '~/.cache/wal/sequences'
 
-[templates.astronaut]
-input_path = '~/.config/matugen/templates/astronaut.conf'
-output_path = '~/.cache/dotfiles/hyprland-dotfiles/sddm-astronaut.conf'
+# Output into a world-readable dir (/var/lib/sddm/dotfiles) created by
+# apps/sddm/install.sh and owned by the user. The SDDM greeter runs as the
+# 'sddm' user and CANNOT read ~/.cache (mode 700), which caused the blank
+# white screen — keeping these files here fixes it.
+[templates.sddm]
+input_path = '~/.config/matugen/templates/sddm-theme.conf'
+output_path = '/var/lib/sddm/dotfiles/theme.conf'
 
 [templates.primary]
 input_path = '~/.config/matugen/templates/primary'

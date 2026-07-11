@@ -25,6 +25,16 @@ fit_image() { # fit_image <src> <dst>
     fi
 }
 
+# Mirror the blurred wallpaper into the world-readable SDDM dir (owned by the
+# user, mode 755) so the 'sddm' greeter — which cannot read ~/.cache — can show
+# it as the login background. No-op if that dir isn't set up yet.
+sync_sddm_bg() { # sync_sddm_bg <src>
+    local sd="$1" dstdir="/var/lib/sddm/dotfiles"
+    [ -f "$sd" ] || return 0
+    [ -w "$dstdir/." ] || return 0
+    cp -f "$sd" "$dstdir/blurred_wallpaper.png" 2>/dev/null && chmod 644 "$dstdir/blurred_wallpaper.png" || true
+}
+
 case "$TARGET" in
     desktop)
         bash "$SHELL_DIR/scripts/wallpaper.sh" "$WALL"
@@ -40,10 +50,11 @@ case "$TARGET" in
         else
             cp "$WALL" "$DEST"
         fi
+        sync_sddm_bg "$DEST"
         printf '%s' "$WALL" > "$STATE/lockscreen.txt"
         ;;
     sddm)
-        # sddm-astronaut-theme reads this same file as its Background, so the
+        # where_is_my_sddm_theme reads this same file as its Background, so the
         # picker's "set as SDDM" just refreshes the already-synced wallpaper.
         DEST="$HOME/.cache/dotfiles/hyprland-dotfiles/blurred_wallpaper.png"
         if [ -w "$(dirname "$DEST" 2>/dev/null)/." ]; then
@@ -54,6 +65,7 @@ case "$TARGET" in
             echo "apply_target.sh: cannot write $DEST (no sudo)" >&2
             exit 1
         fi
+        sync_sddm_bg "$DEST"
         printf '%s' "$WALL" > "$STATE/sddm.txt"
         ;;
     *)
