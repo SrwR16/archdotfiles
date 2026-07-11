@@ -61,36 +61,6 @@ ShellRoot {
         for (var k in batch) Theme[k] = batch[k]
     }
 
-    // Pull a #hex out of matugen's nested color group: colors.<name>.default.hex
-    function matugenHex(root, name) {
-        var g = root[name]
-        if (g && g.default && typeof g.default.hex === "string")
-            return g.default.hex
-        return null
-    }
-
-    function applyMatugenCache(t) {
-        var c = parseColors(t)
-        if (!c) return
-        var map = {
-            background: "background", surface: "surface",
-            surface_bright: "surfaceBright", surface_dim: "surfaceDim",
-            surface_container: "surfaceContainer", surface_variant: "surfaceVariant",
-            primary: "primary", on_primary: "primaryFg",
-            secondary: "secondary", tertiary: "tertiary",
-            on_background: "backgroundFg", on_surface: "surfaceFg",
-            on_surface_variant: "surfaceVariantFg",
-            outline: "outline", outline_variant: "outlineVariant",
-            error: "error"
-        }
-        var flat = {}
-        for (var src in map) {
-            var h = matugenHex(c, src)
-            if (h) flat[map[src]] = h
-        }
-        applyThemeColors(flat)
-    }
-
     FileView {
         id: themeFileWatcher
         path: Quickshell.shellPath("theme/colors.json")
@@ -98,15 +68,6 @@ ShellRoot {
         onLoaded: applyThemeColors(parseColors(text()))
         onTextChanged: applyThemeColors(parseColors(text()))
         Component.onCompleted: applyThemeColors(parseColors(text()))
-    }
-
-    FileView {
-        id: matugenCacheWatcher
-        path: Quickshell.env("HOME") + "/.cache/matugen/colors.json"
-        watchChanges: true
-        onLoaded: applyMatugenCache(text())
-        onTextChanged: applyMatugenCache(text())
-        Component.onCompleted: applyMatugenCache(text())
     }
 
     // Full-screen PanelWindow — like quickshellinspire, never resizes.
@@ -236,12 +197,12 @@ ShellRoot {
 
     IpcHandler {
         target: "theme-manager"
-        // Re-read both color sources. Called by the system wallpaper pipeline
-        // (dotfiles/scripts/wallpaper → reload_quickshell) and acts as a
-        // reliable fallback in case the file watchers miss an atomic rewrite.
+        // Re-read the live palette written by matugen (config.toml →
+        // quickshell_theme template). Called by the system wallpaper pipeline
+        // via the matugen post_hook, and acts as a reliable fallback in case
+        // the file watcher misses matugen's atomic rewrite.
         function reload() {
             applyThemeColors(parseColors(themeFileWatcher.text()))
-            applyMatugenCache(matugenCacheWatcher.text())
         }
     }
 
