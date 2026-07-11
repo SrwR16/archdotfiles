@@ -25,7 +25,6 @@ Rectangle {
     if (menuName !== "app") showAppLauncher = false;
     if (menuName !== "sys") showSys = false;
     if (menuName !== "tray") showTray = false;
-    if (menuName !== "askpass") showAskpass = false;
     if (menuName !== "prod") showProductivity = false;
     if (menuName !== "powerSection") showPowerSection = false;
     if (menuName !== "vpn") showVpn = false;
@@ -178,7 +177,7 @@ Rectangle {
   property string _lastBatteryMode: "charging"
   property string batteryAlertMode: showBatteryAlert ? (activityManager.activeActivity.data.mode || _lastBatteryMode) : _lastBatteryMode
   onShowBatteryAlertChanged: { if (showBatteryAlert) _lastBatteryMode = activityManager.activeActivity.data.mode || "charging" }
-  property bool anyOverlayActive: showBatteryAlert || showNotifAlert || showPomodoro || showSys || showTray || showPowerSection || showAppLauncher || showAskpass || showProductivity || showVpn
+  property bool anyOverlayActive: showBatteryAlert || showNotifAlert || showPomodoro || showSys || showTray || showPowerSection || showAppLauncher || showProductivity || showVpn
 
   property string _pendingBatteryMode: ""
   property bool _suppressMorph: false
@@ -336,15 +335,10 @@ Rectangle {
   // --- Layout ---
   MediaService { id: media }
 
-  // --- Askpass dialog state ---
-  property var askpassSvc: null
-  property bool showAskpass: askpassSvc && askpassSvc.pendingRequest !== null
-
   // Size changes are the core of the Dynamic Island morph.
   property string morphState: showProductivity ? "productivity" 
                             : showControlCenter ? "controlCenter" 
                             : showAppLauncher ? "appLauncher" 
-                            : showAskpass ? "askpass" 
                             : showVpn ? "vpn" 
                             : showTray ? "tray" 
                             : showSys ? "sys" 
@@ -372,10 +366,6 @@ Rectangle {
     State {
       name: "appLauncher"
       PropertyChanges { target: clockWidget; height: 240; width: 480; radius: 28 }
-    },
-    State {
-      name: "askpass"
-      PropertyChanges { target: clockWidget; height: 200; width: 480; radius: 28 }
     },
     State {
       name: "vpn"
@@ -1286,17 +1276,6 @@ Rectangle {
   }
 
 
-
-  PasswordAskpassDialog {
-    id: askpassDialog
-    anchors.centerIn: parent
-
-    promptText: clockWidget.showAskpass && clockWidget.askpassSvc ? clockWidget.askpassSvc.pendingRequest.prompt : ""
-    fifoPath: clockWidget.showAskpass && clockWidget.askpassSvc ? clockWidget.askpassSvc.pendingRequest.fifoPath : ""
-
-    onSubmitted: (password) => { if (clockWidget.askpassSvc) clockWidget.askpassSvc.submit(password); }
-    onCancelled: { if (clockWidget.askpassSvc) clockWidget.askpassSvc.cancel(); }
-  }
 
   SystemClock {
     id: clock

@@ -33,7 +33,6 @@ Item {
     }
     AppLauncherService { id: appLauncherSvc }
     ModeService { id: modeSvc }
-    AskpassService { id: askpassSvc }
     PrivacyService { id: privacySvc }
     VpnService { id: vpnSvc }
     HardwareMonitor { id: hwMonitor }
@@ -77,7 +76,6 @@ Item {
         statusSvc: statusSvc
 
         modeSvc: modeSvc
-        askpassSvc: askpassSvc
         privacySvc: privacySvc
         vpnSvc: vpnSvc
         hwMonitor: hwMonitor

@@ -6,6 +6,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../widgets"
+import "./"
 
 Item {
     id: window
@@ -1316,14 +1317,12 @@ Item {
             Behavior on shadowVerticalOffset { NumberAnimation { duration: 220 } }
             Behavior on shadowOpacity { NumberAnimation { duration: 220 } }
         }
-        Image {
+        PosterImage {
             id: posterImg
             anchors.fill: parent
-            source: model.poster !== "" ? model.poster : ""
+            url: (model.poster && model.poster !== "") ? model.poster : ""
             fillMode: Image.PreserveAspectCrop
-            asynchronous: true
             smooth: true
-            cache: true
             sourceSize.width: window.s(240)
             sourceSize.height: window.s(360)
             visible: status === Image.Ready
@@ -1884,12 +1883,12 @@ Item {
                                     Behavior on shadowOpacity { NumberAnimation { duration: 220 } }
                                 }
 
-                                Image {
+                                PosterImage {
                                     id: gridImage
                                     anchors.fill: parent
-                                    source: model.poster !== "" ? model.poster : ""
+                                    url: (model.poster && model.poster !== "") ? model.poster : ""
                                     fillMode: Image.PreserveAspectCrop
-                                    asynchronous: true; smooth: true; cache: true
+                                    smooth: true
                                     visible: status === Image.Ready
                                 }
                                 Rectangle {
@@ -2025,419 +2024,245 @@ Item {
                 }
             }
         }
+        }
         // ==========================================
-        // SERIES VIEW
+        // DETAIL VIEW  (movie + series, redesigned)
         // ==========================================
-        RowLayout {
-            anchors.fill: parent; anchors.margins: window.s(20); spacing: window.s(25)
+        Item {
+            id: detailView
+            anchors.fill: parent
             visible: window.currentView === "series"
-            ColumnLayout {
-                Layout.preferredWidth: window.s(220); Layout.minimumWidth: window.s(220); Layout.maximumWidth: window.s(220)
-                Layout.fillHeight: true; spacing: window.s(12)
-                Rectangle {
-                    // True one-sheet ratio (2:3) at this column's width, so
-                    // PreserveAspectCrop has nothing left to crop — the old
-                    // fixed s(300) height was shorter than a real poster's
-                    // proportions and chopped the top/bottom off every time.
-                    Layout.fillWidth: true; Layout.preferredHeight: width * 1.5; radius: window.rLG(); color: window.crust; clip: true
+            readonly property bool isMovie: window.isMovieDetail
+
+            // ----- HERO BAND -----
+            Item {
+                id: heroBand
+                anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+                height: window.s(290)
+
+                PosterImage {
+                    id: heroBackdrop
+                    anchors.fill: parent
+                    url: window.selectedBackdrop || ""
+                    fillMode: Image.PreserveAspectCrop; smooth: true
+                    visible: status === Image.Ready
+                }
+                PosterImage {
+                    id: heroFallback
+                    anchors.fill: parent; anchors.margins: -window.s(48)
+                    url: (heroBackdrop.status !== Image.Ready && window.selectedPoster !== "") ? window.selectedPoster : ""
+                    fillMode: Image.PreserveAspectCrop; smooth: true
+                    visible: status === Image.Ready && heroBackdrop.status !== Image.Ready
                     layer.enabled: true
-                    layer.effect: MultiEffect { shadowEnabled: true; shadowColor: window.shadowColor; shadowBlur: 0.6; shadowVerticalOffset: 6; shadowOpacity: 0.3 }
-                    Image {
-                        id: sideposterImg
-                        anchors.fill: parent
-                        source: window.selectedPoster !== "" ? window.selectedPoster : ""
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true; smooth: true; cache: true
-                        sourceSize.width: window.s(440); sourceSize.height: window.s(660)
-                        visible: status === Image.Ready
-                        opacity: 0
-                        onStatusChanged: if (status === Image.Ready) fadeInSidePoster.start()
-                        NumberAnimation { id: fadeInSidePoster; target: sideposterImg; property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutQuad }
-                    }
-                    // Faint bottom vignette so the frame reads as a deliberate
-                    // poster card rather than a bare, flatly-cropped image.
-                    Rectangle {
-                        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
-                        height: parent.height * 0.28; visible: sideposterImg.status === Image.Ready
-                        gradient: Gradient { GradientStop { position: 0; color: "transparent" } GradientStop { position: 1; color: Qt.rgba(0,0,0,0.35) } }
-                    }
-                    Rectangle {
-                        anchors.fill: parent; color: window.surface0; radius: window.rLG()
-                        visible: window.selectedPoster === "" || sideposterImg.status === Image.Error || sideposterImg.status === Image.Loading
-                        Text { anchors.centerIn: parent; width: parent.width - window.s(10); text: window.selectedTitle; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(14); wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter }
-                    }
-                }
-                Text {
-                    Layout.fillWidth: true; text: window.selectedTitle
-                    font.family: window.fontUI; font.pixelSize: window.s(19); font.weight: Font.DemiBold; font.letterSpacing: -0.3
-                    color: window.text; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-                    maximumLineCount: 3; elide: Text.ElideRight
-                }
-                Flow {
-                    Layout.fillWidth: true; spacing: window.s(7)
-                    visible: window.selectedRatingLabel !== "" || window.selectedGenres.length > 0
-                    Rectangle {
-                        visible: window.selectedRatingLabel !== ""
-                        width: ratingLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                        color: Qt.rgba(0.96, 0.77, 0.09, 0.14)
-                        Text { id: ratingLbl; anchors.centerIn: parent; text: window.selectedRatingLabel; color: "#f5c518"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
-                    }
-                    Rectangle {
-                        visible: window.selectedRTRating !== ""
-                        width: rtLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                        color: Qt.rgba(window.red.r, window.red.g, window.red.b, 0.14)
-                        Text { id: rtLbl; anchors.centerIn: parent; text: "🍅 " + window.selectedRTRating; color: window.red; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
-                    }
-                    Rectangle {
-                        visible: window.selectedMetacriticRating !== ""
-                        width: mcLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                        color: Qt.rgba(window.green.r, window.green.g, window.green.b, 0.14)
-                        Text { id: mcLbl; anchors.centerIn: parent; text: "MC " + window.selectedMetacriticRating; color: window.green; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
-                    }
-                    Repeater {
-                        model: window.selectedGenres.slice(0, 4)
-                        Rectangle {
-                            width: genreLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                            color: window.surface0
-                            Text { id: genreLbl; anchors.centerIn: parent; text: modelData; color: window.subtext0; font.family: window.fontUI; font.weight: Font.Medium; font.pixelSize: window.s(11) }
-                        }
-                    }
-                }
-                Flickable {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(window.s(110), descText.implicitHeight + window.s(8))
-                    Layout.maximumHeight: window.s(110)
-                    visible: window.selectedDescription !== ""
-                    clip: true; contentHeight: descText.implicitHeight
-                    Text {
-                        id: descText
-                        width: parent.width - window.s(8)
-                        text: window.selectedDescription
-                        font.family: window.fontUI; font.pixelSize: window.s(11)
-                        color: window.subtext0; wrapMode: Text.WordWrap; lineHeight: 1.4
-                        Behavior on opacity { NumberAnimation { duration: 400 } }
-                        opacity: window.selectedDescription !== "" ? 1 : 0
-                    }
-                }
-                // Cast — a quiet strip of names, not a full credits page.
-                ColumnLayout {
-                    Layout.fillWidth: true; spacing: window.s(4)
-                    visible: window.selectedCast.length > 0
-                    Text { text: "CAST"; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; color: window.subtext0; opacity: 0.8 }
-                    Text {
-                        Layout.fillWidth: true
-                        text: window.selectedCast.join(" · ")
-                        font.family: window.fontUI; font.pixelSize: window.s(11); color: window.text
-                        wrapMode: Text.WordWrap; maximumLineCount: 3; elide: Text.ElideRight
-                    }
-                }
-                // Trailer — opens on YouTube. Never launches on its own.
-                Rectangle {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(42); radius: window.rMD()
-                    visible: window.selectedTrailerYtId !== ""
-                    color: trailerMouse.containsMouse ? window.surface2 : window.surface1
-                    Behavior on color { ColorAnimation { duration: 180 } }
-                    RowLayout {
-                        anchors.centerIn: parent; spacing: window.s(7)
-                        Text { text: "▶"; color: window.red; font.pixelSize: window.s(12) }
-                        Text { text: "Watch Trailer"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(13); color: window.text }
-                    }
-                    MouseArea { id: trailerMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: window.openTrailer() }
+                    layer.effect: MultiEffect { blurEnabled: true; blur: 1.0; blurMax: 64; saturation: -0.2 }
                 }
                 Rectangle {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(42); radius: window.rMD()
-                    property bool inList: window.isInWatchlist(window.selectedImdbId)
-                    color: inList ? Qt.rgba(window.red.r, window.red.g, window.red.b, 0.14) : (watchlistBtnMouse.containsMouse ? window.surface2 : window.surface1)
-                    Behavior on color { ColorAnimation { duration: 180 } }
-                    RowLayout {
-                        anchors.centerIn: parent; spacing: window.s(7)
-                        Text { text: parent.parent.inList ? "♥" : "♡"; color: parent.parent.inList ? window.red : window.text; font.pixelSize: window.s(13) }
-                        Text { text: parent.parent.inList ? "In My List" : "Add to My List"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(13); color: window.text }
-                    }
-                    MouseArea {
-                        id: watchlistBtnMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: window.toggleWatchlist({ imdbId: window.selectedImdbId, title: window.selectedTitle, poster: window.selectedPoster, type: window.isMovieDetail ? "movie" : "tv" })
-                    }
+                    anchors.fill: parent
+                    color: window.surface0
+                    visible: heroBackdrop.status !== Image.Ready && heroFallback.status !== Image.Ready
                 }
                 Rectangle {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(42); radius: window.rMD()
-                    property bool isHovered: backMouse.containsMouse
-                    color: isHovered ? window.surface2 : window.surface1
-                    Behavior on color { ColorAnimation { duration: 200 } }
-                    Text { anchors.centerIn: parent; text: "‹  Back"; font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: Font.Medium; color: window.subtext0 }
-                    MouseArea { id: backMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { window.currentView = "search"; searchInput.forceActiveFocus(); saveUiState() } }
-                }
-                Item { Layout.fillHeight: true }
-            }
-            ColumnLayout {
-                Layout.fillWidth: true; Layout.fillHeight: true; spacing: window.s(12)
-                // Movie-only: previously this whole column was just the CTA
-                // button with nothing else, leaving most of the panel blank.
-                // A backdrop hero card gives it real content (facts + art),
-                // and the "More Like This" grid below fills the rest of the
-                // space with something actually useful to browse.
-                Rectangle {
-                    // Fills whatever room is left in the column instead of a
-                    // fixed 150px slab — since "More Like This" no longer
-                    // eats the rest of this panel, the hero gets to be the
-                    // actual centerpiece of the movie detail view.
-                    Layout.fillWidth: true; Layout.fillHeight: true; radius: window.rLG()
-                    visible: window.isMovieDetail
-                    color: window.crust; clip: true
-                    Image {
-                        id: heroBackdropImg
-                        anchors.fill: parent
-                        source: window.selectedBackdrop || ""
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true; smooth: true; cache: true
-                        visible: status === Image.Ready
+                    anchors.fill: parent
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0.10) }
+                        GradientStop { position: 0.45; color: Qt.rgba(0, 0, 0, 0.45) }
+                        GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.92) }
                     }
-                    // No backdrop art? Rather than a bare flat panel, fill it
-                    // with a softly blurred, darkened blow-up of the poster
-                    // itself — a subtle wash of the movie's own art instead
-                    // of empty surface color.
-                    Image {
-                        id: heroPosterFillImg
-                        anchors.fill: parent
-                        anchors.margins: -window.s(20)
-                        source: (heroBackdropImg.status !== Image.Ready && window.selectedPoster !== "") ? window.selectedPoster : ""
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true; smooth: true; cache: true
-                        visible: status === Image.Ready && heroBackdropImg.status !== Image.Ready
+                }
+
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: window.s(22); spacing: window.s(22)
+                    Rectangle {
+                        Layout.preferredWidth: window.s(168); Layout.preferredHeight: window.s(252)
+                        radius: window.rLG(); color: window.crust; clip: true
+                        border.color: window.hairline; border.width: 1
                         layer.enabled: true
-                        layer.effect: MultiEffect { blurEnabled: true; blur: 1.0; blurMax: 48; saturation: -0.15 }
-                    }
-                    Rectangle {
-                        anchors.fill: parent
-                        color: Qt.rgba(0, 0, 0, 0.32)
-                        visible: heroPosterFillImg.status === Image.Ready && heroBackdropImg.status !== Image.Ready
-                    }
-                    Rectangle {
-                        anchors.fill: parent
-                        visible: window.selectedBackdrop === "" && heroPosterFillImg.status !== Image.Ready
-                        color: window.surface0
-                    }
-                    Rectangle {
-                        anchors.fill: parent
-                        gradient: Gradient {
-                            GradientStop { position: 0.0; color: "transparent" }
-                            GradientStop { position: 0.55; color: Qt.rgba(0, 0, 0, 0.25) }
-                            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.82) }
-                        }
-                    }
-                    Flow {
-                        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
-                        anchors.margins: window.s(14)
-                        spacing: window.s(8)
-                        visible: window.selectedYear !== "" || window.selectedRuntime !== "" || window.selectedDirector !== ""
-                        Rectangle {
-                            visible: window.selectedYear !== ""
-                            width: yearLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                            color: Qt.rgba(1, 1, 1, 0.14)
-                            Text { id: yearLbl; anchors.centerIn: parent; text: window.selectedYear; color: "#ffffff"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
+                        layer.effect: MultiEffect { shadowEnabled: true; shadowColor: window.shadowColor; shadowBlur: 0.7; shadowVerticalOffset: 8; shadowOpacity: 0.45 }
+                        PosterImage {
+                            anchors.fill: parent
+                            url: window.selectedPoster !== "" ? window.selectedPoster : ""
+                            fillMode: Image.PreserveAspectCrop; smooth: true
+                            visible: status === Image.Ready
                         }
                         Rectangle {
-                            visible: window.selectedRuntime !== ""
-                            width: runtimeLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                            color: Qt.rgba(1, 1, 1, 0.14)
-                            Text { id: runtimeLbl; anchors.centerIn: parent; text: window.selectedRuntime; color: "#ffffff"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
+                            anchors.fill: parent; color: window.surface0
+                            visible: window.selectedPoster === ""
                         }
-                        Rectangle {
-                            visible: window.selectedDirector !== ""
-                            width: directorLbl.width + window.s(16); height: window.s(24); radius: height / 2
-                            color: Qt.rgba(1, 1, 1, 0.14)
-                            Text { id: directorLbl; anchors.centerIn: parent; text: "Dir. " + window.selectedDirector; color: "#ffffff"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11); elide: Text.ElideRight }
+                        Text {
+                            anchors.centerIn: parent; width: parent.width - window.s(10)
+                            text: window.selectedTitle
+                            visible: window.selectedPoster === ""
+                            color: window.subtext0; font.family: window.fontUI
+                            font.pixelSize: window.s(13); wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
+                        }
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        Layout.alignment: Qt.AlignBottom; spacing: window.s(10)
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Rectangle {
+                                Layout.preferredWidth: window.s(86); Layout.preferredHeight: window.s(32); radius: window.s(16)
+                                color: backMouse2.containsMouse ? window.surface2 : Qt.rgba(0, 0, 0, 0.4)
+                                Text { anchors.centerIn: parent; text: "‹ Back"; color: "#ffffff"; font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: Font.Medium }
+                                MouseArea { id: backMouse2; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { window.currentView = "search"; searchInput.forceActiveFocus(); saveUiState() } }
+                            }
+                            Item { Layout.fillWidth: true }
+                        }
+                        Text {
+                            text: window.selectedTitle
+                            color: "#ffffff"; font.family: window.fontUI; font.weight: Font.DemiBold
+                            font.pixelSize: window.s(28); font.letterSpacing: -0.5
+                            wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+                        }
+                        Flow {
+                            Layout.fillWidth: true; spacing: window.s(8)
+                            visible: window.selectedYear !== "" || window.selectedRuntime !== "" || window.selectedDirector !== ""
+                            Repeater {
+                                model: [
+                                    window.selectedYear !== "" ? window.selectedYear : null,
+                                    window.selectedRuntime !== "" ? window.selectedRuntime : null,
+                                    window.selectedDirector !== "" ? "Dir. " + window.selectedDirector : null
+                                ].filter(function (v) { return v !== null })
+                                Rectangle {
+                                    height: window.s(26); radius: height / 2
+                                    color: Qt.rgba(1, 1, 1, 0.14)
+                                    width: metaLbl.width + window.s(16)
+                                    Text { id: metaLbl; anchors.centerIn: parent; text: modelData; color: "#ffffff"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) }
+                                }
+                            }
+                        }
+                        Flow {
+                            Layout.fillWidth: true; spacing: window.s(7)
+                            visible: window.selectedRatingLabel !== "" || window.selectedGenres.length > 0
+                            Rectangle { visible: window.selectedRatingLabel !== ""; height: window.s(24); radius: height / 2; color: Qt.rgba(0.96, 0.77, 0.09, 0.16); width: rLbl.width + window.s(16); Text { id: rLbl; anchors.centerIn: parent; text: window.selectedRatingLabel; color: "#f5c518"; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) } }
+                            Rectangle { visible: window.selectedRTRating !== ""; height: window.s(24); radius: height / 2; color: Qt.rgba(window.red.r, window.red.g, window.red.b, 0.16); width: rt2.width + window.s(16); Text { id: rt2; anchors.centerIn: parent; text: "🍅 " + window.selectedRTRating; color: window.red; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) } }
+                            Rectangle { visible: window.selectedMetacriticRating !== ""; height: window.s(24); radius: height / 2; color: Qt.rgba(window.green.r, window.green.g, window.green.b, 0.16); width: mc2.width + window.s(16); Text { id: mc2; anchors.centerIn: parent; text: "MC " + window.selectedMetacriticRating; color: window.green; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(11) } }
+                            Repeater {
+                                model: window.selectedGenres.slice(0, 4)
+                                Rectangle { height: window.s(24); radius: height / 2; color: window.surface0; width: g2.width + window.s(16); Text { id: g2; anchors.centerIn: parent; text: modelData; color: window.subtext0; font.family: window.fontUI; font.weight: Font.Medium; font.pixelSize: window.s(11) } }
+                            }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true; spacing: window.s(12); Layout.topMargin: window.s(4)
+                            Rectangle {
+                                Layout.preferredWidth: window.s(212); Layout.preferredHeight: window.s(46); radius: window.rMD()
+                                scale: playBtnMouse.pressed ? 0.98 : 1.0
+                                Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+                                color: playBtnMouse.containsMouse ? Qt.lighter(window.accent, 1.08) : window.accent
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                                layer.enabled: true
+                                layer.effect: MultiEffect { shadowEnabled: true; shadowColor: window.shadowColor; shadowBlur: 0.6; shadowVerticalOffset: 4; shadowOpacity: 0.25 }
+                                RowLayout { anchors.centerIn: parent; spacing: window.s(8)
+                                    Text { text: "▶"; color: window.base; font.pixelSize: window.s(13) }
+                                    Text { text: "Find a Source & Play"; color: window.base; font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(15) }
+                                }
+                                MouseArea { id: playBtnMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: detailView.isMovie
+                                        ? startSourceCheck("movie", window.selectedImdbId, window.selectedTitle, window.selectedPoster, 0, 0)
+                                        : startSourceCheck("tv", window.selectedImdbId, window.selectedTitle, window.selectedPoster, window.currentSeason, 1) }
+                            }
+                            Rectangle {
+                                Layout.preferredWidth: window.s(46); Layout.preferredHeight: window.s(46); radius: window.rMD()
+                                visible: window.selectedTrailerYtId !== ""
+                                color: trailerMouse2.containsMouse ? window.surface2 : window.surface1
+                                Behavior on color { ColorAnimation { duration: 180 } }
+                                Text { anchors.centerIn: parent; text: "▶"; color: window.red; font.pixelSize: window.s(14) }
+                                MouseArea { id: trailerMouse2; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: window.openTrailer() }
+                            }
+                            Rectangle {
+                                Layout.preferredWidth: window.s(46); Layout.preferredHeight: window.s(46); radius: window.rMD()
+                                property bool inList: window.isInWatchlist(window.selectedImdbId)
+                                color: parent.inList ? Qt.rgba(window.red.r, window.red.g, window.red.b, 0.16) : (wlMouse2.containsMouse ? window.surface2 : window.surface1)
+                                Behavior on color { ColorAnimation { duration: 180 } }
+                                Text { anchors.centerIn: parent; text: parent.inList ? "♥" : "♡"; color: parent.inList ? window.red : window.text; font.pixelSize: window.s(15) }
+                                MouseArea { id: wlMouse2; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: window.toggleWatchlist({ imdbId: window.selectedImdbId, title: window.selectedTitle, poster: window.selectedPoster, type: window.isMovieDetail ? "movie" : "tv" }) }
+                            }
                         }
                     }
                 }
-                Rectangle {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(60); radius: window.rLG()
-                    visible: window.isMovieDetail
-                    scale: moviePlayMouse.pressed ? 0.98 : 1.0
-                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
-                    color: moviePlayMouse.containsMouse ? Qt.lighter(window.accent, 1.08) : window.accent
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    layer.enabled: true
-                    layer.effect: MultiEffect { shadowEnabled: true; shadowColor: window.shadowColor; shadowBlur: 0.6; shadowVerticalOffset: 4; shadowOpacity: 0.25 }
-                    Text {
-                        anchors.centerIn: parent; text: "▶  Find a Source & Play"
-                        font.family: window.fontUI; font.weight: Font.DemiBold; font.pixelSize: window.s(17); font.letterSpacing: -0.2
-                        color: window.base
-                    }
-                    MouseArea {
-                        id: moviePlayMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: startSourceCheck("movie", window.selectedImdbId, window.selectedTitle, window.selectedPoster, 0, 0)
-                    }
-                }
-                Item {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(44)
-                    visible: !window.isMovieDetail
+            }
+
+            // ----- DETAIL LOWER -----
+            // Series: a slim season strip + an episode list that fills the rest
+            // of the panel (the pre-redesign layout that worked well). Movie:
+            // just the description + cast. "More Like This" was removed.
+            ColumnLayout {
+                id: detailLower
+                anchors.left: parent.left; anchors.right: parent.right
+                anchors.top: heroBand.bottom; anchors.bottom: parent.bottom
+                anchors.margins: window.s(20); anchors.topMargin: window.s(16)
+                spacing: window.s(14)
+
+                // SERIES: seasons strip
+                ColumnLayout {
+                    visible: !detailView.isMovie; spacing: window.s(10)
+                    Text { text: "SEASONS"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.8 }
                     ListView {
                         id: seasonList
-                        anchors.fill: parent
-                        orientation: ListView.Horizontal; model: seasonModel; spacing: window.s(8); clip: true
+                        Layout.fillWidth: true; Layout.preferredHeight: window.s(40)
+                        orientation: ListView.Horizontal; model: window.seasonModel; spacing: window.s(8); clip: true
                         Behavior on contentX { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
                         delegate: Rectangle {
-                            width: seasonLabelText.width + window.s(28); height: window.s(38); radius: height / 2
+                            width: sLabel.width + window.s(28); height: window.s(38); radius: height / 2
                             property bool isActive: window.currentSeason === model.seasonNum
                             color: isActive ? window.text : window.surface0
                             Behavior on color { ColorAnimation { duration: 280; easing.type: Easing.OutExpo } }
-                            scale: isActive ? 1.03 : 1.0
-                            Behavior on scale { NumberAnimation { duration: 240; easing.type: Easing.OutExpo } }
-                            Text {
-                                id: seasonLabelText
-                                anchors.centerIn: parent
-                                text: "S" + model.seasonNum
-                                font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: isActive ? Font.DemiBold : Font.Medium
-                                color: isActive ? window.base : window.subtext0
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    if (window.currentSeason !== model.seasonNum) {
-                                        window.currentSeason = model.seasonNum
-                                        updateEpisodes(model.seasonNum)
-                                        saveUiState()
-                                    }
-                                }
-                            }
+                            Text { id: sLabel; anchors.centerIn: parent; text: "S" + model.seasonNum; color: isActive ? window.base : window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: isActive ? Font.DemiBold : Font.Medium }
+                            MouseArea { anchors.fill: parent; onClicked: { if (window.currentSeason !== model.seasonNum) { window.currentSeason = model.seasonNum; window.updateEpisodes(model.seasonNum); saveUiState() } } }
                         }
                     }
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Qt.rgba(window.surface1.r, window.surface1.g, window.surface1.b, 0.5) }
+                    Text { text: "EPISODES"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.8 }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Qt.rgba(window.surface1.r, window.surface1.g, window.surface1.b, 0.5); visible: !window.isMovieDetail }
-                Item {
+                // SERIES: episode list fills remaining height
+                ListView {
+                    id: epList
+                    visible: !detailView.isMovie
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    visible: !window.isMovieDetail
-                    ListView {
-                        id: epList
-                        anchors.fill: parent
-                        model: episodeModel; spacing: window.s(6); clip: true
-                        opacity: window.seasonSwitching ? 0 : 1
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: window.seasonSwitching ? 180 : 250
-                                easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuad
-                            }
-                        }
-                        transform: Translate {
-                            y: window.seasonSwitching ? window.s(8) : 0
-                            Behavior on y {
-                                NumberAnimation {
-                                    duration: window.seasonSwitching ? 180 : 280
-                                    easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuart
+                    model: window.episodeModel; spacing: window.s(6); clip: true
+                    opacity: window.seasonSwitching ? 0 : 1
+                    Behavior on opacity { NumberAnimation { duration: window.seasonSwitching ? 180 : 250; easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuad } }
+                    transform: Translate { y: window.seasonSwitching ? window.s(8) : 0; Behavior on y { NumberAnimation { duration: window.seasonSwitching ? 180 : 280; easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuart } } }
+                    Text { anchors.centerIn: parent; visible: window.isLoadingSeries; text: "Fetching episodes..."; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(13) }
+                    highlight: Rectangle { color: window.surface0; radius: window.rSM(); z: 0; Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutExpo } } }
+                    highlightFollowsCurrentItem: true
+                    highlightMoveVelocity: -1
+                    delegate: Item {
+                        width: ListView.view.width; height: window.s(58); z: 1
+                        property bool isCurrent: ListView.isCurrentItem
+                        Rectangle {
+                            anchors.fill: parent; radius: window.rSM()
+                            color: epMouse.containsMouse || isCurrent ? window.surface0 : "transparent"
+                            Behavior on color { ColorAnimation { duration: 180 } }
+                            RowLayout { anchors.fill: parent; anchors.margins: window.s(10); spacing: window.s(12)
+                                Rectangle { Layout.preferredWidth: window.s(36); Layout.preferredHeight: window.s(36); radius: window.rXS(); color: isCurrent || epMouse.containsMouse ? window.accent : window.surface1; Behavior on color { ColorAnimation { duration: 200 } }
+                                    Text { anchors.centerIn: parent; text: model.epNum; color: isCurrent || epMouse.containsMouse ? window.base : window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: Font.DemiBold } }
+                                Column { Layout.fillWidth: true; spacing: window.s(2)
+                                    Text { width: parent.width; text: model.epTitle; font.family: window.fontUI; font.pixelSize: model.hasRealTitle ? window.s(13) : window.s(12); font.weight: model.hasRealTitle ? Font.Medium : Font.Normal; color: model.hasRealTitle ? window.text : window.subtext0; elide: Text.ElideRight } }
                                 }
-                            }
-                        }
-                        Text {
-                            anchors.centerIn: parent
-                            visible: window.isLoadingSeries
-                            text: "Fetching episodes..."
-                            color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(13)
-                        }
-                        highlight: Rectangle {
-                            color: window.surface0; radius: window.rSM(); z: 0
-                            Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        highlightFollowsCurrentItem: true
-                        highlightMoveVelocity: -1
-                        delegate: Item {
-                            width: ListView.view.width; height: window.s(58); z: 1
-                            property bool isCurrent: ListView.isCurrentItem
-                            Rectangle {
-                                anchors.fill: parent; radius: window.rSM()
-                                color: epMouse.containsMouse || isCurrent ? window.surface0 : "transparent"
-                                Behavior on color { ColorAnimation { duration: 180 } }
-                                RowLayout {
-                                    anchors.fill: parent; anchors.margins: window.s(10); spacing: window.s(12)
-                                    Rectangle {
-                                        Layout.preferredWidth: window.s(36); Layout.preferredHeight: window.s(36)
-                                        radius: window.rXS()
-                                        color: isCurrent || epMouse.containsMouse ? window.accent : window.surface1
-                                        Behavior on color { ColorAnimation { duration: 200 } }
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: model.epNum
-                                            font.family: window.fontUI; font.pixelSize: window.s(13); font.weight: Font.DemiBold
-                                            color: isCurrent || epMouse.containsMouse ? window.base : window.subtext0
-                                            Behavior on color { ColorAnimation { duration: 200 } }
-                                        }
-                                    }
-                                    Column {
-                                        Layout.fillWidth: true; spacing: window.s(2)
-                                        Text {
-                                            width: parent.width
-                                            text: model.epTitle
-                                            font.family: window.fontUI
-                                            font.pixelSize: model.hasRealTitle ? window.s(13) : window.s(12)
-                                            font.weight: model.hasRealTitle ? Font.Medium : Font.Normal
-                                            color: model.hasRealTitle ? window.text : window.subtext0
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-                                }
-                                MouseArea {
-                                    id: epMouse; anchors.fill: parent; hoverEnabled: true
-                                    onClicked: {
-                                        epList.currentIndex = index
-                                        startSourceCheck("tv", window.selectedImdbId, window.selectedTitle, window.selectedPoster, window.currentSeason, model.epNum)
-                                    }
-                                }
+                                MouseArea { id: epMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { epList.currentIndex = index; startSourceCheck("tv", window.selectedImdbId, window.selectedTitle, window.selectedPoster, window.currentSeason, model.epNum) } }
                             }
                         }
                     }
+
+                // MOVIE: description + cast
+                Text {
+                    visible: detailView.isMovie
+                    Layout.fillWidth: true
+                    text: window.selectedDescription
+                    color: window.text; font.family: window.fontUI; font.pixelSize: window.s(13)
+                    wrapMode: Text.WordWrap; lineHeight: 1.45
                 }
-                // Similar titles — cheap genre-overlap heuristic against the
-                // trending cache, no extra network round trip.
-                // TV keeps the slim horizontal strip since the episode list
-                // above it already fills the space.
-                ColumnLayout {
-                    Layout.fillWidth: true; Layout.preferredHeight: window.s(150); spacing: window.s(6)
-                    visible: !window.isMovieDetail && window.similarTitles.length > 0
-                    Text { text: "MORE LIKE THIS"; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; color: window.subtext0; opacity: 0.8 }
-                    ListView {
-                        Layout.fillWidth: true; Layout.fillHeight: true
-                        orientation: ListView.Horizontal; spacing: window.s(10); clip: true
-                        model: window.similarTitles
-                        delegate: Rectangle {
-                            width: window.s(90); height: window.s(128); radius: window.rSM(); color: window.crust; clip: true
-                            Image {
-                                anchors.fill: parent
-                                source: modelData.poster || ""
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true; smooth: true
-                                visible: status === Image.Ready
-                            }
-                            Text {
-                                anchors.centerIn: parent
-                                width: parent.width - window.s(8)
-                                text: modelData.title
-                                visible: parent.children[0].status !== Image.Ready
-                                color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(10)
-                                wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-                            }
-                            Rectangle {
-                                anchors.bottom: parent.bottom; width: parent.width; height: window.s(28)
-                                gradient: Gradient { GradientStop { position: 0; color: "transparent" } GradientStop { position: 1; color: Qt.rgba(0,0,0,0.75) } }
-                                Text {
-                                    anchors.bottom: parent.bottom; anchors.margins: window.s(4); width: parent.width - window.s(8); anchors.left: parent.left; anchors.leftMargin: window.s(4)
-                                    text: modelData.title; color: window.text; font.family: window.fontUI; font.pixelSize: window.s(9)
-                                    elide: Text.ElideRight
-                                }
-                            }
-                            MouseArea {
-                                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (modelData.type === "movie") loadMovieDetails(modelData.imdbId, modelData.title, modelData.poster)
-                                    else loadSeriesDetails(modelData.imdbId, modelData.title, modelData.poster)
-                                }
-                            }
-                        }
-                    }
+                Column {
+                    visible: detailView.isMovie
+                    Layout.fillWidth: true; spacing: window.s(4)
+                    Text { text: "CAST"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.8 }
+                    Text { width: parent.width; text: window.selectedCast.join(" · "); color: window.text; font.family: window.fontUI; font.pixelSize: window.s(12); wrapMode: Text.WordWrap }
                 }
+                Item { Layout.fillHeight: true; visible: detailView.isMovie }
             }
         }
-    }
     // ==========================================
     // SOURCE CHECKER MODAL OVERLAY
     // ==========================================
@@ -2492,11 +2317,11 @@ Item {
                             Rectangle {
                                 Layout.preferredWidth: window.s(56); Layout.preferredHeight: window.s(56)
                                 radius: window.rSM(); color: window.crust; clip: true
-                                Image {
+                                PosterImage {
                                     anchors.fill: parent
-                                    source: window.pendingMedia.poster || ""
+                                    url: window.pendingMedia.poster || ""
                                     fillMode: Image.PreserveAspectCrop
-                                    asynchronous: true; smooth: true
+                                    smooth: true
                                     visible: status === Image.Ready
                                 }
                                 Text {
@@ -2606,6 +2431,14 @@ Item {
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.surface1; Layout.topMargin: window.s(4) }
                     }
 
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.leftMargin: window.s(14); Layout.rightMargin: window.s(14); Layout.topMargin: window.s(6)
+                        Text { text: "AVAILABLE SOURCES"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.85 }
+                        Item { Layout.fillWidth: true }
+                        Text { visible: window.checkingState === "checking"; text: "scanning…"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(10) }
+                    }
+
                     ListView {
                         id: sourceListUI
                         Layout.fillWidth: true; Layout.fillHeight: true
@@ -2680,20 +2513,6 @@ Item {
                                                  : model.status === "pending" ? window.subtext0
                                                  : sourceRow.statusColor
                                             font.family: window.fontUI; font.weight: Font.Bold; font.pixelSize: window.s(15)
-                                        }
-                                    }
-                                    // Small rank badge — sources are checked
-                                    // in this order, so surfacing "#1, #2…"
-                                    // makes the auto-check sequence legible.
-                                    Rectangle {
-                                        anchors.top: parent.top; anchors.left: parent.left
-                                        anchors.topMargin: -window.s(5); anchors.leftMargin: -window.s(5)
-                                        width: window.s(17); height: window.s(17); radius: window.s(8.5)
-                                        color: window.base; border.color: window.surface1; border.width: 1
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: (index + 1)
-                                            color: window.subtext0; font.family: window.fontUI; font.weight: Font.Bold; font.pixelSize: window.s(9)
                                         }
                                     }
                                 }
@@ -2775,68 +2594,15 @@ Item {
                                     ToolTip.text: "Copy link"
                                     ToolTip.delay: 400
                                 }
-                                // Trailing status pill — a labelled chip reads
-                                // faster than a bare glyph and gives the
-                                // checking/failed/success states equal visual
-                                // weight to the source name itself.
+                                // Calm status dot — colour alone communicates
+                                // pending / checking / verified / failed,
+                                // without a loud labelled chip on every row.
                                 Rectangle {
-                                    Layout.preferredHeight: window.s(26)
-                                    Layout.preferredWidth: statusRow.width + window.s(16)
-                                    radius: height / 2
-                                    color: model.status === "pending" ? "transparent"
-                                         : Qt.rgba(sourceRow.statusColor.r, sourceRow.statusColor.g, sourceRow.statusColor.b, 0.14)
-                                    border.color: model.status === "pending" ? window.surface2 : "transparent"
-                                    border.width: 1
-                                    RowLayout {
-                                        id: statusRow
-                                        anchors.centerIn: parent
-                                        spacing: window.s(5)
-                                        Item {
-                                            Layout.preferredWidth: window.s(12); Layout.preferredHeight: window.s(12)
-                                            visible: model.status === "checking"
-                                            property real spinAngle: 0
-                                            NumberAnimation on spinAngle {
-                                                from: 0; to: 360; duration: 700
-                                                loops: Animation.Infinite
-                                                running: model.status === "checking"
-                                                easing.type: Easing.Linear
-                                            }
-                                            Canvas {
-                                                anchors.fill: parent
-                                                property real angle: parent.spinAngle
-                                                onAngleChanged: requestPaint()
-                                                onPaint: {
-                                                    var ctx = getContext("2d")
-                                                    ctx.reset()
-                                                    var cx = width / 2, cy = height / 2, r = width / 2 - 1.5
-                                                    var startRad = (parent.spinAngle - 90) * Math.PI / 180
-                                                    var endRad   = startRad + 1.6 * Math.PI
-                                                    ctx.beginPath()
-                                                    ctx.arc(cx, cy, r, startRad, endRad)
-                                                    ctx.strokeStyle = window.blue
-                                                    ctx.lineWidth = 2
-                                                    ctx.lineCap = "round"
-                                                    ctx.stroke()
-                                                }
-                                            }
-                                        }
-                                        Text {
-                                            visible: model.status === "success"
-                                            text: "✓"; color: window.green; font.weight: Font.Bold; font.pixelSize: window.s(12)
-                                        }
-                                        Text {
-                                            visible: model.status === "failed"
-                                            text: "↻"; color: window.red; font.weight: Font.Bold; font.pixelSize: window.s(12)
-                                        }
-                                        Text {
-                                            text: model.status === "pending"   ? "Play ›"
-                                                : model.status === "checking" ? "Checking"
-                                                : model.status === "success"  ? "Play ✓"
-                                                :                               "Retry"
-                                            font.family: window.fontUI; font.weight: Font.Bold; font.pixelSize: window.s(10)
-                                            color: model.status === "pending" ? window.subtext0 : sourceRow.statusColor
-                                        }
-                                    }
+                                    Layout.preferredWidth: window.s(10); Layout.preferredHeight: window.s(10)
+                                    radius: window.s(5)
+                                    color: sourceRow.statusColor
+                                    opacity: model.status === "pending" ? 0.35 : 1
+                                    Behavior on color { ColorAnimation { duration: 200 } }
                                 }
                             }
                         }
@@ -2844,6 +2610,6 @@ Item {
                 }
             }
         }
-        }
     }
+}
 }

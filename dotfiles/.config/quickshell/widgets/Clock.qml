@@ -16,13 +16,11 @@ Item {
   property var latestNotificationData: null
   property var storedNotifications: []
   property alias showPowerSection: mainWidget.showPowerSection
-  property alias showAskpass: mainWidget.showAskpass
   property alias showAppLauncher: mainWidget.showAppLauncher
   property alias showPomodoro: mainWidget.showPomodoro
   property alias showSys: mainWidget.showSys
   property alias showTray: mainWidget.showTray
   property alias modeSvc: mainWidget.modeSvc
-  property alias askpassSvc: mainWidget.askpassSvc
   property alias showControlCenter: mainWidget.showControlCenter
   property alias anyOverlayActive: mainWidget.anyOverlayActive
 

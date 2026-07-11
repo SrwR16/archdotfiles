@@ -756,6 +756,9 @@ Item {
                 wifiScanning: controlCenter.wifiScanning
                 wifiConnecting: controlCenter.wifiConnecting
                 wifiQrPath: controlCenter.wifiQrPath
+                wifiPendingSsid: controlCenter.wifiPendingSsid
+                wifiPendingSecurity: controlCenter._wifiConnectingSecurity
+                wifiConnectError: controlCenter.wifiConnectError
                 onToggleWifi: controlCenter.toggleWifi()
                 onScanWifi: controlCenter.scanWifi()
                 onConnectToWifi: (ssid, security, pw) => controlCenter.connectToWifi(ssid, security, pw)
@@ -763,6 +766,7 @@ Item {
                 onDisconnectWifi: controlCenter.disconnectWifi()
                 onGenerateWifiQr: controlCenter.generateWifiQr()
                 onRequestPassword: (ssid) => { controlCenter.wifiPendingSsid = ssid; controlCenter.wifiNeedsPassword = true; }
+                onCancelPassword: { controlCenter.wifiPendingSsid = ""; controlCenter.wifiNeedsPassword = false; controlCenter.wifiConnectError = ""; }
                 onBackRequested: controlCenter.page = "main"
                 onShowQrCode: (path) => controlCenter.showQrCode(path)
             }
@@ -843,13 +847,4 @@ Item {
         }
     }
 
-    WifiPasswordDialog {
-      anchors.fill: parent
-      visible: controlCenter.wifiNeedsPassword
-      pendingSsid: controlCenter.wifiPendingSsid
-      connectError: controlCenter.wifiConnectError
-      connecting: controlCenter.wifiConnecting
-      onDismiss: controlCenter.wifiNeedsPassword = false
-      onConnectRequested: (ssid, pw) => controlCenter.connectToWifi(ssid, "secured", pw)
-    }
 }

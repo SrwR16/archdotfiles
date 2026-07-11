@@ -25,6 +25,7 @@ otf-font-awesome
 ttf-firacode-nerd
 ttf-jetbrains-mono-nerd
 qt6-svg
+qt6-imageformats
 qt6-virtualkeyboard
 qt6-multimedia-ffmpeg
 gvfs-mtp

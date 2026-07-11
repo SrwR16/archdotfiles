@@ -26,7 +26,6 @@ The top bar morphs between several states with elastic animations:
 | **Notification** | 130px × 480px | App notification banner (3.5s auto-dismiss) |
 | **Power Menu** | 130px × 480px | Logout · Lock · Sleep · Reboot · Shutdown buttons (10s auto-dismiss) |
 | **App Launcher** | 240px × 480px | Search + filtered app grid (15s auto-dismiss) |
-| **Askpass Dialog** | 200px × 480px | Sudo/SSH password prompt |
 
 ### Control Center
 
@@ -63,12 +62,6 @@ A temperature watchdog polls CPU temp every 8 seconds and force-reverts to Balan
 - Animated banners with app icon resolution, urgency coloring
 - Notification history with clear-all support
 - **Do Not Disturb** mode suppresses banners
-
-### Askpass (sudo/SSH password prompts)
-
-- Custom `SUDO_ASKPASS` and `SSH_ASKPASS` helpers using FIFO IPC
-- Password dialog appears directly in the Dynamic Island
-- Set `SUDO_ASKPASS` and `SSH_ASKPASS` environment variables (see [Setup](#setup))
 
 ### App Launcher
 
@@ -296,19 +289,7 @@ sudo apt install playerctl cava network-manager brightnessctl gammastep power-pr
 quickshell
 ```
 
-### 5. (Optional) Askpass setup
-
-Add to your shell config (`~/.zshrc` / `~/.bashrc`):
-
-```sh
-export SUDO_ASKPASS="$HOME/.config/quickshell/scripts/quickshell-askpass"
-alias sudo='sudo -A'
-
-export SSH_ASKPASS="$HOME/.config/quickshell/scripts/quickshell-ssh-askpass"
-export SSH_ASKPASS_REQUIRE=force
-```
-
-### 6. (Optional) Keyboard shortcuts
+### 5. (Optional) Keyboard shortcuts
 
 The main process watches for trigger files in `$XDG_RUNTIME_DIR` (defaults to `/tmp/runtime-$USER`):
 

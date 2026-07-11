@@ -71,19 +71,27 @@ ShellRoot {
         WlrLayershell.namespace: "qs-shell"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.exclusiveZone: root.overlayView === "island" ? 46 : 0
-        WlrLayershell.keyboardFocus: root.overlayView === "island" ? WlrKeyboardFocus.None : WlrKeyboardFocus.Auto
+        WlrLayershell.keyboardFocus: root.overlayView === "island" ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
         focusable: true
 
         // ---------------------------------------------------------------
-        // Mask — island area only in island mode, full screen otherwise
+        // Mask — restrict input to the island only when the island is idle.
+        // Whenever the island has an open overlay OR a widget panel (movie /
+        // wallpaper) is open we use the full-window mask so every part of the
+        // panel is clickable.
+        //
+        // IMPORTANT: always assign a real Region. Returning `undefined` here
+        // left the input region stuck on the tiny island-sized mask, which is
+        // exactly why the movie / wallpaper panels were impossible to click.
+        // `fullWindow` is a dedicated always-visible item so the full mask is
+        // never empty even while the island itself is hidden.
         // ---------------------------------------------------------------
-        property bool needsLargeMask: overlayRoot.anyActive
-        mask: root.overlayView === "island" ? (needsLargeMask ? fullMask : islandMask) : undefined
+        Item { id: fullWindow; anchors.fill: parent; visible: true }
 
         Region {
             id: fullMask
-            Region { item: overlayRoot }
+            Region { item: fullWindow }
         }
 
         Region {
@@ -91,32 +99,16 @@ ShellRoot {
             Region { item: overlayRoot.island }
         }
 
-        Timer {
-            id: maskTimer
-            interval: 400
-            running: !overlayRoot.anyActive && root.overlayView === "island"
-            onTriggered: mainWindow.needsLargeMask = false
-        }
-
-        Connections {
-            target: overlayRoot
-            function onAnyActiveChanged() {
-                if (overlayRoot.anyActive) {
-                    maskTimer.stop()
-                    mainWindow.needsLargeMask = true
-                } else {
-                    maskTimer.restart()
-                }
-            }
-        }
+        mask: (root.overlayView === "island" && !overlayRoot.anyActive) ? islandMask : fullMask
 
         // ---------------------------------------------------------------
-        // Island content — visible only in island mode
+        // Island content — kept visible at all times (including while a
+        // movie / wallpaper panel is open) so the bar doesn't vanish.
         // ---------------------------------------------------------------
         OverlayRoot {
             id: overlayRoot
             anchors.fill: parent
-            visible: root.overlayView === "island"
+            visible: true
         }
 
         // ---------------------------------------------------------------
@@ -146,9 +138,9 @@ ShellRoot {
             Behavior on width { NumberAnimation { duration: 230; easing.type: Easing.OutCubic } }
             Behavior on height { NumberAnimation { duration: 230; easing.type: Easing.OutCubic } }
 
-            opacity: visible ? 1.0 : 0.0
+            opacity: widgetBox.visible ? 1.0 : 0.0
             Behavior on opacity {
-                NumberAnimation { duration: 160; easing.type: visible ? Easing.OutCubic : Easing.InCubic }
+                NumberAnimation { duration: 160; easing.type: widgetBox.visible ? Easing.OutCubic : Easing.InCubic }
             }
 
             Loader {

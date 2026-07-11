@@ -22,6 +22,10 @@ ScrollView {
   property string wifiQrPath: ""
   property string wifiCurrentPassword: ""
   property bool wifiPasswordRevealed: false
+  property string wifiPendingSsid: ""
+  property string wifiPendingSecurity: ""
+  property string wifiConnectError: ""
+  property bool _pwReveal: false
 
   signal toggleWifi()
   signal scanWifi()
@@ -32,6 +36,11 @@ ScrollView {
   signal generateWifiQr()
   signal showQrCode(string path)
   signal requestPassword(string ssid)
+  signal cancelPassword()
+
+  function doWifiConnect() {
+    connectToWifi(wifiPendingSsid, wifiPendingSecurity, wifiPwField.text)
+  }
 
   ColumnLayout {
     width: parent.width
@@ -137,6 +146,91 @@ ScrollView {
           text: "No saved password found for this network."
           color: Theme.text; opacity: 0.5
           font { family: "Inter"; pixelSize: 11 }
+        }
+      }
+    }
+
+    // ---- Inline password entry (replaces floating dialog) ----
+    Rectangle {
+      Layout.fillWidth: true
+      Layout.topMargin: 6
+      visible: wifiPendingSsid !== ""
+      radius: 16
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.92)
+      border.color: Theme.primary
+      border.width: 1
+      clip: true
+      ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 14
+        spacing: 10
+        Text {
+          text: "Connect to " + wifiPendingSsid
+          color: Theme.text
+          font { family: "Inter"; pixelSize: 13; weight: 700 }
+          Layout.fillWidth: true
+          elide: Text.ElideRight
+        }
+        Rectangle {
+          Layout.fillWidth: true
+          height: 42
+          radius: 10
+          color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.8)
+          border.color: Theme.border
+          border.width: 1
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 10; anchors.rightMargin: 6
+            spacing: 6
+            TextField {
+              id: wifiPwField
+              Layout.fillWidth: true
+              color: Theme.text
+              echoMode: _pwReveal ? TextInput.Normal : TextInput.Password
+              placeholderText: "Password"
+              placeholderTextColor: Theme.subtext
+              background: null
+              font { family: "Inter"; pixelSize: 13 }
+              focus: wifiPendingSsid !== ""
+              onAccepted: doWifiConnect()
+            }
+            Rectangle {
+              width: 30; height: 30; radius: 8
+              color: pwRevealBtn.containsMouse ? Theme.surfaceLight : "transparent"
+              Text { anchors.centerIn: parent; text: _pwReveal ? "󰋭" : "󰋬"; color: Theme.text; font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 } }
+              MouseArea {
+                id: pwRevealBtn; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                onClicked: _pwReveal = !_pwReveal
+              }
+            }
+          }
+        }
+        Text {
+          visible: wifiConnectError !== ""
+          text: wifiConnectError
+          color: "#f38ba8"
+          font { family: "Inter"; pixelSize: 11 }
+          Layout.fillWidth: true
+          wrapMode: Text.WordWrap
+        }
+        RowLayout {
+          Layout.fillWidth: true
+          spacing: 8
+          Item { Layout.fillWidth: true }
+          Rectangle {
+            Layout.preferredWidth: 90; Layout.preferredHeight: 38; radius: 12
+            color: cancelWifiBtn.containsMouse ? Theme.surfaceLight : Theme.surface
+            Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.text; font { family: "Inter"; pixelSize: 12; weight: 600 } }
+            MouseArea { id: cancelWifiBtn; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: cancelPassword() }
+          }
+          Rectangle {
+            id: connectBtn
+            Layout.preferredWidth: 110; Layout.preferredHeight: 38; radius: 12
+            color: connectWifiBtn.containsMouse ? Theme.primary : Qt.darker(Theme.primary, 1.1)
+            enabled: !wifiConnecting
+            Text { anchors.centerIn: parent; text: wifiConnecting ? "Connecting…" : "Connect"; color: Theme.backgroundFg; font { family: "Inter"; pixelSize: 12; weight: 700 } }
+            MouseArea { id: connectWifiBtn; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: doWifiConnect() }
+          }
         }
       }
     }
