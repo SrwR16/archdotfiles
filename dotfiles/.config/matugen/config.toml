@@ -48,6 +48,10 @@ output_path = '~/.cache/wal/colors.json'
 input_path = '~/.config/matugen/templates/sequences'
 output_path = '~/.cache/wal/sequences'
 
+[templates.astronaut]
+input_path = '~/.config/matugen/templates/astronaut.conf'
+output_path = '~/.cache/dotfiles/hyprland-dotfiles/sddm-astronaut.conf'
+
 [templates.primary]
 input_path = '~/.config/matugen/templates/primary'
 output_path = '~/.config/dotfiles/colors/primary'

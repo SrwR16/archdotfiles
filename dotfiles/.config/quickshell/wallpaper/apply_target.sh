@@ -43,7 +43,9 @@ case "$TARGET" in
         printf '%s' "$WALL" > "$STATE/lockscreen.txt"
         ;;
     sddm)
-        DEST="/usr/share/sddm/themes/dotfiles/backgrounds/dotfiles.jpg"
+        # sddm-astronaut-theme reads this same file as its Background, so the
+        # picker's "set as SDDM" just refreshes the already-synced wallpaper.
+        DEST="$HOME/.cache/dotfiles/hyprland-dotfiles/blurred_wallpaper.png"
         if [ -w "$(dirname "$DEST" 2>/dev/null)/." ]; then
             fit_image "$WALL" "$DEST"
         elif command -v sudo >/dev/null 2>&1; then
