@@ -659,7 +659,10 @@ Rectangle {
 
         Text {
           text: clockWidget.brightnessIcon(clockWidget.brightness)
-          color: Theme.primary
+          color: Qt.rgba(
+            0.89, 0.7 + 0.25 * clockWidget.brightness, 0.25,
+            0.4 + 0.6 * clockWidget.brightness
+          )
           font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
           Behavior on color { ColorAnimation { duration: 200 } }
         }
@@ -671,7 +674,7 @@ Rectangle {
             Rectangle {
               anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
               width: parent.width * clockWidget.brightness
-              radius: 3; color: Theme.primary
+              radius: 3; color: Theme.warning
               Behavior on width { NumberAnimation { duration: 200; easing: Easing.OutCubic } }
             }
           }
