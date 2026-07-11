@@ -20,7 +20,8 @@ cp -rf "$repo_path/apps/." "$apps_runtime/"
 # --------------------------------------------------------------
 if gum confirm "Configure SDDM login theme (sddm-astronaut)? Skippable on updates."; then
     info "Configuring SDDM astronaut theme..."
-    bash "$apps_runtime/sddm/install.sh" -y || warn "SDDM configuration reported issues — re-run later: bash $apps_runtime/sddm/install.sh -y"
+    # Run interactively (no -y) so sudo can prompt for the password in a terminal.
+    bash "$apps_runtime/sddm/install.sh" || warn "SDDM configuration reported issues — re-run later: bash $apps_runtime/sddm/install.sh"
 else
     info "Skipped SDDM configuration. To set it up later: bash $apps_runtime/sddm/install.sh"
 fi

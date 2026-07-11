@@ -61,7 +61,7 @@ output_path = '~/.cache/wal/sequences'
 # white screen — keeping these files here fixes it.
 [templates.sddm]
 input_path = '~/.config/matugen/templates/sddm-theme.conf'
-output_path = '/var/lib/sddm/dotfiles/theme.conf'
+output_path = '/var/tmp/sddm-dotfiles/theme.conf'
 
 [templates.primary]
 input_path = '~/.config/matugen/templates/primary'

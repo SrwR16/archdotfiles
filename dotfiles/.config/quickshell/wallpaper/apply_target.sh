@@ -29,9 +29,9 @@ fit_image() { # fit_image <src> <dst>
 # user, mode 755) so the 'sddm' greeter — which cannot read ~/.cache — can show
 # it as the login background. No-op if that dir isn't set up yet.
 sync_sddm_bg() { # sync_sddm_bg <src>
-    local sd="$1" dstdir="/var/lib/sddm/dotfiles"
+    local sd="$1" dstdir="/var/tmp/sddm-dotfiles"
     [ -f "$sd" ] || return 0
-    [ -w "$dstdir/." ] || return 0
+    mkdir -p "$dstdir"
     cp -f "$sd" "$dstdir/blurred_wallpaper.png" 2>/dev/null && chmod 644 "$dstdir/blurred_wallpaper.png" || true
 }
 

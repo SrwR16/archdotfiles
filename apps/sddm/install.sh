@@ -36,22 +36,18 @@ onprimarycolor=$(cat ~/.config/dotfiles/colors/onprimary 2>/dev/null)
 
 THEME_DIR="/usr/share/sddm/themes/where_is_my_sddm_theme"
 # World-readable, user-owned dir so the 'sddm' greeter can read the config
-# and background (it cannot traverse ~/.cache). Fixes the blank white screen.
-SDDM_DOTFILES_DIR="/var/lib/sddm/dotfiles"
+# and background (it cannot traverse ~/.cache). Uses /var/tmp: it's
+# world-writable + world-traversable (so the sddm user can read it) and needs
+# NO root to create — only the symlink into /usr/share needs root (pkexec).
+SDDM_DOTFILES_DIR="/var/tmp/sddm-dotfiles"
 GENERATED_CONF="$SDDM_DOTFILES_DIR/theme.conf"
 SDDM_CONF_D="/etc/sddm.conf.d"
 
-# Run a command as root WITHOUT an interactive terminal:
-#   * prefer pkexec  — graphical polkit prompt, works in a Wayland/X11 session
-#     with no tty (so this script succeeds when driven by the non-interactive
-#     dotfiles installer / post-arch.sh).
-#   * fall back to sudo — needs a tty + password.
-rootdo() {
-    if command -v pkexec >/dev/null 2>&1 && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; }; then
-        pkexec "$@" 2>/dev/null && return 0
-    fi
-    sudo "$@"
-}
+# Run a command as root via interactive sudo (prompts for the password in a
+# terminal). Credentials are cached after the first prompt, so the few root
+# operations in this script only ask once. This must be run in an interactive
+# session — never piped/silenced.
+rootdo() { sudo "$@"; }
 
 check_sddm_installed() { $CHECK_PKG_CMD &> /dev/null; }
 check_sddm_active()    { systemctl is-active --quiet display-manager; }
@@ -88,6 +84,7 @@ activate_sddm() {
 
 # Write ONE authoritative SDDM config and remove every conflicting Current= file.
 write_sddm_config() {
+    sudo -v >/dev/null 2>&1 || true   # prompt for password once, cache it
     echo ":: Writing single SDDM config (theme=where_is_my_sddm_theme) and removing conflicts..."
     rootdo mkdir -p "$SDDM_CONF_D"
     for f in "$SDDM_CONF_D"/*.conf; do
@@ -121,6 +118,7 @@ EOF
 # Generate the matugen-driven theme.conf into a world-readable dir and symlink
 # the theme to read it, so SDDM shows the live wallpaper + Material You colors.
 link_astronaut_config() {
+    sudo -v >/dev/null 2>&1 || true   # prompt for password once, cache it
     echo ":: Deploying matugen-driven theme.conf for where_is_my_sddm_theme..."
     # Create a world-readable, user-owned dir for the generated config + background
     # so the 'sddm' greeter (which can't read ~/.cache) can load them.
@@ -168,7 +166,8 @@ CFG
     fi
     chmod 644 "$GENERATED_CONF" "$SDDM_DOTFILES_DIR/blurred_wallpaper.png" 2>/dev/null || true
     # Point the theme's theme.conf at our generated, world-readable file.
-    rootdo ln -sf "$GENERATED_CONF" "$THEME_DIR/theme.conf"
+    rootdo ln -sf "$GENERATED_CONF" "$THEME_DIR/theme.conf" || \
+        echo ":: WARN: could not create the theme symlink (no root). Run in a graphical session (pkexec) or a terminal: sudo ln -sf '$GENERATED_CONF' '$THEME_DIR/theme.conf'"
 }
 
 # --- 4. MAIN LOGIC ---
