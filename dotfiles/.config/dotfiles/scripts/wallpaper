@@ -117,14 +117,21 @@ run_matugen() {
     [ -f "$HOME/.local/bin/matugen" ] && bin="$HOME/.local/bin/matugen"
 
     info "Running matugen in $mode mode"
-    "$bin" image "$IMAGE_PATH" --source-color-index 0 -m "$mode"
+    # Always run matugen with the shared config.toml. It carries the
+    # quickshell_theme + quickshell_overview templates that regenerate
+    # ~/.config/quickshell/theme/colors.json and Appearance.colors.qml, so the
+    # live quickshell island + overview track the wallpaper. Running matugen
+    # without it (the old default) left quickshell's colors stale.
+    "$bin" image "$IMAGE_PATH" --source-color-index 0 -m "$mode" -c "$HOME/.config/matugen/config.toml"
     info "Matugen updated"
 }
 
 reload_quickshell() {
     if pgrep -x qs >/dev/null; then
-        qs ipc call theme-manager reload
-        qs -p "$HOME/.local/share/dotfiles-settings/quickshell" ipc call theme-manager reload
+        # The running quickshell (shell.qml) exposes a theme-manager IPC that
+        # re-reads the regenerated colors. The old -p dotfiles-settings path no
+        # longer exists, so drop it to avoid spurious ipc errors.
+        qs ipc call theme-manager reload || true
         info "Quickshell theme updated"
     else
         warn "Quickshell not running, skipping theme reload"
