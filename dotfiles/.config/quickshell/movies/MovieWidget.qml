@@ -389,7 +389,7 @@ Item {
         } else {
             watchlistModel.insert(0, item)
         }
-        let ids = { ...window.watchlistIds }
+        let ids = Object.assign({}, window.watchlistIds || {})
         if (ids[item.imdbId]) delete ids[item.imdbId]
         else ids[item.imdbId] = true
         window.watchlistIds = ids
@@ -562,7 +562,7 @@ Item {
             }
         } else if (event.key === Qt.Key_Escape) {
             saveUiState()
-            Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "close"])
+            root.overlayView = "island"
             event.accepted = true
         }
     }
@@ -1893,23 +1893,24 @@ Item {
                                     visible: status === Image.Ready
                                 }
                                 Rectangle {
+                                    id: loadingPlaceholder
                                     anchors.fill: parent; color: window.surface0
                                     visible: model.poster === "" || gridImage.status === Image.Error || gridImage.status === Image.Loading
                                     radius: window.rMD()
                                     property bool isLoading: model.poster !== "" && gridImage.status === Image.Loading
                                     Rectangle {
                                         anchors.fill: parent; radius: window.rMD(); color: "transparent"
-                                        visible: parent.isLoading
+                                        visible: loadingPlaceholder.isLoading
                                         Rectangle {
-                                            width: parent.width * 0.4; height: parent.height
+                                            width: loadingPlaceholder.width * 0.4; height: loadingPlaceholder.height
                                             color: Qt.rgba(window.surface1.r, window.surface1.g, window.surface1.b, 0.4)
-                                            property real shimX: -parent.parent.width
+                                            property real shimX: -loadingPlaceholder.width
                                             x: shimX
                                             NumberAnimation on shimX {
-                                                from: -parent.parent.width
-                                                to: parent.parent.width * 1.5
+                                                from: -loadingPlaceholder.width
+                                                to: loadingPlaceholder.width * 1.5
                                                 duration: 1200; loops: Animation.Infinite
-                                                running: parent.parent.parent.isLoading
+                                                running: loadingPlaceholder.isLoading
                                                 easing.type: Easing.InOutSine
                                             }
                                         }
@@ -2557,7 +2558,7 @@ Item {
                                     color: window.text
                                     clip: true
                                     Text {
-                                        anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                                         text: "Search sources..."
                                         color: window.subtext0
                                         font: sourceSearchField.font
