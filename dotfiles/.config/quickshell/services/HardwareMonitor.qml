@@ -54,4 +54,34 @@ QtObject {
             }
         }
     }
+
+    // One-shot immediate read of the current backlight level. Used for
+    // event-driven updates (keyboard/slider) so the UI doesn't wait for the
+    // poll loop below. inotify does not work on /sys files, so we can't watch
+    // the brightness file directly — instead the actor that changed brightness
+    // calls refresh() right after writing it.
+    property Process refreshProc: Process {
+        running: false
+        command: [
+            "sh", "-c",
+            "b_path=$(ls /sys/class/backlight/*/brightness 2>/dev/null | head -1); " +
+            "b_max=$(cat ${b_path%/*}/max_brightness 2>/dev/null || echo 100); " +
+            "[ -n \"$b_path\" ] && read -r b < \"$b_path\"; " +
+            "echo \"b=$(( ${b:-0} * 100 / b_max ))\""
+        ]
+        stdout: SplitParser {
+            onRead: (data) => {
+                var line = data.trim();
+                if (line.length >= 2 && line.charAt(0) === 'b' && line.charAt(1) === '=') {
+                    var pct = parseInt(line.substring(2));
+                    if (!isNaN(pct)) root.brightness = Math.max(0, Math.min(1, pct / 100));
+                }
+            }
+        }
+    }
+
+    function refresh() {
+        refreshProc.running = false;
+        refreshProc.running = true;
+    }
 }

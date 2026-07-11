@@ -699,6 +699,7 @@ Rectangle {
           }
           clockWidget.brightnessSetProc.command = ["brightnessctl", "set", Math.round(cur * 100) + "%"];
           clockWidget.brightnessSetProc.running = true;
+          hwMonitor.refresh();
           revertTimer.restart();
         }
       }

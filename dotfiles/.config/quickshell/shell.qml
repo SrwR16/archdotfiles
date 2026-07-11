@@ -271,6 +271,15 @@ ShellRoot {
         function toggleWallpaper() {
             handleCommand("toggle", "wallpaper", "")
         }
+
+        // Event-driven brightness refresh. The keyboard brightness keybinds (and
+        // the in-shell sliders) call this right after changing the backlight, so
+        // the island updates instantly instead of waiting for HardwareMonitor's
+        // poll loop.
+        function refreshBrightness() {
+            if (overlayRoot && overlayRoot.hwMonitor)
+                overlayRoot.hwMonitor.refresh();
+        }
     }
 
 }

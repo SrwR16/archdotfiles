@@ -547,6 +547,7 @@ Item {
         brightness = Math.max(0, Math.min(1, val));
         brightnessSetProc.command = ["brightnessctl", "set", Math.round(brightness * 100) + "%"];
         brightnessSetProc.running = true;
+        hwMonitor.refresh();
     }
 
     Process { id: brightnessSetProc }
