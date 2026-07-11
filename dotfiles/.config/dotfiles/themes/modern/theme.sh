@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 # Dotfiles Theme Modern
 
-# Set nwg-dock-hyprland
-echo "modern" > $HOME/.config/dotfiles/settings/dock-theme
-$HOME/.config/nwg-dock-hyprland/launch.sh &
-
-# Set swaync
-echo '@import "themes/modern/style.css";' > $HOME/.config/swaync/style.css
-swaync-client -rs
-
 # Set launcher
 echo 'rofi' > $HOME/.config/dotfiles/settings/launcher
 

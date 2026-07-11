@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 # Dotfiles Theme Glass
 
-# Set nwg-dock-hyprland
-echo "transparent" > $HOME/.config/dotfiles/settings/dock-theme
-$HOME/.config/nwg-dock-hyprland/launch.sh &
-
-# Set swaync
-echo '@import "themes/glass/style.css";' > $HOME/.config/swaync/style.css
-swaync-client -rs
-
 # Set launcher
 echo 'rofi' > $HOME/.config/dotfiles/settings/launcher
 

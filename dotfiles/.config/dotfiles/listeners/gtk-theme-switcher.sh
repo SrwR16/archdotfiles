@@ -53,13 +53,8 @@ apply_theme() {
         # Update Quickshell theme
         echo "Quickshell Theme updated"
 
-        # Reload nwg-dock-hyprland
-        nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" > /dev/null 2>&1 &
-        disown
-
         $HOME/.config/hypr/scripts/gtk.sh &
 
-        swaync-client -rs
     elif [[ "$THEME_PREF" == "0" || "$THEME_PREF" == "false" ]]; then
         echo "Detected light theme preference (gtk-application-prefer-dark-theme=0/false). Applying light matugen theme..."
         $MATUGEN_BIN image $(cat ~/.cache/dotfiles/hyprland-dotfiles/current_wallpaper) --source-color-index 0 -m "light"
@@ -68,13 +63,8 @@ apply_theme() {
         qs ipc call theme-manager reload
         echo "Quickshell Theme updated"
 
-        # Reload nwg-dock-hyprland
-        nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" > /dev/null 2>&1 &
-        disown
-
         $HOME/.config/hypr/scripts/gtk.sh &
 
-        swaync-client -rs
     else
         echo "Warning: Unexpected value for gtk-application-prefer-dark-theme: $THEME_PREF. Expected 0/1/true/false. Skipping theme application."
     fi

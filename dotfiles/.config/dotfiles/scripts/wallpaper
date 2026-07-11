@@ -121,12 +121,6 @@ run_matugen() {
     info "Matugen updated"
 }
 
-reload_nwg_dock() {
-    nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" >/dev/null 2>&1 &
-    disown
-    info "nwg-dock-hyprland reloaded"
-}
-
 reload_quickshell() {
     if pgrep -x qs >/dev/null; then
         qs ipc call theme-manager reload
@@ -141,12 +135,6 @@ reload_pywalfox() {
     type pywalfox >/dev/null 2>&1 || return
     pywalfox update
     info "Pywalfox updated"
-}
-
-reload_swaync() {
-    sleep 0.1
-    swaync-client -rs
-    info "SwayNC refreshed"
 }
 
 generate_image_variants() {
@@ -236,10 +224,8 @@ if "$SKIP_THEMING"; then
     info "Updating theming skipped"
 else
     run_matugen
-    reload_nwg_dock
     reload_quickshell
     reload_pywalfox
-    reload_swaync
     generate_image_variants
 fi
 send_notification "Wallpaper Updated" "$(basename "$IMAGE_PATH")${MONITOR_OUTPUT:+ on output $MONITOR_OUTPUT}"

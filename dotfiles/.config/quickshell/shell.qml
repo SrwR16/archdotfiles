@@ -70,7 +70,11 @@ ShellRoot {
         color: "transparent"
         WlrLayershell.namespace: "qs-shell"
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.exclusiveZone: root.overlayView === "island" ? 46 : 0
+        // Constant exclusive zone: toggling it between island/widget modes
+        // made every other window reflow (shift) when a panel opened. Keeping
+        // it fixed at the island height reserves the top bar without shifting
+        // anything when movie/wallpaper open.
+        WlrLayershell.exclusiveZone: 46
         WlrLayershell.keyboardFocus: root.overlayView === "island" ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
         focusable: true
