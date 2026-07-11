@@ -41,13 +41,25 @@ SDDM_DOTFILES_DIR="/var/lib/sddm/dotfiles"
 GENERATED_CONF="$SDDM_DOTFILES_DIR/theme.conf"
 SDDM_CONF_D="/etc/sddm.conf.d"
 
+# Run a command as root WITHOUT an interactive terminal:
+#   * prefer pkexec  — graphical polkit prompt, works in a Wayland/X11 session
+#     with no tty (so this script succeeds when driven by the non-interactive
+#     dotfiles installer / post-arch.sh).
+#   * fall back to sudo — needs a tty + password.
+rootdo() {
+    if command -v pkexec >/dev/null 2>&1 && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; }; then
+        pkexec "$@" 2>/dev/null && return 0
+    fi
+    sudo "$@"
+}
+
 check_sddm_installed() { $CHECK_PKG_CMD &> /dev/null; }
 check_sddm_active()    { systemctl is-active --quiet display-manager; }
 
 disable_other_dms() {
     for dm in gdm lightdm lxdm xdm mdm slim wdm; do
         if systemctl is-enabled --quiet "$dm" 2>/dev/null; then
-            echo ":: Disabling conflicting DM: $dm..." && sudo systemctl disable "$dm"
+            echo ":: Disabling conflicting DM: $dm..." && rootdo systemctl disable "$dm"
         fi
     done
 }
@@ -77,20 +89,23 @@ activate_sddm() {
 # Write ONE authoritative SDDM config and remove every conflicting Current= file.
 write_sddm_config() {
     echo ":: Writing single SDDM config (theme=where_is_my_sddm_theme) and removing conflicts..."
-    sudo mkdir -p "$SDDM_CONF_D"
+    rootdo mkdir -p "$SDDM_CONF_D"
     for f in "$SDDM_CONF_D"/*.conf; do
         [ -e "$f" ] || continue
-        if sudo grep -qE '^[[:space:]]*Current[[:space:]]*=' "$f"; then
+        if rootdo grep -qE '^[[:space:]]*Current[[:space:]]*=' "$f"; then
             echo "   removing conflicting: $f"
-            sudo rm -f "$f"
+            rootdo rm -f "$f"
         fi
     done
     # A stray top-level /etc/sddm.conf would override .conf.d — drop it.
     if [ -f /etc/sddm.conf ]; then
-        sudo cp -f /etc/sddm.conf /etc/sddm.conf.bak
-        sudo rm -f /etc/sddm.conf
+        rootdo cp -f /etc/sddm.conf /etc/sddm.conf.bak
+        rootdo rm -f /etc/sddm.conf
     fi
-    sudo tee "$SDDM_CONF_D/theme.conf" > /dev/null <<EOF
+    # Write to a temp file, then move into place as root (avoids heredoc-through-pkexec).
+    local tmp
+    tmp="$(mktemp)"
+    cat > "$tmp" <<EOF
 [Theme]
 Current=where_is_my_sddm_theme
 
@@ -99,6 +114,8 @@ DisplayServer=wayland
 InputMethod=qtvirtualkeyboard
 GreeterEnvironment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 EOF
+    rootdo cp -f "$tmp" "$SDDM_CONF_D/theme.conf"
+    rm -f "$tmp"
 }
 
 # Generate the matugen-driven theme.conf into a world-readable dir and symlink
@@ -107,8 +124,8 @@ link_astronaut_config() {
     echo ":: Deploying matugen-driven theme.conf for where_is_my_sddm_theme..."
     # Create a world-readable, user-owned dir for the generated config + background
     # so the 'sddm' greeter (which can't read ~/.cache) can load them.
-    sudo mkdir -p "$SDDM_DOTFILES_DIR"
-    sudo chown "$(id -u):$(id -g)" "$SDDM_DOTFILES_DIR"
+    rootdo mkdir -p "$SDDM_DOTFILES_DIR"
+    rootdo chown "$(id -u):$(id -g)" "$SDDM_DOTFILES_DIR"
     chmod 755 "$SDDM_DOTFILES_DIR"
     # Seed a sane default config if matugen hasn't generated one yet, so the
     # greeter never falls back to a broken/blank screen.
@@ -151,7 +168,7 @@ CFG
     fi
     chmod 644 "$GENERATED_CONF" "$SDDM_DOTFILES_DIR/blurred_wallpaper.png" 2>/dev/null || true
     # Point the theme's theme.conf at our generated, world-readable file.
-    sudo ln -sf "$GENERATED_CONF" "$THEME_DIR/theme.conf"
+    rootdo ln -sf "$GENERATED_CONF" "$THEME_DIR/theme.conf"
 }
 
 # --- 4. MAIN LOGIC ---
