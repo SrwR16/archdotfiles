@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Non-interactive mode: pass -y/--yes to auto-confirm every prompt (used when
+# install.sh drives this during post-install). Still requires sudo for the
+# system-level config writes.
+AUTO=""
+case "$1" in
+    -y|--yes) AUTO=1 ;;
+esac
+
 # Installs/configures SDDM with the sddm-astronaut-theme and wires it to
 # auto-sync the desktop wallpaper + matugen colors. Resolves the old
 # conflicting Current= themes (dotfiles / matugen-minimal / where_is_my_sddm_theme)
@@ -102,17 +110,16 @@ link_astronaut_config() {
 }
 
 # --- 4. MAIN LOGIC ---
-clear
-figlet -f smslant "Dotfiles SDDM"
+if [ -z "$AUTO" ]; then clear; figlet -f smslant "Dotfiles SDDM"; fi
 
 if ! check_sddm_installed; then
     echo ":: Status: SDDM/astronaut not installed."
-    if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Install SDDM + sddm-astronaut-theme?"; then
+    if [ -n "$AUTO" ] || gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Install SDDM + sddm-astronaut-theme?"; then
         install_sddm
         if check_sddm_installed; then
             write_sddm_config
             link_astronaut_config
-            if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Activate SDDM now?"; then
+            if [ -n "$AUTO" ] || gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Activate SDDM now?"; then
                 activate_sddm
             fi
         else
@@ -127,19 +134,23 @@ elif ! check_sddm_active; then
     echo ":: SDDM is installed but NOT active."
     write_sddm_config
     link_astronaut_config
-    if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Activate SDDM now?"; then
+    if [ -n "$AUTO" ] || gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Activate SDDM now?"; then
         activate_sddm
     fi
 else
     echo ":: SDDM is installed and active."
-    ACTION=$(gum choose --selected.background=$primarycolor --selected.foreground=$onprimarycolor "Re-apply astronaut config" "Deactivate SDDM" "Exit")
+    if [ -n "$AUTO" ]; then
+        ACTION="Re-apply astronaut config"
+    else
+        ACTION=$(gum choose --selected.background=$primarycolor --selected.foreground=$onprimarycolor "Re-apply astronaut config" "Deactivate SDDM" "Exit")
+    fi
     case $ACTION in
         "Re-apply astronaut config")
             write_sddm_config
             link_astronaut_config
             echo ":: Re-applied. Reboot to see changes." ;;
         "Deactivate SDDM")
-            if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Are you sure you want to deactivate SDDM?"; then
+            if [ -n "$AUTO" ] || gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "Are you sure you want to deactivate SDDM?"; then
                 sudo systemctl disable sddm
                 echo ":: SDDM deactivated."
             fi ;;
@@ -149,5 +160,4 @@ else
 fi
 
 echo
-echo ":: Done! Press [ENTER] to close."
-read
+if [ -z "$AUTO" ]; then echo ":: Done! Press [ENTER] to close."; read; fi

@@ -16,6 +16,16 @@ mkdir -p "$apps_runtime"
 cp -rf "$repo_path/apps/." "$apps_runtime/"
 
 # --------------------------------------------------------------
+# SDDM login theme (astronaut) — optional, skippable on updates
+# --------------------------------------------------------------
+if gum confirm "Configure SDDM login theme (sddm-astronaut)? Skippable on updates."; then
+    info "Configuring SDDM astronaut theme..."
+    bash "$apps_runtime/sddm/install.sh" -y || warn "SDDM configuration reported issues — re-run later: bash $apps_runtime/sddm/install.sh -y"
+else
+    info "Skipped SDDM configuration. To set it up later: bash $apps_runtime/sddm/install.sh"
+fi
+
+# --------------------------------------------------------------
 # Dotfiles Settings App (built from the vendored source)
 # --------------------------------------------------------------
 
