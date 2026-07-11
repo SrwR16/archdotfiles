@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
-import "../"
+import "../widgets"
 
 Item {
     id: window

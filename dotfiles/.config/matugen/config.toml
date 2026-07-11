@@ -4,6 +4,10 @@
 input_path = '~/.config/matugen/templates/colors.json'
 output_path = '~/.config/dotfiles/colors/colors.json'
 
+[templates.quickshell_colors]
+input_path = '~/.config/matugen/templates/colors.json'
+output_path = '~/.config/hypr/scripts/quickshell/qs_colors.json'
+
 [templates.kitty]
 input_path = '~/.config/matugen/templates/kitty-colors.conf'
 output_path = '~/.config/kitty/colors-matugen.conf'
