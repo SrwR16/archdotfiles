@@ -88,7 +88,7 @@ done
 
 # ---------------------------------------------------------------------------
 sec "Helper scripts referenced by widgets are present in-repo"
-for s in wallpaper/ddg_search.sh wallpaper/get_ddg_links.py wallpaper/matugen_reload.sh scripts/wallpaper.sh; do
+for s in wallpaper/save_state.sh wallpaper/set_video.sh scripts/restore_wallpaper.sh scripts/wallpaper.sh; do
   [ -f "$s" ] && ok "helper present: $s" || bad "helper MISSING: $s"
 done
 

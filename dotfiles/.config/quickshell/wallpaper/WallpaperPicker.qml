@@ -54,17 +54,14 @@ Item {
     }
 
     // --- state ---
-    property string tab: "local"                 // "local" | "online"
     property string baseDir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
     property string currentFolder: baseDir
     property string selectedPath: ""
     property string selectedUrl: ""
     property bool   selectedIsVideo: false
-    property bool   searchRunning: false
     property bool   themeOn: true
     property string statusMsg: ""
     property bool   showStatus: false
-    readonly property string onlineSaveDir: paths.getCacheDir("wallpaper_picker") + "/online"
     readonly property var imageExts: ["jpg","jpeg","png","webp","gif","bmp"]
     readonly property var videoExts: ["mp4","webm","mov"]
 
@@ -74,12 +71,6 @@ Item {
             if (e.endsWith("." + videoExts[i])) return true
         return false
     }
-    function extOf(u) {
-        var m = u.split("?")[0]
-        var e = m.substr(m.lastIndexOf(".") + 1).toLowerCase()
-        if (imageExts.indexOf(e) >= 0) return "." + e
-        return ".jpg"
-    }
     function toFileUrl(p) { return "file://" + encodeURI(p) }
 
     function showToast(msg) {
@@ -87,44 +78,47 @@ Item {
         window.showStatus = true
         statusTimer.restart()
     }
+    function saveState(key, val) {
+        Quickshell.execDetached([Quickshell.shellPath("wallpaper/save_state.sh"), key, val])
+    }
     function runStatic(p) {
         if (window.themeOn) wpSvc.applyWallpaper(p)
         else Quickshell.execDetached(["awww", "img", p])
+        saveState("last", p)
         showToast("Wallpaper set" + (window.themeOn ? " · theme applied" : ""))
     }
     function runVideo(p) {
         Quickshell.execDetached([Quickshell.shellPath("wallpaper/set_video.sh"), p])
+        saveState("last", p)
         showToast("Video wallpaper set")
     }
-    function saveAndApply(url) {
-        var out = onlineSaveDir + "/online_" + Date.now() + extOf(url)
-        saveProc.fullUrl = url
-        saveProc.targetPath = out
-        saveProc.command = [Quickshell.shellPath("wallpaper/save_url.sh"), url, out]
-        saveProc.running = true
-        showToast("Downloading…")
-    }
     function applySelection() {
-        if (!window.selectedPath && !window.selectedUrl) { showToast("Select a wallpaper first"); return }
-        if (window.selectedIsVideo && window.selectedUrl === "") { runVideo(window.selectedPath); return }
-        if (window.selectedUrl !== "") { saveAndApply(window.selectedUrl); return }
-        runStatic(window.selectedPath)
+        if (!window.selectedPath) { showToast("Select a wallpaper first"); return }
+        if (window.selectedIsVideo) runVideo(window.selectedPath)
+        else runStatic(window.selectedPath)
     }
     function closePanel() { root.overlayView = "island" }
-    function runSearch(q) {
-        q = (q || "").trim()
-        if (!q) return
-        window.searchRunning = true
-        window.searchModel.clear()
-        searchProc.query = q
-        searchProc.command = [Quickshell.shellPath("wallpaper/search.sh"), q]
-        searchProc.running = true
-    }
 
     Timer {
         id: statusTimer
         interval: 2600
         onTriggered: window.showStatus = false
+    }
+
+    // restore persisted wallpaper folder on startup
+    Process {
+        id: loadDirProc
+        running: true
+        command: ["sh", "-c", "cat \"$HOME/.local/state/quickshell/wallpaper_picker/dir.txt\" 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var d = this.text.trim()
+                if (d !== "") {
+                    window.baseDir = d
+                    window.currentFolder = d
+                }
+            }
+        }
     }
 
     FolderListModel {
@@ -144,41 +138,9 @@ Item {
         showFiles: false
         showDotAndDotDot: false
     }
-    ListModel { id: searchModel }
-
-    Process {
-        id: searchProc
-        property string query
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                window.searchRunning = false
-                var lines = this.text.split("\n")
-                for (var i = 0; i < lines.length; i++) {
-                    var ln = lines[i].trim()
-                    if (!ln || ln === "DONE") continue
-                    var parts = ln.split("|")
-                    if (parts.length >= 2 && parts[0])
-                        window.searchModel.append({ path: parts[0], url: parts[1] })
-                }
-                if (window.searchModel.count === 0) showToast("No results for \"" + searchProc.query + "\"")
-            }
-        }
-        stderr: StdioCollector {
-            onStreamFinished: { if (this.text.trim()) console.error("wallpaper search:", this.text.trim()) }
-        }
-    }
-    Process {
-        id: saveProc
-        property string targetPath
-        property string fullUrl
-        running: false
-        stdout: StdioCollector { onStreamFinished: { runStatic(saveProc.targetPath) } }
-        stderr: StdioCollector { onStreamFinished: { if (this.text.trim()) showToast("Download failed") } }
-    }
 
     Component.onCompleted: {
-        Quickshell.execDetached(["mkdir", "-p", onlineSaveDir])
+        Quickshell.execDetached(["mkdir", "-p", window.baseDir])
         window.currentFolder = window.baseDir
     }
 
@@ -223,87 +185,15 @@ Item {
                     font.pixelSize: s(22)
                     font.weight: Font.DemiBold
                 }
-
-                // segmented control: Local | Online (matches Movies/TV)
-                Rectangle {
-                    Layout.preferredWidth: s(180); Layout.preferredHeight: s(36)
-                    radius: rLG(); color: surface0
-                    Rectangle {
-                        id: tabHighlight
-                        width: parent.width / 2 - s(4); height: parent.height - s(6)
-                        y: s(3); radius: rMD(); color: text
-                        property real targetX: window.tab === "local" ? s(3) : (parent.width / 2 + s(1))
-                        property real actualX: targetX
-                        Behavior on actualX { NumberAnimation { duration: 340; easing.type: Easing.OutExpo } }
-                        x: actualX
-                        layer.enabled: true
-                        layer.effect: MultiEffect {
-                            shadowEnabled: true; shadowColor: shadowColor
-                            shadowBlur: 0.6; shadowVerticalOffset: 2; shadowOpacity: 0.28
-                        }
-                    }
-                    RowLayout {
-                        anchors.fill: parent; spacing: 0
-                        MouseArea {
-                            Layout.fillWidth: true; Layout.fillHeight: true
-                            onClicked: window.tab = "local"
-                            Text {
-                                anchors.centerIn: parent; text: "Local"
-                                font.family: fontUI
-                                font.weight: window.tab === "local" ? Font.DemiBold : Font.Medium
-                                font.pixelSize: s(13)
-                                color: window.tab === "local" ? base : subtext0
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                            }
-                        }
-                        MouseArea {
-                            Layout.fillWidth: true; Layout.fillHeight: true
-                            onClicked: window.tab = "online"
-                            Text {
-                                anchors.centerIn: parent; text: "Online"
-                                font.family: fontUI
-                                font.weight: window.tab === "online" ? Font.DemiBold : Font.Medium
-                                font.pixelSize: s(13)
-                                color: window.tab === "online" ? base : subtext0
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                            }
-                        }
-                    }
+                Text {
+                    text: "· " + (window.currentFolder === window.baseDir ? "All" : window.currentFolder.split("/").pop())
+                    color: subtext0
+                    font.family: fontUI
+                    font.pixelSize: s(13)
                 }
 
                 Item { Layout.fillWidth: true }
 
-                // online search bar
-                TextField {
-                    id: searchField
-                    visible: window.tab === "online"
-                    Layout.preferredWidth: s(240); Layout.preferredHeight: s(36)
-                    placeholderText: "Search wallpapers…"
-                    color: text
-                    font.family: fontUI
-                    font.pixelSize: s(13)
-                    background: Rectangle {
-                        radius: rLG(); color: surface0
-                        border.color: parent.activeFocus ? surface2 : surface1
-                        border.width: 1
-                    }
-                    onAccepted: runSearch(text)
-                }
-                Rectangle {
-                    visible: window.tab === "online"
-                    width: s(36); height: s(36); radius: rLG()
-                    color: searchBtnMouse.containsMouse ? surface1 : surface0
-                    border.color: surface1; border.width: 1
-                    Text { anchors.centerIn: parent; text: "🔍"; font.pixelSize: s(14) }
-                    MouseArea {
-                        id: searchBtnMouse
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: runSearch(searchField.text)
-                    }
-                }
-
-                // close button (matches MovieWidget ✕)
                 Rectangle {
                     width: s(32); height: s(32); radius: s(16)
                     color: closeMouse.containsMouse ? surface2 : "transparent"
@@ -342,23 +232,22 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: s(34)
                         radius: rMD()
-                        color: (window.tab === "local" && window.currentFolder === window.baseDir) ? surface1 : "transparent"
+                        color: window.currentFolder === window.baseDir ? surface1 : "transparent"
                         Text {
                             anchors.left: parent.left; anchors.leftMargin: s(12)
                             anchors.verticalCenter: parent.verticalCenter
                             text: "🖼  All Wallpapers"
-                            color: (window.tab === "local" && window.currentFolder === window.baseDir) ? text : subtext0
+                            color: window.currentFolder === window.baseDir ? text : subtext0
                             font.family: fontUI; font.pixelSize: s(13)
                         }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: { window.tab = "local"; window.currentFolder = window.baseDir }
+                            onClicked: window.currentFolder = window.baseDir
                         }
                     }
 
                     Text {
-                        visible: window.tab === "local"
                         text: "FOLDERS"
                         color: subtext0
                         font.family: fontUI; font.pixelSize: s(11)
@@ -370,7 +259,6 @@ Item {
                         id: folderList
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        visible: window.tab === "local"
                         model: foldersModel
                         clip: true
                         spacing: s(4)
@@ -396,7 +284,7 @@ Item {
                         }
                     }
 
-                    Item { Layout.fillHeight: true; visible: window.tab === "local" }
+                    Item { Layout.fillHeight: true }
 
                     Rectangle {
                         Layout.fillWidth: true
@@ -418,7 +306,6 @@ Item {
                     }
 
                     Text {
-                        visible: window.tab === "local"
                         text: window.baseDir
                         color: subtext0
                         font.family: fontUI; font.pixelSize: s(10)
@@ -439,7 +326,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: s(16)
                         cellWidth: s(184); cellHeight: s(154)
-                        model: window.tab === "local" ? localModel : searchModel
+                        model: localModel
                         delegate: WallDelegate {}
                         clip: true
                         ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: s(8) }
@@ -453,10 +340,8 @@ Item {
                         font.family: fontUI
                         font.pixelSize: s(14)
                         wrapMode: Text.Wrap
-                        text: window.tab === "local"
-                            ? "No wallpapers here.\nDrop images into " + window.baseDir + "\nor hit “Browse…”."
-                            : (window.searchRunning ? "Searching DuckDuckGo…" : "Search online wallpapers above.")
-                        visible: (window.tab === "local" ? localModel.count : searchModel.count) === 0
+                        text: "No wallpapers here.\nDrop images into " + window.baseDir + "\nor hit “Browse…”."
+                        visible: localModel.count === 0
                     }
                 }
             }
@@ -487,7 +372,7 @@ Item {
                     }
                     Text {
                         anchors.centerIn: parent
-                        visible: !window.selectedPath && !window.selectedIsVideo
+                        visible: !window.selectedPath
                         text: "—"; color: subtext0; font.pixelSize: s(16)
                     }
                 }
@@ -527,19 +412,19 @@ Item {
                 Rectangle {
                     Layout.preferredWidth: s(150); Layout.preferredHeight: s(38)
                     radius: rLG()
-                    color: (window.selectedPath !== "" || window.selectedUrl !== "")
+                    color: window.selectedPath !== ""
                         ? (setBtnMouse.containsMouse ? Qt.lighter(accent, 1.12) : accent)
                         : surface1
                     Text {
                         anchors.centerIn: parent
                         text: window.selectedIsVideo ? "Set Video" : "Set Wallpaper"
-                        color: (window.selectedPath !== "" || window.selectedUrl !== "") ? base : subtext0
+                        color: window.selectedPath !== "" ? base : subtext0
                         font.family: fontUI; font.pixelSize: s(13); font.weight: Font.DemiBold
                     }
                     MouseArea {
                         id: setBtnMouse
                         anchors.fill: parent
-                        enabled: (window.selectedPath !== "" || window.selectedUrl !== "")
+                        enabled: window.selectedPath !== ""
                         cursorShape: Qt.PointingHandCursor
                         onClicked: applySelection()
                     }
@@ -573,7 +458,6 @@ Item {
         id: card
         readonly property string _src:   model.fileURL ? model.fileURL : (model.path ? model.path : "")
         readonly property string _apply: model.filePath ? model.filePath : (model.path ? model.path : "")
-        readonly property string _full:  model.url ? model.url : ""
         property bool _vid: isVideoPath(_apply)
         property bool _sel: window.selectedPath === _apply
         width: GridView.view.cellWidth; height: GridView.view.cellHeight
@@ -661,7 +545,6 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     window.selectedPath = _apply
-                    window.selectedUrl = _full
                     window.selectedIsVideo = _vid
                 }
                 onDoubleClicked: applySelection()
@@ -677,6 +560,7 @@ Item {
             var u = selectedFolder.toString()
             window.baseDir = u.replace(/^file:\/\//, "")
             window.currentFolder = window.baseDir
+            saveState("dir", window.baseDir)
         }
     }
 }
