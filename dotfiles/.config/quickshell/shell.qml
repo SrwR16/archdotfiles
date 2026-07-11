@@ -185,7 +185,7 @@ ShellRoot {
     IpcHandler {
         target: "main"
 
-        function handleCommand(cmd, target, arg) {
+        function handleCommand(cmd: string, target: string, arg: string): void {
             if (cmd === "toggle") {
                 if (root.overlayView === target)
                     root.overlayView = "island"
