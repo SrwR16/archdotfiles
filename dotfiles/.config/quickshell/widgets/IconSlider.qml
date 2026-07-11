@@ -27,7 +27,7 @@ Item {
       height: parent.height
       radius: 20
       color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85)
-      Behavior on width { enabled: !drag.pressed; NumberAnimation { duration: 100 } }
+      Behavior on width { enabled: !drag.pressed; NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
     }
 
     RowLayout {

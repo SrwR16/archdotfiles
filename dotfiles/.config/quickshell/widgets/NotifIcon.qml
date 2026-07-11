@@ -25,7 +25,9 @@ Item {
     sourceSize.width: root.iconSize * 2
     sourceSize.height: root.iconSize * 2
     visible: status === Image.Ready
+    opacity: status === Image.Ready ? 1 : 0
     fillMode: Image.PreserveAspectFit
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
   }
 
   Rectangle {

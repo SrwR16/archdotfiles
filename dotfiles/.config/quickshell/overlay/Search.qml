@@ -158,7 +158,7 @@ Rectangle {
         height: 32
         radius: 6
         color: appList.currentIndex === index ? Theme.surfaceHover : (itemMouse.containsMouse ? Theme.surfaceLight : "transparent")
-        Behavior on color { ColorAnimation { duration: 80 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
 
         RowLayout {
           anchors.fill: parent

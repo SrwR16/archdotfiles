@@ -40,7 +40,7 @@ ColumnLayout {
         Rectangle {
           height: parent.height; width: parent.width * SystemUsageService.cpuUsage; radius: 3
           color: Theme.primary
-          Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+          Behavior on width { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
         }
       }
     }
@@ -58,8 +58,8 @@ ColumnLayout {
         Layout.fillWidth: true; height: 6; radius: 3; color: Theme.surfaceLight
         Rectangle {
           height: parent.height; width: parent.width * SystemUsageService.ramUsage; radius: 3
-          color: Theme.secondary
-          Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+           color: Theme.secondary
+           Behavior on width { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
         }
       }
     }
@@ -77,8 +77,8 @@ ColumnLayout {
         Layout.fillWidth: true; height: 6; radius: 3; color: Theme.surfaceLight
         Rectangle {
           height: parent.height; width: parent.width * SystemUsageService.diskUsage; radius: 3
-          color: Theme.tertiary
-          Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+           color: Theme.tertiary
+           Behavior on width { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
         }
       }
     }

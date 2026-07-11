@@ -90,7 +90,7 @@ Item {
         anchors.topMargin: 10
         visible: island.showAppLauncher
         opacity: island.showAppLauncher ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
         Search {
             id: searchOverlay

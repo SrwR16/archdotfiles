@@ -270,7 +270,10 @@ Rectangle {
                               implicitWidth: actText.implicitWidth + 12
                               implicitHeight: 20
                               radius: 10
-                              color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+                              color: actHover.containsMouse ? Theme.surfaceHover : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+                              scale: actHover.pressed ? 0.94 : 1.0
+                              Behavior on color { ColorAnimation { duration: Motion.durXS } }
+                              Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
 
                               Text {
                                 id: actText
@@ -281,7 +284,9 @@ Rectangle {
                               }
 
                               MouseArea {
+                                id: actHover
                                 anchors.fill: parent
+                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                   if (modelData.invoke) modelData.invoke();

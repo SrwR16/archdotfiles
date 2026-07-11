@@ -143,7 +143,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.preferredHeight: activePlayer?.trackTitle ? 80 : 32
 
-    Behavior on Layout.preferredHeight { NumberAnimation { duration: 200 } }
+    Behavior on Layout.preferredHeight { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
 
     Rectangle {
       anchors.fill: parent

@@ -44,9 +44,13 @@ Item {
 
             Rectangle {
                 width: 80; height: 30; radius: 8
-                color: Theme.surfaceVariant
-                
+                color: disconnectHover.containsMouse ? Theme.surfaceHover : Theme.surfaceVariant
+                scale: disconnectHover.pressed ? 0.96 : 1.0
+                Behavior on color { ColorAnimation { duration: Motion.durXS } }
+                Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
+
                 MouseArea {
+                    id: disconnectHover
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {

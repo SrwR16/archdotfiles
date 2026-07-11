@@ -350,6 +350,12 @@ Rectangle {
 
   state: morphState
 
+  // Amount of vertical space the top bar (clock / status / power) reserves
+  // inside the island when a full-page overlay (control center, productivity)
+  // is open. Keep this in sync with ccExpandedContent's top margin + side
+  // margins so overlay content is never clipped.
+  readonly property int contentInset: 84
+
   states: [
     State {
       name: "default"
@@ -357,11 +363,11 @@ Rectangle {
     },
     State {
       name: "productivity"
-      PropertyChanges { target: clockWidget; height: typeof prodLoader !== "undefined" && prodLoader.item ? prodLoader.item.implicitHeight + 70 : 800; width: 540; radius: 28 }
+      PropertyChanges { target: clockWidget; height: typeof prodLoader !== "undefined" && prodLoader.item ? prodLoader.item.implicitHeight + clockWidget.contentInset : 800; width: 540; radius: 28 }
     },
     State {
       name: "controlCenter"
-      PropertyChanges { target: clockWidget; height: typeof ccLoader !== "undefined" && ccLoader.item ? ccLoader.item.implicitHeight + 70 : 870; width: 680; radius: 24 }
+      PropertyChanges { target: clockWidget; height: typeof ccLoader !== "undefined" && ccLoader.item ? ccLoader.item.implicitHeight + clockWidget.contentInset : 870; width: 680; radius: 24 }
     },
     State {
       name: "appLauncher"
@@ -373,27 +379,27 @@ Rectangle {
     },
     State {
       name: "powerSection"
-      PropertyChanges { target: clockWidget; height: 160; width: 540; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 184; width: 540; radius: 28 }
     },
     State {
       name: "tray"
-      PropertyChanges { target: clockWidget; height: 120; width: 440; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 152; width: 440; radius: 28 }
     },
     State {
       name: "sys"
-      PropertyChanges { target: clockWidget; height: 100; width: 480; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 172; width: 480; radius: 28 }
     },
     State {
       name: "pomodoro"
-      PropertyChanges { target: clockWidget; height: 76; width: 380; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 96; width: 380; radius: 28 }
     },
     State {
       name: "notifAlert"
-      PropertyChanges { target: clockWidget; height: 72; width: 400; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 400; radius: 24 }
     },
     State {
       name: "batteryAlert"
-      PropertyChanges { target: clockWidget; height: 72; width: 360; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 360; radius: 24 }
     },
   ]
 
@@ -401,10 +407,13 @@ Rectangle {
   border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
   border.width: 1
 
-  // Fluid morph animation for expansion/collapse (Apple-like)
-  Behavior on height { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
-  Behavior on width  { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
-  Behavior on radius { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
+    // Signature "alive" morph: a deterministic eased tween with a small,
+    // BOUNDED overshoot (OutBack). Unlike a physics SpringAnimation it can
+    // never oscillate or collapse to zero, so a hover that resizes the
+    // island can't flicker it invisible.
+    Behavior on height { NumberAnimation { duration: Motion.durL; easing.type: Motion.easeEmphatic } }
+    Behavior on width  { NumberAnimation { duration: Motion.durL; easing.type: Motion.easeEmphatic } }
+    Behavior on radius { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeEmphatic } }
 
   MouseArea {
     id: mouseArea
@@ -452,7 +461,7 @@ Rectangle {
 
     opacity: clockWidget.isExpanded || clockWidget.mode !== "default" || (clockWidget.anyOverlayActive && !clockWidget.showBatteryAlert && !clockWidget.showNotifAlert) ? 0.0 : 1.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durM } }
 
     property real leftWidth: media.playing ? visualizerContainer.width + 12 : 0
     property real rightWidth: (PomodoroService.sessionState !== "Idle" ? pomodoroRow.implicitWidth + 12 : 0) + (privacyContainer.targetWidth > 0 ? privacyContainer.targetWidth + 12 : 0)
@@ -477,7 +486,7 @@ Rectangle {
       height: 12
       clip: true
 
-      Behavior on anchors.rightMargin { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+      Behavior on anchors.rightMargin { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
       Row {
         anchors.right: parent.right
@@ -501,7 +510,7 @@ Rectangle {
       visible: PomodoroService.sessionState !== "Idle"
       spacing: 6
       
-      Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+      Behavior on anchors.leftMargin { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
       Rectangle {
         Layout.preferredWidth: 2
@@ -537,7 +546,7 @@ Rectangle {
       height: 18
       clip: true
 
-      Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+      Behavior on anchors.leftMargin { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
       Row {
         id: privacyRow
@@ -586,7 +595,7 @@ Rectangle {
 
     opacity: !clockWidget.isExpanded && clockWidget.mode !== "default" && !clockWidget.anyOverlayActive ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durM } }
 
     // Volume mode
     Item {
@@ -603,7 +612,7 @@ Rectangle {
           text: clockWidget.volumeIcon(clockWidget.volume, clockWidget.audioMuted)
           color: clockWidget.audioMuted ? Theme.subtext : Theme.primary
           font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
-          Behavior on color { ColorAnimation { duration: 120 } }
+          Behavior on color { ColorAnimation { duration: Motion.durXS } }
         }
 
         Item {
@@ -615,8 +624,8 @@ Rectangle {
               width: parent.width * (clockWidget.audioMuted ? 0 : clockWidget.volume)
               radius: 3
               color: clockWidget.audioMuted ? Theme.border : Theme.primary
-              Behavior on width { NumberAnimation { duration: 150; easing: Easing.OutCubic } }
-              Behavior on color { ColorAnimation { duration: 120 } }
+              Behavior on width { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
+              Behavior on color { ColorAnimation { duration: Motion.durXS } }
             }
           }
         }
@@ -625,7 +634,7 @@ Rectangle {
           text: Math.round((clockWidget.audioMuted ? 0 : clockWidget.volume) * 100) + "%"
           color: clockWidget.audioMuted ? Theme.subtext : Theme.text
           font { family: "Inter"; pixelSize: 13; weight: 700 }
-          Behavior on color { ColorAnimation { duration: 120 } }
+          Behavior on color { ColorAnimation { duration: Motion.durXS } }
         }
       }
 
@@ -664,7 +673,7 @@ Rectangle {
             0.4 + 0.6 * clockWidget.brightness
           )
           font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
-          Behavior on color { ColorAnimation { duration: 200 } }
+          Behavior on color { ColorAnimation { duration: Motion.durM } }
         }
 
         Item {
@@ -675,7 +684,7 @@ Rectangle {
               anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
               width: parent.width * clockWidget.brightness
               radius: 3; color: Theme.warning
-              Behavior on width { NumberAnimation { duration: 200; easing: Easing.OutCubic } }
+              Behavior on width { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
             }
           }
         }
@@ -724,7 +733,7 @@ Rectangle {
             anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
             width: parent.width * clockWidget.kbdBrightness
             radius: 3; color: Theme.primary
-            Behavior on width { NumberAnimation { duration: 200; easing: Easing.OutCubic } }
+            Behavior on width { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
           }
         }
       }
@@ -745,14 +754,14 @@ Rectangle {
         text: "󰜹"
         color: clockWidget.capsLock ? Theme.primary : Theme.subtext
         font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
       }
 
       Text {
         text: clockWidget.capsLock ? "ON" : "OFF"
         color: clockWidget.capsLock ? Theme.text : Theme.subtext
         font { family: "Inter"; pixelSize: 13; weight: 700 }
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
       }
     }
 
@@ -765,14 +774,14 @@ Rectangle {
         text: "󰎦"
         color: clockWidget.numLock ? Theme.primary : Theme.subtext
         font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
       }
 
       Text {
         text: clockWidget.numLock ? "ON" : "OFF"
         color: clockWidget.numLock ? Theme.text : Theme.subtext
         font { family: "Inter"; pixelSize: 13; weight: 700 }
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
       }
     }
 
@@ -825,7 +834,7 @@ Rectangle {
 
     opacity: (clockWidget.isExpanded || clockWidget.showControlCenter) && !clockWidget.showPomodoro && !clockWidget.showSys && !clockWidget.showTray ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     Item {
       id: workspaceArea
@@ -870,7 +879,7 @@ Rectangle {
           MouseArea {
             id: timeMouseArea
             anchors.fill: parent
-            hoverEnabled: true
+            hoverEnabled: false
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               if (clockWidget.showProductivity && clockWidget.productivityPage === "time") {
@@ -899,13 +908,13 @@ Rectangle {
             color: Theme.text
             opacity: dateMouseArea.containsMouse ? 1.0 : 0.5
             font { family: "Inter"; pixelSize: 11; weight: 500 }
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
           }
 
           MouseArea {
             id: dateMouseArea
             anchors.fill: parent
-            hoverEnabled: true
+            hoverEnabled: false
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               if (clockWidget.showProductivity && clockWidget.productivityPage === "calendar") {
@@ -937,7 +946,7 @@ Rectangle {
       width: 32; height: 32
       radius: 16
       color: powerMouseArea.containsMouse ? Theme.surfaceHover : "transparent"
-      Behavior on color { ColorAnimation { duration: 150 } }
+      Behavior on color { ColorAnimation { duration: Motion.durXS } }
       
       Text {
         anchors.centerIn: parent
@@ -949,9 +958,8 @@ Rectangle {
       MouseArea {
         id: powerMouseArea
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: false
         cursorShape: Qt.PointingHandCursor
-        onContainsMouseChanged: clockWidget._powerHovered = containsMouse
         onClicked: {
           clockWidget.showPowerSection = !clockWidget.showPowerSection;
         }
@@ -967,7 +975,7 @@ Rectangle {
 
     opacity: clockWidget.showPomodoro ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     PomodoroSection {
       anchors.fill: parent
@@ -982,7 +990,7 @@ Rectangle {
 
     opacity: clockWidget.showSys ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     SystemUsageSection {
       anchors.fill: parent
@@ -999,7 +1007,7 @@ Rectangle {
 
     opacity: clockWidget.showBatteryAlert && !clockWidget.isExpanded ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     RowLayout {
       anchors.centerIn: parent
@@ -1077,7 +1085,7 @@ Rectangle {
 
     opacity: clockWidget.showNotifAlert ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     RowLayout {
       anchors.centerIn: parent
@@ -1110,7 +1118,7 @@ Rectangle {
       Rectangle {
         width: 20; height: 20; radius: 10
         color: _notifCapsuleHovered ? Theme.surfaceHover : "transparent"
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
 
         Text {
           anchors.centerIn: parent
@@ -1155,9 +1163,11 @@ Rectangle {
   Item {
     id: trayExpandedContent
     anchors.fill: parent
+    anchors.margins: 16
+
     opacity: clockWidget.showTray ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 150 } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durXS } }
 
     SystemTraySection {
       anchors.fill: parent
@@ -1170,14 +1180,14 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: 20
+    anchors.margins: 0
     anchors.topMargin: 64
-    height: Math.max(0, parent.height - 84) // Prevent negative heights during morph which completely breaks the QML rendering engine
+    height: Math.max(0, parent.height - clockWidget.contentInset) // Prevent negative heights during morph which completely breaks the QML rendering engine
     clip: true // Apple-style smooth unmasking: we clip the perfectly rendered internal layout as the island smoothly morphs!
 
     opacity: clockWidget.showControlCenter ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } } // Fades out slightly faster than the morph so it doesn't leave ghost images
+    Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } } // Fades out slightly faster than the morph so it doesn't leave ghost images
 
     MouseArea {
       anchors.fill: parent
@@ -1209,17 +1219,13 @@ Rectangle {
   // --- Power Panel overlay ---
   Item {
     id: powerExpandedContent
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: parent.top
-    anchors.margins: 20
-    anchors.topMargin: 64
-    height: Math.max(0, parent.height - 84)
+    anchors.fill: parent
+    anchors.margins: 16
     clip: true
 
     opacity: clockWidget.showPowerSection ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
     MouseArea {
       anchors.fill: parent
@@ -1245,14 +1251,14 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: 20
+    anchors.margins: 0
     anchors.topMargin: 64
-    height: Math.max(0, parent.height - 84)
+    height: Math.max(0, parent.height - clockWidget.contentInset)
     clip: true
 
     opacity: clockWidget.showProductivity ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
     MouseArea {
       anchors.fill: parent
@@ -1283,14 +1289,23 @@ Rectangle {
     precision: SystemClock.Minutes
   }
 
-  VpnSection {
-    vpnSvc: clockWidget.vpnSvc
+  // --- VPN popup overlay ---
+  Item {
+    anchors.fill: parent
     visible: clockWidget.showVpn
     opacity: visible ? 1 : 0
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.top: parent.top
-    anchors.topMargin: 56
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
+
+    MouseArea {
+      anchors.fill: parent
+      onClicked: {} // Consume clicks so they don't fall through and pin the island
+    }
+
+    VpnSection {
+      vpnSvc: clockWidget.vpnSvc
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+    }
   }
 }
 

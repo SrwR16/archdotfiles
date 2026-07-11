@@ -14,11 +14,14 @@ RowLayout {
 
   Text {
     text: "󰅁"
-    color: Theme.text
+    color: parent.containsMouse ? Theme.primary : Theme.text
     font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
+    Behavior on color { ColorAnimation { duration: Motion.durXS } }
     MouseArea {
+      id: backHover
       anchors.fill: parent
       anchors.margins: -8
+      hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
       onClicked: parent.parent.backTapped()
     }

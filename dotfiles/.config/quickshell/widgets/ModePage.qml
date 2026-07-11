@@ -26,7 +26,9 @@ ScrollView {
     Text {
       text: "Performance Mode"
       color: Theme.muted
-      font { family: "Inter"; pixelSize: 11; weight: 700 }
+      font.family: "Inter"
+      font.pixelSize: 11
+      font.weight: 700
       Layout.leftMargin: 4
     }
 
@@ -34,147 +36,114 @@ ScrollView {
       Layout.fillWidth: true
       spacing: 8
 
-      Rectangle {
+      QsCard {
         Layout.fillWidth: true
         Layout.preferredHeight: 64
-        radius: 12
-        color: currentMode === "silent" ? Theme.surfaceHover : Theme.surfaceLight
+        highlighted: currentMode === "silent"
+        onClicked: setMode("silent")
 
         ColumnLayout {
-          anchors.centerIn: parent
+          anchors.fill: parent
+          anchors.margins: 8
           spacing: 2
 
           Text {
             text: "󰤆"
             color: currentMode === "silent" ? Theme.primary : Theme.subtext
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 16 }
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "Silent"
             color: currentMode === "silent" ? Theme.text : Theme.subtext
-            font { family: "Inter"; pixelSize: 12; weight: currentMode === "silent" ? 600 : 400 }
+            font.family: "Inter"
+            font.pixelSize: 12
+            font.weight: currentMode === "silent" ? 600 : 400
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "quiet fan · power-saver"
             color: Theme.text
             opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
+            font.family: "Inter"
+            font.pixelSize: 8
             Layout.alignment: Qt.AlignHCenter
           }
-
-          Text {
-            text: "integrated GPU"
-            color: Theme.text
-            opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
-            Layout.alignment: Qt.AlignHCenter
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: setMode("silent")
         }
       }
 
-      Rectangle {
+      QsCard {
         Layout.fillWidth: true
         Layout.preferredHeight: 64
-        radius: 12
-        color: currentMode === "balanced" ? Theme.surfaceHover : Theme.surfaceLight
+        highlighted: currentMode === "balanced"
+        onClicked: setMode("balanced")
 
         ColumnLayout {
-          anchors.centerIn: parent
+          anchors.fill: parent
+          anchors.margins: 8
           spacing: 2
 
           Text {
             text: "󰒓"
             color: currentMode === "balanced" ? Theme.primary : Theme.subtext
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 16 }
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "Balanced"
             color: currentMode === "balanced" ? Theme.text : Theme.subtext
-            font { family: "Inter"; pixelSize: 12; weight: currentMode === "balanced" ? 600 : 400 }
+            font.family: "Inter"
+            font.pixelSize: 12
+            font.weight: currentMode === "balanced" ? 600 : 400
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "auto fan · balanced CPU"
             color: Theme.text
             opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
+            font.family: "Inter"
+            font.pixelSize: 8
             Layout.alignment: Qt.AlignHCenter
           }
-
-          Text {
-            text: "hybrid GPU"
-            color: Theme.text
-            opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
-            Layout.alignment: Qt.AlignHCenter
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: setMode("balanced")
         }
       }
 
-      Rectangle {
+      QsCard {
         Layout.fillWidth: true
         Layout.preferredHeight: 64
-        radius: 12
-        color: currentMode === "performance" ? Theme.surfaceHover : Theme.surfaceLight
+        highlighted: currentMode === "performance"
+        onClicked: setMode("performance")
 
         ColumnLayout {
-          anchors.centerIn: parent
+          anchors.fill: parent
+          anchors.margins: 8
           spacing: 2
 
           Text {
             text: "󰓅"
             color: currentMode === "performance" ? Theme.primary : Theme.subtext
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 16 }
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "Performance"
             color: currentMode === "performance" ? Theme.text : Theme.subtext
-            font { family: "Inter"; pixelSize: 12; weight: currentMode === "performance" ? 600 : 400 }
+            font.family: "Inter"
+            font.pixelSize: 12
+            font.weight: currentMode === "performance" ? 600 : 400
             Layout.alignment: Qt.AlignHCenter
           }
-
           Text {
             text: "high fan · max CPU"
             color: Theme.text
             opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
+            font.family: "Inter"
+            font.pixelSize: 8
             Layout.alignment: Qt.AlignHCenter
           }
-
-          Text {
-            text: "hybrid GPU"
-            color: Theme.text
-            opacity: 0.4
-            font { family: "Inter"; pixelSize: 8 }
-            Layout.alignment: Qt.AlignHCenter
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: setMode("performance")
         }
       }
     }
@@ -186,6 +155,8 @@ ScrollView {
       Layout.preferredHeight: 48
       radius: 12
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+      border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+      border.width: 1
 
       RowLayout {
         anchors.fill: parent
@@ -195,7 +166,8 @@ ScrollView {
         Text {
           text: "󰔄"
           color: cpuTemp > 0 ? (cpuTemp >= 85 ? Theme.error : Theme.primary) : Theme.subtext
-          font { family: "JetBrainsMono Nerd Font"; pixelSize: 16 }
+          font.family: "JetBrainsMono Nerd Font"
+          font.pixelSize: 16
         }
 
         ColumnLayout {
@@ -206,13 +178,15 @@ ScrollView {
             text: "CPU Temperature"
             color: Theme.text
             opacity: 0.6
-            font { family: "Inter"; pixelSize: 10 }
+            font.family: "Inter"
+            font.pixelSize: 10
           }
-
           Text {
             text: cpuTemp > 0 ? cpuTemp + "°C" : "—°C"
             color: cpuTemp >= 85 ? Theme.error : Theme.text
-            font { family: "Inter"; pixelSize: 14; weight: 700 }
+            font.family: "Inter"
+            font.pixelSize: 14
+            font.weight: 700
           }
         }
 
@@ -223,17 +197,20 @@ ScrollView {
             return "Balanced";
           }
           color: Theme.primary
-          font { family: "Inter"; pixelSize: 11; weight: 600 }
+          font.family: "Inter"
+          font.pixelSize: 11
+          font.weight: 600
         }
       }
     }
 
     Text {
-      text: "⚠ Fan speed: Silent/Performance modes bypass the automatic temperature curve. If CPU exceeds 85°C, the system force-reverts to Balanced."
+      text: "⚠ Silent/Performance modes bypass the automatic temperature curve. If CPU exceeds 85°C, the system force-reverts to Balanced."
       color: Theme.text
       opacity: 0.4
       wrapMode: Text.WordWrap
-      font { family: "Inter"; pixelSize: 9 }
+      font.family: "Inter"
+      font.pixelSize: 9
       Layout.fillWidth: true
       Layout.topMargin: 2
     }

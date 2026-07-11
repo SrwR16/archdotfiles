@@ -36,60 +36,79 @@ ScrollView {
     width: parent.width
     spacing: 10
 
-    Text {
-      text: "Output"
-      color: Theme.muted
-      font { family: "Inter"; pixelSize: 11; weight: 700 }
+    // ============ OUTPUT ============
+    RowLayout {
+      Layout.fillWidth: true
       Layout.leftMargin: 4
+      spacing: 8
+
+      Text {
+        text: "Output"
+        color: Theme.muted
+        font.family: "Inter"
+        font.pixelSize: 11
+        font.weight: 700
+      }
+      Item { Layout.fillWidth: true }
+      QsButton {
+        text: audioMuted ? "Unmute" : "Mute"
+        outline: true
+        onClicked: toggleMute()
+      }
     }
 
     Repeater {
       model: audioSinks
 
-      Rectangle {
+      QsCard {
         required property var modelData
         Layout.fillWidth: true
-        Layout.preferredHeight: 40
-        radius: 10
-        color: modelData === audioSink ? Theme.surfaceHover : Theme.surfaceLight
+        Layout.preferredHeight: 48
+        highlighted: modelData === audioSink
+        onClicked: setDefaultSink(modelData)
 
         RowLayout {
           anchors.fill: parent
-          anchors.leftMargin: 12
-          anchors.rightMargin: 12
-          spacing: 8
+          anchors.leftMargin: 14
+          anchors.rightMargin: 14
+          spacing: 10
 
           Text {
-            text: modelData === audioSink ? "✓" : "  "
-            color: Theme.primary
-            font { family: "Inter"; pixelSize: 13; weight: 700 }
+            text: "󰓃"
+            color: modelData === audioSink ? Theme.primary : Theme.text
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 15
           }
-
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 1
+            spacing: 0
+
             Text {
               text: modelData.description || modelData.name || ""
               color: Theme.text
-              font { family: "Inter"; pixelSize: 12; weight: modelData === audioSink ? 600 : 400 }
               elide: Text.ElideRight
               Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 12
+              font.weight: modelData === audioSink ? 600 : 400
             }
             Text {
               text: modelData.nickname || ""
               visible: text !== ""
               color: Theme.subtext
-              font { family: "Inter"; pixelSize: 9 }
               elide: Text.ElideRight
               Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 9
             }
           }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: setDefaultSink(modelData)
+          Text {
+            text: modelData === audioSink ? "✓" : ""
+            color: Theme.primary
+            font.family: "Inter"
+            font.pixelSize: 13
+            font.weight: 700
+          }
         }
       }
     }
@@ -103,60 +122,79 @@ ScrollView {
 
     Item { Layout.preferredHeight: 8 }
 
-    Text {
-      text: "Input"
-      color: Theme.muted
-      font { family: "Inter"; pixelSize: 11; weight: 700 }
+    // ============ INPUT ============
+    RowLayout {
+      Layout.fillWidth: true
       Layout.leftMargin: 4
+      spacing: 8
+
+      Text {
+        text: "Input"
+        color: Theme.muted
+        font.family: "Inter"
+        font.pixelSize: 11
+        font.weight: 700
+      }
+      Item { Layout.fillWidth: true }
+      QsButton {
+        text: audioSourceMuted ? "Unmute" : "Mute"
+        outline: true
+        onClicked: toggleAudioSourceMute()
+      }
     }
 
     Repeater {
       model: audioSources
 
-      Rectangle {
+      QsCard {
         required property var modelData
         Layout.fillWidth: true
-        Layout.preferredHeight: 40
-        radius: 10
-        color: modelData === audioSource ? Theme.surfaceHover : Theme.surfaceLight
+        Layout.preferredHeight: 48
+        highlighted: modelData === audioSource
+        onClicked: setDefaultSource(modelData)
 
         RowLayout {
           anchors.fill: parent
-          anchors.leftMargin: 12
-          anchors.rightMargin: 12
-          spacing: 8
+          anchors.leftMargin: 14
+          anchors.rightMargin: 14
+          spacing: 10
 
           Text {
-            text: modelData === audioSource ? "✓" : "  "
-            color: Theme.primary
-            font { family: "Inter"; pixelSize: 13; weight: 700 }
+            text: "󰍬"
+            color: modelData === audioSource ? Theme.primary : Theme.text
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 15
           }
-
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 1
+            spacing: 0
+
             Text {
               text: modelData.description || modelData.name || ""
               color: Theme.text
-              font { family: "Inter"; pixelSize: 12; weight: modelData === audioSource ? 600 : 400 }
               elide: Text.ElideRight
               Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 12
+              font.weight: modelData === audioSource ? 600 : 400
             }
             Text {
               text: modelData.nickname || ""
               visible: text !== ""
               color: Theme.subtext
-              font { family: "Inter"; pixelSize: 9 }
               elide: Text.ElideRight
               Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 9
             }
           }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: setDefaultSource(modelData)
+          Text {
+            text: modelData === audioSource ? "✓" : ""
+            color: Theme.primary
+            font.family: "Inter"
+            font.pixelSize: 13
+            font.weight: 700
+          }
         }
       }
     }

@@ -26,35 +26,68 @@ ScrollView {
   signal toggleBtConnection(var device)
   signal backRequested()
 
+  readonly property bool _on: !!btAdapter && btAdapter.enabled
+
   ColumnLayout {
     width: parent.width
     spacing: 10
 
+    // ============ HEADER ============
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 52
-      radius: 14
+      radius: 16
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+      border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+      border.width: 1
 
       RowLayout {
         anchors.fill: parent
         anchors.margins: 14
-        Text { text: "Bluetooth"; color: Theme.text; font { family: "Inter"; pixelSize: 14; weight: 700 } }
+        spacing: 10
+
+        Text {
+          text: "Bluetooth"
+          color: Theme.text
+          font.family: "Inter"
+          font.pixelSize: 14
+          font.weight: 700
+        }
         Item { Layout.fillWidth: true }
+        Text {
+          text: _on ? "On" : "Off"
+          color: _on ? Theme.primary : Theme.subtext
+          font.family: "Inter"
+          font.pixelSize: 11
+          font.weight: 600
+          opacity: 0.8
+        }
         Rectangle {
-          width: 46; height: 26; radius: 13
-          color: btAdapter?.enabled ? Theme.primary : Theme.border
+          width: 46
+          height: 26
+          radius: 13
+          color: _on ? Theme.primary : Theme.border
+          Behavior on color { ColorAnimation { duration: Motion.durXS } }
+
           Rectangle {
-            width: 20; height: 20; radius: 10; color: Theme.backgroundFg
+            width: 20
+            height: 20
+            radius: 10
+            color: Theme.backgroundFg
             anchors.verticalCenter: parent.verticalCenter
-            x: btAdapter?.enabled ? parent.width - width - 3 : 3
-            Behavior on x { NumberAnimation { duration: 120 } }
+            x: _on ? parent.width - width - 3 : 3
+            Behavior on x { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
           }
-          MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: toggleBluetooth() }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: toggleBluetooth()
+          }
         }
       }
     }
 
+    // ============ DEVICES HEADER ============
     RowLayout {
       Layout.fillWidth: true
       Layout.topMargin: 4
@@ -62,25 +95,42 @@ ScrollView {
 
       Text {
         text: "Devices"
-        color: Theme.text; opacity: 0.7
-        font { family: "Inter"; pixelSize: 12; weight: 700 }
-        Layout.fillWidth: true
+        color: Theme.text
+        opacity: 0.7
+        font.family: "Inter"
+        font.pixelSize: 12
+        font.weight: 700
       }
+      Item { Layout.fillWidth: true }
+      RowLayout {
+        spacing: 6
 
-      Text {
-        text: btScanning ? "Scanning…" : "Scan"
-        color: Theme.primary
-        font { family: "Inter"; pixelSize: 11; weight: 600 }
-        MouseArea {
-          anchors.fill: parent; anchors.margins: -6
-          cursorShape: Qt.PointingHandCursor
-          onClicked: toggleBtScan()
+        Spinner {
+          visible: btScanning
+          running: btScanning
+          size: 14
+          color: Theme.primary
+        }
+        Text {
+          text: btScanning ? "Scanning…" : "Scan"
+          color: _on ? Theme.primary : Theme.subtext
+          font.family: "Inter"
+          font.pixelSize: 11
+          font.weight: 600
+
+          MouseArea {
+            anchors.fill: parent
+            anchors.margins: -6
+            cursorShape: Qt.PointingHandCursor
+            onClicked: if (_on) toggleBtScan()
+          }
         }
       }
     }
 
+    // ============ DEVICE LIST ============
     Repeater {
-      model: btDevices
+      model: _on ? btDevices : []
 
       delegate: Rectangle {
         id: btCard
@@ -88,74 +138,137 @@ ScrollView {
         Layout.fillWidth: true
         Layout.preferredHeight: 56
         radius: 14
-        color: modelData.state === BluetoothDeviceState.Connected ? Theme.surfaceLight : (modelData.pairing ? Theme.surfaceHover : Theme.surface)
+        color: modelData.state === BluetoothDeviceState.Connected
+          ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.14)
+          : (modelData.pairing ? Theme.surfaceHover : Theme.surface)
+        border.color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : "transparent"
+        border.width: modelData.state === BluetoothDeviceState.Connected ? 1.5 : 0
+        Behavior on color { ColorAnimation { duration: Motion.durXS } }
 
         RowLayout {
           anchors.fill: parent
           anchors.margins: 14
-          spacing: 10
+          spacing: 12
 
           Text {
-            text: modelData.pairing ? "󰄉" : (modelData.state === BluetoothDeviceState.Connected ? "󰂱" : "󰂯")
+            text: modelData.pairing ? "󰄉"
+              : (modelData.state === BluetoothDeviceState.Connected ? "󰂱" : "󰂯")
             color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.text
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 16 }
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
           }
 
           ColumnLayout {
             spacing: 0
             Layout.fillWidth: true
-            Text { text: btCard.modelData.name || btCard.modelData.deviceName || "Unknown device"; color: Theme.text; elide: Text.ElideRight; Layout.fillWidth: true; font { family: "Inter"; pixelSize: 13; weight: 600 } }
+
             Text {
-              text: btDeviceSubtitle(btCard.modelData)
-              color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.text
-              opacity: modelData.state === BluetoothDeviceState.Connected ? 1 : 0.6
-              font { family: "Inter"; pixelSize: 10 }
+              text: btCard.modelData.name || btCard.modelData.deviceName || "Unknown device"
+              color: Theme.text
+              elide: Text.ElideRight
+              Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 13
+              font.weight: 600
+            }
+            RowLayout {
+              spacing: 6
+
+              Text {
+                text: btDeviceSubtitle(btCard.modelData)
+                color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.text
+                opacity: modelData.state === BluetoothDeviceState.Connected ? 1 : 0.6
+                font.family: "Inter"
+                font.pixelSize: 10
+              }
+              Text {
+                visible: modelData.batteryAvailable
+                text: Math.round(modelData.battery * 100) + "%"
+                color: Theme.subtext
+                font.family: "Inter"
+                font.pixelSize: 10
+              }
             }
           }
 
-          Text {
-            text: modelData.pairing ? "" : (modelData.paired ? "Forget" : "Pair")
-            visible: !modelData.pairing
-            color: Theme.error
-            font { family: "Inter"; pixelSize: 11; weight: 600 }
-            MouseArea {
-              anchors.fill: parent; anchors.margins: -8
-              cursorShape: Qt.PointingHandCursor
-              onClicked: modelData.paired ? forgetDevice(modelData) : pairDevice(modelData)
-            }
-          }
-
-          Text {
-            text: modelData.state === BluetoothDeviceState.Connected ? "Disconnect" : "Connect"
-            visible: modelData.paired && !modelData.pairing
+          // Connecting / pairing spinner
+          Spinner {
+            visible: modelData.state === BluetoothDeviceState.Connecting || modelData.pairing
+            running: modelData.state === BluetoothDeviceState.Connecting || modelData.pairing
+            size: 16
             color: Theme.primary
-            font { family: "Inter"; pixelSize: 11; weight: 600 }
+          }
+
+          // Connect / Disconnect
+          Text {
+            visible: modelData.paired && !modelData.pairing
+              && modelData.state !== BluetoothDeviceState.Connecting
+            text: modelData.state === BluetoothDeviceState.Connected ? "Disconnect" : "Connect"
+            color: Theme.primary
+            font.family: "Inter"
+            font.pixelSize: 11
+            font.weight: 600
+
             MouseArea {
-              anchors.fill: parent; anchors.margins: -8
+              anchors.fill: parent
+              anchors.margins: -8
               cursorShape: Qt.PointingHandCursor
               onClicked: toggleBtConnection(modelData)
+            }
+          }
+
+          // Pair / Forget
+          Text {
+            visible: !modelData.pairing
+              && modelData.state !== BluetoothDeviceState.Connecting
+            text: modelData.paired ? "Forget" : "Pair"
+            color: modelData.paired ? Theme.error : Theme.text
+            opacity: modelData.paired ? 0.85 : 0.7
+            font.family: "Inter"
+            font.pixelSize: 11
+            font.weight: 600
+
+            MouseArea {
+              anchors.fill: parent
+              anchors.margins: -8
+              cursorShape: Qt.PointingHandCursor
+              onClicked: modelData.paired ? forgetDevice(modelData) : pairDevice(modelData)
             }
           }
         }
       }
     }
 
+    // Empty / offline states
     Text {
-      visible: btDevices.length === 0 && !btScanning
-      text: btAdapter?.enabled ? "No devices found" : "Turn on Bluetooth to see devices"
-      color: Theme.text; opacity: 0.4
+      visible: _on && btDevices.length === 0 && !btScanning
+      text: "No devices found"
+      color: Theme.text
+      opacity: 0.4
       Layout.alignment: Qt.AlignHCenter
       Layout.topMargin: 12
-      font { family: "Inter"; pixelSize: 12 }
+      font.family: "Inter"
+      font.pixelSize: 12
     }
-
     Text {
-      visible: btScanning && btDevices.length === 0
+      visible: _on && btScanning && btDevices.length === 0
       text: "Scanning for devices…"
-      color: Theme.primary; opacity: 0.6
+      color: Theme.primary
+      opacity: 0.6
       Layout.alignment: Qt.AlignHCenter
       Layout.topMargin: 12
-      font { family: "Inter"; pixelSize: 12 }
+      font.family: "Inter"
+      font.pixelSize: 12
+    }
+    Text {
+      visible: !_on
+      text: "Turn on Bluetooth to see devices"
+      color: Theme.text
+      opacity: 0.4
+      Layout.alignment: Qt.AlignHCenter
+      Layout.topMargin: 12
+      font.family: "Inter"
+      font.pixelSize: 12
     }
 
     Item { Layout.preferredHeight: 4 }

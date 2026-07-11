@@ -148,7 +148,7 @@ Item {
                 font.family: "Inter"; font.pixelSize: 10
                 visible: !timerWidget.running
                 opacity: visible ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 200 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.durM } }
             }
         }
 

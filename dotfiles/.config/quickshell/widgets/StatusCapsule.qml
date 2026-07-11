@@ -13,8 +13,9 @@ Rectangle {
     radius: 12
     height: 24
     width: layout.implicitWidth + 24
-
-    Behavior on color { ColorAnimation { duration: 150 } }
+    scale: capsuleMouseArea.pressed ? 0.96 : 1.0
+    Behavior on color { ColorAnimation { duration: Motion.durXS } }
+    Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
 
     property QtObject statusSvc: null
     property string wifiName: statusSvc ? statusSvc.wifi : "Disconnected"
@@ -40,7 +41,7 @@ Rectangle {
     MouseArea {
         id: capsuleMouseArea
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: false
         cursorShape: Qt.PointingHandCursor
         onClicked: statusCapsule.clicked()
     }
@@ -92,7 +93,8 @@ Rectangle {
                 // Clamp max width to 21 to prevent overflow bugs if system reports > 100% battery
                 width: Math.max(0, Math.min(21, 21 * (statusCapsule.batteryPercent / 100)))
                 radius: 2
-                color: statusCapsule.isCharging ? "#34c759" : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
+                color: statusCapsule.isCharging ? Theme.success : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
+                Behavior on width { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
             }
 
             Rectangle {
@@ -104,19 +106,18 @@ Rectangle {
                 color: Theme.text
                 opacity: 0.4
             }
-
         }
 
         Text {
             visible: statusCapsule.isCharging
             text: "󱐋"
-            color: "#34c759"
+            color: Theme.success
             font { family: "JetBrainsMono Nerd Font"; pixelSize: 11 }
         }
 
         Text {
             text: statusCapsule.batteryPercent + "%"
-            color: statusCapsule.isCharging ? "#34c759" : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
+            color: statusCapsule.isCharging ? Theme.success : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
             font { family: "Inter"; pixelSize: 11; weight: 700 }
         }
     }

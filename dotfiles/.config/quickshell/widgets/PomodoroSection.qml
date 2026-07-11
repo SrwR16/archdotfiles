@@ -85,7 +85,10 @@ RowLayout {
 
     Rectangle {
       width: 32; height: 32; radius: 16
-      color: Theme.surfaceLight
+      color: playHover.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
+      scale: playHover.pressed ? 0.9 : 1.0
+      Behavior on color { ColorAnimation { duration: Motion.durXS } }
+      Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
       Text {
         anchors.centerIn: parent
         text: PomodoroService.sessionState === "Idle" || PomodoroService.isPaused ? "▶" : "⏸"
@@ -93,7 +96,9 @@ RowLayout {
         font.pixelSize: 14
       }
       MouseArea {
+        id: playHover
         anchors.fill: parent
+        hoverEnabled: true
         onClicked: PomodoroService.togglePause()
         cursorShape: Qt.PointingHandCursor
       }
@@ -101,7 +106,10 @@ RowLayout {
 
     Rectangle {
       width: 32; height: 32; radius: 16
-      color: Theme.surfaceLight
+      color: stopHover.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
+      scale: stopHover.pressed ? 0.9 : 1.0
+      Behavior on color { ColorAnimation { duration: Motion.durXS } }
+      Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
       visible: PomodoroService.sessionState !== "Idle"
       Text {
         anchors.centerIn: parent
@@ -110,7 +118,9 @@ RowLayout {
         font.pixelSize: 14
       }
       MouseArea {
+        id: stopHover
         anchors.fill: parent
+        hoverEnabled: true
         onClicked: PomodoroService.stop()
         cursorShape: Qt.PointingHandCursor
       }

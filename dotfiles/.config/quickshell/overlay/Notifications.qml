@@ -44,7 +44,7 @@ Rectangle {
   }
 
   opacity: expanded ? 1.0 : 0.0
-  Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
+  Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeIsland } }
 
   RowLayout {
     id: content

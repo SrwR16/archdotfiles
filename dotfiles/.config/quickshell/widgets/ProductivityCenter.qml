@@ -88,18 +88,18 @@ Item {
                     property int prevIdx: 0
                     property int curIdx: prodCenter.activeMode
                     onCurIdxChanged: {
-                        if (curIdx > prevIdx) { rightAnim.duration = 200; leftAnim.duration = 350; }
-                        else if (curIdx < prevIdx) { leftAnim.duration = 200; rightAnim.duration = 350; }
-                        prevIdx = curIdx;
-                    }
-                    property real stepSize: (parent.width - 4) / 3
-                    property real targetLeft: 2 + (curIdx * stepSize)
-                    property real targetRight: targetLeft + stepSize
-                    property real actualLeft: targetLeft
-                    property real actualRight: targetRight
+                         if (curIdx > prevIdx) { rightAnim.duration = Motion.durS; leftAnim.duration = Motion.durM; }
+                         else if (curIdx < prevIdx) { leftAnim.duration = Motion.durS; rightAnim.duration = Motion.durM; }
+                         prevIdx = curIdx;
+                     }
+                     property real stepSize: (parent.width - 4) / 3
+                     property real targetLeft: 2 + (curIdx * stepSize)
+                     property real targetRight: targetLeft + stepSize
+                     property real actualLeft: targetLeft
+                     property real actualRight: targetRight
 
-                    Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: 250; easing.type: Easing.OutExpo } }
-                    Behavior on actualRight { NumberAnimation { id: rightAnim; duration: 250; easing.type: Easing.OutExpo } }
+                     Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: Motion.durM; easing.type: Motion.easeStandard } }
+                     Behavior on actualRight { NumberAnimation { id: rightAnim; duration: Motion.durM; easing.type: Motion.easeStandard } }
 
                     x: actualLeft
                     width: actualRight - actualLeft
@@ -122,7 +122,7 @@ Item {
                                 font.bold: true
                                 font.pixelSize: 12
                                 color: prodCenter.activeMode === index ? Theme.onPrimary : Theme.text
-                                Behavior on color { ColorAnimation { duration: 250 } }
+                                 Behavior on color { ColorAnimation { duration: Motion.durM } }
                             }
                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: prodCenter.activeMode = index }
                         }
@@ -142,21 +142,21 @@ Item {
                     anchors.fill: parent
                     visible: prodCenter.activeMode === 0
                     opacity: visible ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                    Behavior on opacity { NumberAnimation { duration: Motion.durM } }
                     TimerWidget { anchors.fill: parent }
                 }
                 Item {
                     anchors.fill: parent
                     visible: prodCenter.activeMode === 1
                     opacity: visible ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                    Behavior on opacity { NumberAnimation { duration: Motion.durM } }
                     StopwatchWidget { anchors.fill: parent }
                 }
                 Item {
                     anchors.fill: parent
                     visible: prodCenter.activeMode === 2
                     opacity: visible ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                    Behavior on opacity { NumberAnimation { duration: Motion.durM } }
                     PomodoroConfigWidget { anchors.fill: parent }
                 }
             }

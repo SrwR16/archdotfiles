@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.SystemTray
+import "../theme"
 
 ColumnLayout {
   id: traySection
@@ -56,7 +57,7 @@ ColumnLayout {
         cursorShape: Qt.PointingHandCursor
         onEntered: iconRect.scale = 1.1
         onExited: iconRect.scale = 1.0
-        Behavior on scale { NumberAnimation { duration: 150 } }
+        Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         onClicked: (mouse) => {
           if (mouse.button === Qt.LeftButton) model.activate()

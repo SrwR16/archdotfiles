@@ -91,6 +91,7 @@ Item {
             anchors.fill: parent
             radius: 6
             color: isActive ? Theme.tertiary : (hasWindows ? Theme.surfaceContainer : Theme.surface)
+            Behavior on color { ColorAnimation { duration: Motion.durXS } }
           }
 
           Text {
@@ -125,6 +126,7 @@ Item {
             anchors.fill: parent
             radius: 6
             color: isActive ? Theme.tertiary : (hasWindows ? Theme.surfaceContainer : Theme.surface)
+            Behavior on color { ColorAnimation { duration: Motion.durXS } }
           }
 
           Text {

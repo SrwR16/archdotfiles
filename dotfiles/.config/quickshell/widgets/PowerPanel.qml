@@ -30,7 +30,9 @@ Item {
           anchors.horizontalCenter: parent.horizontalCenter
           width: 56; height: 56; radius: 16
           color: btnArea.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
-          Behavior on color { ColorAnimation { duration: 150 } }
+          scale: btnArea.pressed ? 0.92 : 1.0
+          Behavior on color { ColorAnimation { duration: Motion.durXS } }
+          Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
 
           Text {
             anchors.centerIn: parent
