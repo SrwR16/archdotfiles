@@ -70,21 +70,12 @@ ShellRoot {
         Component.onCompleted: applyThemeColors(parseColors(text()))
     }
 
-    // Reliable fresh read of theme/colors.json. FileView.text() can serve a
-    // stale cached copy after matugen rewrites the file atomically (inotify
-    // misses the rename), so the IPC reload must re-read from disk directly.
-    Process {
-        id: readColorsProc
-        running: false
-        command: ["cat", Quickshell.shellPath("theme/colors.json")]
-        stdout: StdioCollector {
-            onStreamFinished: applyThemeColors(parseColors(this.text))
-        }
-    }
-
+    // Reliable fresh read of theme/colors.json. The on-disk file is rewritten
+    // atomically by matugen, which FileView's inotify watch can miss, so live
+    // updates go through this explicit reload(). reload() re-reads from disk
+    // and the existing onTextChanged handler re-applies the palette.
     function reloadColors() {
-        readColorsProc.running = false
-        readColorsProc.running = true
+        themeFileWatcher.reload()
     }
 
     // Full-screen PanelWindow — like quickshellinspire, never resizes.
