@@ -634,6 +634,14 @@ Item {
         return src.urlTv.arg(m.imdbId).arg(m.season).arg(m.ep)
     }
 
+    function findSourceIndexByName(name) {
+        if (!name || name === "") return -1
+        for (let i = 0; i < sourceModel.count; i++) {
+            if (sourceModel.get(i).name === name) return i
+        }
+        return -1
+    }
+
     function buildSourceOrder() {
         let order = []
         let imdbId = pendingMedia.imdbId
@@ -2201,7 +2209,7 @@ Item {
                     ListView {
                         id: seasonList
                         Layout.fillWidth: true; Layout.preferredHeight: window.s(40)
-                        orientation: ListView.Horizontal; model: window.seasonModel; spacing: window.s(8); clip: true
+                        orientation: ListView.Horizontal; model: seasonModel; spacing: window.s(8); clip: true
                         Behavior on contentX { NumberAnimation { duration: 350; easing.type: Easing.OutQuart } }
                         delegate: Rectangle {
                             width: sLabel.width + window.s(28); height: window.s(38); radius: height / 2
@@ -2220,7 +2228,7 @@ Item {
                     id: epList
                     visible: !detailView.isMovie
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    model: window.episodeModel; spacing: window.s(6); clip: true
+                    model: episodeModel; spacing: window.s(6); clip: true
                     opacity: window.seasonSwitching ? 0 : 1
                     Behavior on opacity { NumberAnimation { duration: window.seasonSwitching ? 180 : 250; easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuad } }
                     transform: Translate { y: window.seasonSwitching ? window.s(8) : 0; Behavior on y { NumberAnimation { duration: window.seasonSwitching ? 180 : 280; easing.type: window.seasonSwitching ? Easing.InQuad : Easing.OutQuart } } }
@@ -2362,6 +2370,66 @@ Item {
                             }
                         }
                     }
+                    // ----- PINNED "PREFERRED SOURCE" CARD -----
+                    // The list below already tells you which source worked
+                    // last time via the ★ badge — but that still means
+                    // searching/scanning for it on every single episode.
+                    // For a title you've already got a working source for,
+                    // that's friction with zero payoff. This surfaces it as
+                    // one immediate, no-checking-required tap, front and
+                    // center, every time the modal opens.
+                    Rectangle {
+                        id: preferredCard
+                        readonly property string prefName: window.sourcePrefs[window.pendingMedia.imdbId || ""] || ""
+                        readonly property int prefIndex: window.findSourceIndexByName(prefName)
+                        readonly property bool show: prefName !== "" && prefIndex !== -1
+                        Layout.fillWidth: true
+                        Layout.leftMargin: window.s(14); Layout.rightMargin: window.s(14)
+                        Layout.topMargin: window.s(12)
+                        Layout.preferredHeight: show ? window.s(64) : 0
+                        clip: true
+                        visible: show
+                        radius: window.rMD()
+                        color: Qt.rgba(window.accent.r, window.accent.g, window.accent.b, 0.12)
+                        border.color: Qt.rgba(window.accent.r, window.accent.g, window.accent.b, 0.4)
+                        border.width: 1
+                        Behavior on Layout.preferredHeight { NumberAnimation { duration: 220; easing.type: Easing.OutQuart } }
+                        RowLayout {
+                            anchors.fill: parent; anchors.margins: window.s(12); spacing: window.s(12)
+                            Rectangle {
+                                Layout.preferredWidth: window.s(40); Layout.preferredHeight: window.s(40); radius: window.rSM()
+                                color: window.accent
+                                Text { anchors.centerIn: parent; text: "★"; color: window.base; font.pixelSize: window.s(17) }
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true; spacing: window.s(2)
+                                Text {
+                                    text: preferredCard.prefName
+                                    font.family: window.fontUI; font.weight: Font.Bold; font.pixelSize: window.s(14); color: window.text
+                                    elide: Text.ElideRight; Layout.fillWidth: true
+                                }
+                                Text {
+                                    text: "Your usual source — plays instantly, no re-checking"
+                                    font.family: window.fontUI; font.pixelSize: window.s(11); color: window.subtext0
+                                    elide: Text.ElideRight; Layout.fillWidth: true
+                                }
+                            }
+                            Rectangle {
+                                Layout.preferredWidth: window.s(96); Layout.preferredHeight: window.s(38); radius: window.rSM()
+                                color: prefPlayMouse.containsMouse ? Qt.lighter(window.accent, 1.12) : window.accent
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                                RowLayout {
+                                    anchors.centerIn: parent; spacing: window.s(6)
+                                    Text { text: "▶"; color: window.base; font.pixelSize: window.s(11) }
+                                    Text { text: "Play"; color: window.base; font.family: window.fontUI; font.weight: Font.Bold; font.pixelSize: window.s(13) }
+                                }
+                                MouseArea {
+                                    id: prefPlayMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: window.selectSourceManually(preferredCard.prefIndex)
+                                }
+                            }
+                        }
+                    }
                     // Search
                     Rectangle {
                         Layout.fillWidth: true; Layout.preferredHeight: window.s(56); color: window.surface0
@@ -2434,7 +2502,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.leftMargin: window.s(14); Layout.rightMargin: window.s(14); Layout.topMargin: window.s(6)
-                        Text { text: "AVAILABLE SOURCES"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.85 }
+                        Text { text: preferredCard.show ? "OTHER SOURCES" : "AVAILABLE SOURCES"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(11); font.weight: Font.DemiBold; font.letterSpacing: 0.8; opacity: 0.85 }
                         Item { Layout.fillWidth: true }
                         Text { visible: window.checkingState === "checking"; text: "scanning…"; color: window.subtext0; font.family: window.fontUI; font.pixelSize: window.s(10) }
                     }
