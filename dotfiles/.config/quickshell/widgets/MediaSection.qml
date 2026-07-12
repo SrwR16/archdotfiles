@@ -1,14 +1,13 @@
 import "../overlay"
-import "../widgets"
 import "../services"
 import "../theme"
+import "../widgets"
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
+import Quickshell.Services.Mpris
 
 RowLayout {
     id: mediaSection
-    spacing: 8
 
     property string trackTitle: "No Media"
     property string trackArtist: "Unknown Artist"
@@ -19,15 +18,36 @@ RowLayout {
 
     function checkHover() {
         var h = false;
-        if (typeof prevMouse !== "undefined") h = h || prevMouse.containsMouse;
-        if (typeof playMouse !== "undefined") h = h || playMouse.containsMouse;
-        if (typeof nextMouse !== "undefined") h = h || nextMouse.containsMouse;
+        if (typeof prevMouse !== "undefined")
+            h = h || prevMouse.containsMouse;
+
+        if (typeof playMouse !== "undefined")
+            h = h || playMouse.containsMouse;
+
+        if (typeof nextMouse !== "undefined")
+            h = h || nextMouse.containsMouse;
+
         isHovered = h;
     }
 
-    Process { id: prevProc; command: ["playerctl", "previous"] }
-    Process { id: playProc; command: ["playerctl", "play-pause"] }
-    Process { id: nextProc; command: ["playerctl", "next"] }
+    function _ctrl(fn) {
+        var list = Mpris.players.values || [];
+        var p = null;
+        for (var i = 0; i < list.length; ++i) {
+            if (list[i].isPlaying) {
+                p = list[i];
+                break;
+            }
+        }
+        if (!p && list.length > 0)
+            p = list[0];
+
+        if (p && fn)
+            fn(p);
+
+    }
+
+    spacing: 8
 
     Rectangle {
         width: 48
@@ -53,9 +73,16 @@ RowLayout {
                     anchors.centerIn: parent
                     text: "󰎆"
                     color: Theme.primary
-                    font { family: "JetBrainsMono Nerd Font"; pixelSize: 20 }
+
+                    font {
+                        family: "JetBrainsMono Nerd Font"
+                        pixelSize: 20
+                    }
+
                 }
+
             }
+
         }
 
         // Cava Waveform Overlay on Album Art
@@ -69,12 +96,42 @@ RowLayout {
                 spacing: 4
                 height: 24
 
-                Rectangle { width: 4; height: Math.min(24, mediaSection.barHeights[0] * 2); radius: 2; color: Theme.primary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 4; height: Math.min(24, mediaSection.barHeights[1] * 2); radius: 2; color: Theme.primary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 4; height: Math.min(24, mediaSection.barHeights[2] * 2); radius: 2; color: Theme.primary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 4; height: Math.min(24, mediaSection.barHeights[3] * 2); radius: 2; color: Theme.primary; anchors.verticalCenter: parent.verticalCenter }
+                Rectangle {
+                    width: 4
+                    height: Math.min(24, mediaSection.barHeights[0] * 2)
+                    radius: 2
+                    color: Theme.primary
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    width: 4
+                    height: Math.min(24, mediaSection.barHeights[1] * 2)
+                    radius: 2
+                    color: Theme.primary
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    width: 4
+                    height: Math.min(24, mediaSection.barHeights[2] * 2)
+                    radius: 2
+                    color: Theme.primary
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    width: 4
+                    height: Math.min(24, mediaSection.barHeights[3] * 2)
+                    radius: 2
+                    color: Theme.primary
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
             }
+
         }
+
     }
 
     ColumnLayout {
@@ -84,10 +141,16 @@ RowLayout {
         Text {
             text: mediaSection.trackTitle
             color: mediaSection.mediaState === "Idle" ? Theme.subtext : Theme.text
-            opacity: mediaSection.mediaState === "Idle" ? 0.6 : 1.0
+            opacity: mediaSection.mediaState === "Idle" ? 0.6 : 1
             elide: Text.ElideRight
             Layout.maximumWidth: 140
-            font { family: "Inter"; pixelSize: 14; weight: 600 }
+
+            font {
+                family: "Inter"
+                pixelSize: 14
+                weight: 600
+            }
+
         }
 
         RowLayout {
@@ -97,48 +160,80 @@ RowLayout {
             Text {
                 text: "󰒮"
                 color: prevMouse.containsMouse ? Theme.primary : Theme.text
-                opacity: prevMouse.containsMouse ? 1.0 : 0.7
-                font { family: "JetBrainsMono Nerd Font"; pixelSize: 20 }
+                opacity: prevMouse.containsMouse ? 1 : 0.7
+
+                font {
+                    family: "JetBrainsMono Nerd Font"
+                    pixelSize: 20
+                }
+
                 MouseArea {
                     id: prevMouse
+
                     anchors.fill: parent
                     anchors.margins: -4
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: prevProc.running = true
+                    onClicked: mediaSection._ctrl(function(p) {
+                        p.previous();
+                    })
                     onContainsMouseChanged: mediaSection.checkHover()
                 }
+
             }
+
             Text {
                 text: mediaSection.mediaState === "Playing" ? "󰏤" : "󰐊"
                 color: playMouse.containsMouse ? Theme.primary : Theme.text
-                opacity: playMouse.containsMouse ? 1.0 : 0.9
-                font { family: "JetBrainsMono Nerd Font"; pixelSize: 26 }
+                opacity: playMouse.containsMouse ? 1 : 0.9
+
+                font {
+                    family: "JetBrainsMono Nerd Font"
+                    pixelSize: 26
+                }
+
                 MouseArea {
                     id: playMouse
+
                     anchors.fill: parent
                     anchors.margins: -4
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: playProc.running = true
+                    onClicked: mediaSection._ctrl(function(p) {
+                        p.togglePlaying();
+                    })
                     onContainsMouseChanged: mediaSection.checkHover()
                 }
+
             }
+
             Text {
                 text: "󰒭"
                 color: nextMouse.containsMouse ? Theme.primary : Theme.text
-                opacity: nextMouse.containsMouse ? 1.0 : 0.7
-                font { family: "JetBrainsMono Nerd Font"; pixelSize: 20 }
+                opacity: nextMouse.containsMouse ? 1 : 0.7
+
+                font {
+                    family: "JetBrainsMono Nerd Font"
+                    pixelSize: 20
+                }
+
                 MouseArea {
                     id: nextMouse
+
                     anchors.fill: parent
                     anchors.margins: -4
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: nextProc.running = true
+                    onClicked: mediaSection._ctrl(function(p) {
+                        p.next();
+                    })
                     onContainsMouseChanged: mediaSection.checkHover()
                 }
+
             }
+
         }
+
     }
+
 }
