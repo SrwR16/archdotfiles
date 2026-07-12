@@ -359,47 +359,47 @@ Rectangle {
   states: [
     State {
       name: "default"
-      PropertyChanges { target: clockWidget; height: isExpanded ? 64 : 36; width: isExpanded ? 540 : (mode !== "default") ? indicatorRow.implicitWidth + 32 : collapsedContent.contentWidth + 86; radius: isExpanded ? 22 : 18 }
+      PropertyChanges { target: clockWidget; height: isExpanded ? 64 : 36; width: isExpanded ? 600 : (mode !== "default") ? indicatorRow.implicitWidth + 32 : collapsedContent.contentWidth + 86; radius: isExpanded ? 22 : 18 }
     },
     State {
       name: "productivity"
-      PropertyChanges { target: clockWidget; height: typeof prodLoader !== "undefined" && prodLoader.item ? prodLoader.item.implicitHeight + clockWidget.contentInset : 800; width: 540; radius: 28 }
+      PropertyChanges { target: clockWidget; height: typeof prodLoader !== "undefined" && prodLoader.item ? prodLoader.item.implicitHeight + clockWidget.contentInset : 800; width: 600; radius: 28 }
     },
     State {
       name: "controlCenter"
-      PropertyChanges { target: clockWidget; height: typeof ccLoader !== "undefined" && ccLoader.item ? ccLoader.item.implicitHeight + clockWidget.contentInset : 870; width: 680; radius: 24 }
+      PropertyChanges { target: clockWidget; height: typeof ccLoader !== "undefined" && ccLoader.item ? ccLoader.item.implicitHeight + clockWidget.contentInset : 870; width: 600; radius: 24 }
     },
     State {
       name: "appLauncher"
-      PropertyChanges { target: clockWidget; height: 240; width: 480; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 240; width: 600; radius: 28 }
     },
     State {
       name: "vpn"
-      PropertyChanges { target: clockWidget; height: 200; width: 480; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 200; width: 600; radius: 28 }
     },
     State {
       name: "powerSection"
-      PropertyChanges { target: clockWidget; height: 184; width: 540; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 184; width: 600; radius: 28 }
     },
     State {
       name: "tray"
-      PropertyChanges { target: clockWidget; height: 152; width: 440; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 152; width: 600; radius: 28 }
     },
     State {
       name: "sys"
-      PropertyChanges { target: clockWidget; height: 172; width: 480; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 172; width: 600; radius: 28 }
     },
     State {
       name: "pomodoro"
-      PropertyChanges { target: clockWidget; height: 96; width: 380; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 96; width: 600; radius: 28 }
     },
     State {
       name: "notifAlert"
-      PropertyChanges { target: clockWidget; height: 92; width: 400; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 600; radius: 24 }
     },
     State {
       name: "batteryAlert"
-      PropertyChanges { target: clockWidget; height: 92; width: 360; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 600; radius: 24 }
     },
   ]
 
