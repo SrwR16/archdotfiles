@@ -25,8 +25,9 @@ Rectangle {
   border.color: highlighted ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
   border.width: highlighted ? 1.5 : 1
 
+  scale: cardMouse.pressed ? 0.985 : (cardMouse.containsMouse ? 1.015 : 1.0)
   Behavior on color { ColorAnimation { duration: Motion.durXS } }
-  Behavior on scale { NumberAnimation { duration: Motion.durInstant; easing.type: Motion.easeStandard } }
+  Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
 
   property alias mouseArea: cardMouse
   signal clicked()

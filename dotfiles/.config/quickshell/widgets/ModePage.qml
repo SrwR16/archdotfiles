@@ -33,6 +33,11 @@ ScrollView {
     RowLayout {
       Layout.fillWidth: true
       spacing: 10
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 0 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Repeater {
         model: _modes
@@ -126,6 +131,11 @@ ScrollView {
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 60 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         anchors.fill: parent
@@ -200,12 +210,16 @@ ScrollView {
     Text {
       text: "⚠ Silent / Performance bypass the automatic fan curve. If CPU exceeds 85°C the system force-reverts to Balanced."
       color: Theme.text
-      opacity: 0.4
+      opacity: 0
       wrapMode: Text.WordWrap
       font.family: "Inter"
       font.pixelSize: 9
       Layout.fillWidth: true
       Layout.topMargin: 2
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 120 }
+  NumberAnimation { from: 0; to: 0.4; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
     }
 
     Item { Layout.preferredHeight: 4 }

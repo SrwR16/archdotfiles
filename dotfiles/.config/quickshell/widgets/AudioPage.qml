@@ -44,6 +44,11 @@ ScrollView {
     Item {
       Layout.fillWidth: true
       Layout.preferredHeight: outCol.implicitHeight + 28
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 0 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Rectangle {
         anchors.fill: parent
@@ -158,6 +163,11 @@ ScrollView {
       font.pixelSize: 11
       font.weight: 700
       leftPadding: 4
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 60 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
     }
 
     Repeater {
@@ -222,6 +232,11 @@ ScrollView {
     Item {
       Layout.fillWidth: true
       Layout.preferredHeight: inCol.implicitHeight + 28
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 120 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Rectangle {
         anchors.fill: parent
@@ -336,6 +351,11 @@ ScrollView {
       font.pixelSize: 11
       font.weight: 700
       leftPadding: 4
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 180 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
     }
 
     Repeater {

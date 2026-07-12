@@ -175,6 +175,18 @@ Item {
         return nxt < 0 ? rest : rest.substring(0, nxt);
     }
 
+    // Replay staggered entrance animations for a page (called when it becomes visible).
+    function _replayEntrance(root) {
+        if (!root) return;
+        var stack = [root];
+        while (stack.length) {
+            var n = stack.pop();
+            if (n.objectName === "entrance" && n.restart) n.restart();
+            var ch = n.children;
+            if (ch) for (var i = 0; i < ch.length; i++) stack.push(ch[i]);
+        }
+    }
+
     function _wifiParseStatus(text) {
         var lines = text.split("\n");
         for (var i = 0; i < lines.length; i++) {
@@ -237,15 +249,16 @@ Item {
     Process {
         id: wifiScanProc
         command: ["sh", "-c",
-            "nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY,BSSID dev wifi list 2>/dev/null | while IFS= read -r line; do " +
+            "nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY,BSSID,FREQ dev wifi list 2>/dev/null | while IFS= read -r line; do " +
             "  [ -z \"$line\" ] && continue; " +
             "  iu=${line%%:*}; r=${line#*:}; " +
-            "  bssid=${r##*:}; r=${r%:*}; " +
+            "  freq=${r##*:}; r=${r%:*}; " +
+            "  mac=${r##*:}; r=${r%:*}; " +
             "  sec=${r##*:}; r=${r%:*}; " +
             "  sig=${r##*:}; r=${r%:*}; " +
             "  ssid=${r%:*}; " +
             "  [ -z \"$ssid\" ] && continue; " +
-            "  printf '%s\\037%s\\037%s\\037%s\\n' \"$iu\" \"$sig\" \"$sec\" \"$ssid\"; " +
+            "  printf '%s\\037%s\\037%s\\037%s\\037%s\\037%s\\n' \"$iu\" \"$sig\" \"$sec\" \"$mac\" \"$freq\" \"$ssid\"; " +
             "done"]
         stdout: StdioCollector { onStreamFinished: controlCenter._wifiParseScan(this.text) }
     }
@@ -258,17 +271,22 @@ Item {
             var l = lines[i].trim();
             if (!l) continue;
             var f = l.split(controlCenter._wifiSep);
-            if (f.length < 4) continue;
+            if (f.length < 6) continue;
             var inUse = f[0] === "*";
             var signal = parseInt(f[1]) || 0;
             var security = f[2];
-            var ssid = f[3];
+            var mac = f[3];
+            var freq = parseInt(f[4]) || 0;
+            var ssid = f[5];
             if (!ssid || seen[ssid]) continue;
             seen[ssid] = true;
+            var band = freq >= 5000 ? "5 GHz" : (freq > 0 ? "2.4 GHz" : "");
             list.push({
                 ssid: ssid,
                 signal: signal,
                 security: security,
+                mac: mac,
+                band: band,
                 active: inUse,
                 known: controlCenter.wifiKnownList.indexOf(ssid) >= 0
             });
@@ -803,6 +821,7 @@ Item {
             MainPage {
                 id: mainPageItem
                 visible: controlCenter.page === "main"
+                onVisibleChanged: { if (visible) controlCenter._replayEntrance(mainPageItem); }
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 12
@@ -837,7 +856,9 @@ Item {
             }
 
             WifiPage {
+                id: wifiPageItem
                 visible: controlCenter.page === "wifi"
+                onVisibleChanged: { if (visible) controlCenter._replayEntrance(wifiPageItem); }
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
@@ -870,7 +891,9 @@ Item {
 
             // ---- BLUETOOTH PAGE ----
             BluetoothPage {
+              id: btPageItem
               visible: controlCenter.page === "bluetooth"
+              onVisibleChanged: { if (visible) controlCenter._replayEntrance(btPageItem); }
               Layout.fillWidth: true
               Layout.fillHeight: true
               clip: true
@@ -888,7 +911,9 @@ Item {
 
             // ---- AUDIO PAGE ----
             AudioPage {
+              id: audioPageItem
               visible: controlCenter.page === "audio"
+              onVisibleChanged: { if (visible) controlCenter._replayEntrance(audioPageItem); }
               Layout.fillWidth: true
               Layout.fillHeight: true
               clip: true
@@ -912,7 +937,9 @@ Item {
 
             // ---- NIGHT LIGHT PAGE ----
             NightLightPage {
+              id: nlPageItem
               visible: controlCenter.page === "nightlight"
+              onVisibleChanged: { if (visible) controlCenter._replayEntrance(nlPageItem); }
               Layout.fillWidth: true
               Layout.fillHeight: true
               clip: true
@@ -932,7 +959,9 @@ Item {
 
             // ---- MODE PAGE ----
             ModePage {
+              id: modePageItem
               visible: controlCenter.page === "mode"
+              onVisibleChanged: { if (visible) controlCenter._replayEntrance(modePageItem); }
               Layout.fillWidth: true
               Layout.fillHeight: true
               clip: true

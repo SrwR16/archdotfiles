@@ -42,6 +42,11 @@ ScrollView {
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 0 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         anchors.fill: parent
@@ -93,6 +98,11 @@ ScrollView {
       visible: _on
       Layout.fillWidth: true
       spacing: 8
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 60 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         Layout.fillWidth: true
@@ -276,6 +286,11 @@ ScrollView {
       visible: _on
       Layout.fillWidth: true
       spacing: 8
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 120 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Text { text: "Available"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
 

@@ -88,6 +88,11 @@ ScrollView {
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 0 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         anchors.fill: parent
@@ -160,6 +165,11 @@ ScrollView {
       visible: _connected && wifiEnabled
       Layout.fillWidth: true
       Layout.preferredHeight: heroCol.implicitHeight + 28
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 60 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Rectangle {
         anchors.fill: parent
@@ -230,9 +240,11 @@ ScrollView {
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outline; opacity: 0.5 }
 
-        RowLayout {
+        GridLayout {
           Layout.fillWidth: true
-          spacing: 14
+          columns: 2
+          rowSpacing: 12
+          columnSpacing: 14
 
           ColumnLayout {
             spacing: 3
@@ -244,7 +256,16 @@ ScrollView {
               elide: Text.ElideRight; Layout.fillWidth: true
             }
           }
-          Rectangle { width: 1; height: 28; color: Theme.outline; opacity: 0.5 }
+          ColumnLayout {
+            spacing: 3
+            Layout.fillWidth: true
+            Text { text: "Band"; color: Theme.subtext; font.family: "Inter"; font.pixelSize: 10 }
+            Text {
+              text: _active && _active.band ? _active.band : "—"
+              color: Theme.text; font.family: "JetBrains Mono"; font.pixelSize: 12
+              elide: Text.ElideRight; Layout.fillWidth: true
+            }
+          }
           ColumnLayout {
             spacing: 3
             Layout.fillWidth: true
@@ -274,6 +295,16 @@ ScrollView {
                   }
                 }
               }
+            }
+          }
+          ColumnLayout {
+            spacing: 3
+            Layout.fillWidth: true
+            Text { text: "MAC"; color: Theme.subtext; font.family: "Inter"; font.pixelSize: 10 }
+            Text {
+              text: _active && _active.mac ? _active.mac : "—"
+              color: Theme.text; font.family: "JetBrains Mono"; font.pixelSize: 12
+              elide: Text.ElideRight; Layout.fillWidth: true
             }
           }
         }
@@ -397,6 +428,11 @@ ScrollView {
       visible: wifiEnabled
       Layout.fillWidth: true
       spacing: 10
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 120 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         Layout.fillWidth: true; spacing: 8
@@ -480,6 +516,12 @@ ScrollView {
                 Text {
                   text: _isSecured(modelData.security) ? "Secured" : "Open"
                   color: Theme.subtext; opacity: 0.7
+                  font.family: "Inter"; font.pixelSize: 10
+                }
+                Text {
+                  visible: modelData.band.length > 0
+                  text: "· " + modelData.band
+                  color: Theme.subtext
                   font.family: "Inter"; font.pixelSize: 10
                 }
                 Text {

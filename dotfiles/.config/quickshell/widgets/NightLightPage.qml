@@ -42,6 +42,11 @@ ScrollView {
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 0 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       RowLayout {
         anchors.fill: parent
@@ -96,8 +101,12 @@ ScrollView {
       radius: 18
       clip: true
       color: _preview
-      opacity: 0.95
+      opacity: 0
       Behavior on color { ColorAnimation { duration: Motion.durL } }
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 60 }
+  NumberAnimation { from: 0; to: 0.95; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Canvas {
         id: nlSpec
@@ -175,6 +184,11 @@ ScrollView {
       Layout.preferredHeight: 44
       radius: 14
       color: Theme.surfaceLight
+      opacity: 0
+      SequentialAnimation on opacity {
+  PauseAnimation { duration: 120 }
+  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+}
 
       Rectangle {
         id: nlSeg

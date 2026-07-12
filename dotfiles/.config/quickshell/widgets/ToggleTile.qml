@@ -21,12 +21,13 @@ Rectangle {
   color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
   border.color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
   border.width: 1
-  scale: tile._pressed ? 0.97 : 1.0
+  scale: tile._pressed ? 0.97 : (tile._hover ? 1.02 : 1.0)
   Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
   Behavior on color { ColorAnimation { duration: Motion.durXS } }
   Behavior on border.color { ColorAnimation { duration: Motion.durXS } }
 
   property bool _pressed: false
+  property bool _hover: false
 
   RowLayout {
     anchors.fill: parent
@@ -80,6 +81,8 @@ Rectangle {
     width: tile.expandable ? parent.width * 0.72 : parent.width
     cursorShape: Qt.PointingHandCursor
     hoverEnabled: true
+    onEntered: tile._hover = true
+    onExited: tile._hover = false
     onPressed: tile._pressed = true
     onReleased: tile._pressed = false
     onCanceled: tile._pressed = false
@@ -94,6 +97,8 @@ Rectangle {
     width: parent.width * 0.28
     cursorShape: Qt.PointingHandCursor
     hoverEnabled: true
+    onEntered: tile._hover = true
+    onExited: tile._hover = false
     onPressed: tile._pressed = true
     onReleased: tile._pressed = false
     onCanceled: tile._pressed = false
