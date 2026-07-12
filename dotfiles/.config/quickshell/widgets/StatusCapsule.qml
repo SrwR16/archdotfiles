@@ -1,21 +1,13 @@
 import "../overlay"
-import "../widgets"
 import "../services"
 import "../theme"
+import "../widgets"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth
 
-
 Rectangle {
     id: statusCapsule
-    color: capsuleMouseArea.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.85) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
-    radius: 12
-    height: 24
-    width: layout.implicitWidth + 24
-    scale: capsuleMouseArea.pressed ? 0.96 : 1.0
-    Behavior on color { ColorAnimation { duration: Motion.durXS } }
-    Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
 
     property QtObject statusSvc: null
     property string wifiName: statusSvc ? statusSvc.wifi : "Disconnected"
@@ -26,20 +18,31 @@ Rectangle {
     property string networkState: statusSvc ? statusSvc.networkState : "Disconnected"
     property string connectionType: statusSvc ? statusSvc.connType : "disconnected"
     property bool isHovered: capsuleMouseArea.containsMouse
-    signal clicked()
-
     property var btAdapter: Bluetooth.defaultAdapter
     property bool btConnected: {
-        if (!btAdapter || !btAdapter.enabled) return false;
+        if (!btAdapter || !btAdapter.enabled)
+            return false;
+
         var devs = btAdapter.devices.values;
         for (var i = 0; i < devs.length; i++) {
-            if (devs[i].state === BluetoothDeviceState.Connected) return true;
+            if (devs[i].state === BluetoothDeviceState.Connected)
+                return true;
+
         }
         return false;
     }
 
+    signal clicked()
+
+    color: capsuleMouseArea.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.85) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+    radius: 12
+    height: 24
+    width: layout.implicitWidth + 24
+    scale: capsuleMouseArea.pressed ? 0.96 : 1
+
     MouseArea {
         id: capsuleMouseArea
+
         anchors.fill: parent
         hoverEnabled: false
         cursorShape: Qt.PointingHandCursor
@@ -48,35 +51,43 @@ Rectangle {
 
     RowLayout {
         id: layout
+
         anchors.centerIn: parent
         spacing: 10
 
         Text {
-            text: statusCapsule.networkState === "Disconnected" ? "󰤭"
-                : statusCapsule.connectionType === "wired" ? "󰌚"
-                : statusCapsule.wifiSignal > 75 ? "󰤨"
-                : statusCapsule.wifiSignal > 50 ? "󰤥"
-                : statusCapsule.wifiSignal > 25 ? "󰤢"
-                : "󰤟"
+            text: statusCapsule.networkState === "Disconnected" ? "󰤭" : statusCapsule.connectionType === "wired" ? "󰌚" : statusCapsule.wifiSignal > 75 ? "󰤨" : statusCapsule.wifiSignal > 50 ? "󰤥" : statusCapsule.wifiSignal > 25 ? "󰤢" : "󰤟"
             color: statusCapsule.networkState === "Disconnected" ? Theme.subtext : Theme.text
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
+
+            font {
+                family: "JetBrainsMono Nerd Font"
+                pixelSize: 13
+            }
+
         }
 
         Text {
             visible: statusCapsule.btConnected
             text: "󰂱"
             color: Theme.text
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
+
+            font {
+                family: "JetBrainsMono Nerd Font"
+                pixelSize: 13
+            }
+
         }
 
         Item {
-            width: 32; height: 14
+            width: 32
+            height: 14
             Layout.alignment: Qt.AlignVCenter
 
             Rectangle {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                width: 25; height: 12
+                width: 25
+                height: 12
                 radius: 4
                 color: "transparent"
                 border.color: Theme.text
@@ -94,31 +105,69 @@ Rectangle {
                 width: Math.max(0, Math.min(21, 21 * (statusCapsule.batteryPercent / 100)))
                 radius: 2
                 color: statusCapsule.isCharging ? Theme.success : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
-                Behavior on width { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: Motion.durM
+                        easing.type: Motion.easeStandard
+                    }
+
+                }
+
             }
 
             Rectangle {
                 anchors.left: parent.left
                 anchors.leftMargin: 26
                 anchors.verticalCenter: parent.verticalCenter
-                width: 2; height: 4
+                width: 2
+                height: 4
                 radius: 1
                 color: Theme.text
                 opacity: 0.4
             }
+
         }
 
         Text {
             visible: statusCapsule.isCharging
             text: "󱐋"
             color: Theme.success
-            font { family: "JetBrainsMono Nerd Font"; pixelSize: 11 }
+
+            font {
+                family: "JetBrainsMono Nerd Font"
+                pixelSize: 11
+            }
+
         }
 
         Text {
             text: statusCapsule.batteryPercent + "%"
             color: statusCapsule.isCharging ? Theme.success : (statusCapsule.batteryPercent <= 20 ? Theme.error : Theme.text)
-            font { family: "Inter"; pixelSize: 11; weight: 700 }
+
+            font {
+                family: "Inter"
+                pixelSize: 11
+                weight: 700
+            }
+
         }
+
     }
+
+    Behavior on color {
+        ColorAnimation {
+            duration: Motion.durXS
+        }
+
+    }
+
+    Behavior on scale {
+        NumberAnimation {
+            duration: Motion.durXS
+            easing.type: Motion.easeStandard
+        }
+
+    }
+
 }
