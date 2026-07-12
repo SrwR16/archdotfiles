@@ -92,16 +92,42 @@ ScrollView {
     Rectangle {
       visible: nlEnabled
       Layout.fillWidth: true
-      Layout.preferredHeight: 88
+      Layout.preferredHeight: 104
       radius: 18
       clip: true
       color: _preview
       opacity: 0.95
       Behavior on color { ColorAnimation { duration: Motion.durL } }
 
+      Canvas {
+        id: nlSpec
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: 14
+        property real frac: Math.max(0, Math.min(1, ((nlMode === "auto" ? nlNightTemp : nlTemp) - 1000) / 7000))
+        onFracChanged: requestPaint()
+        Component.onCompleted: requestPaint()
+        onPaint: {
+          var ctx = getContext("2d")
+          ctx.reset()
+          var w = width, h = height
+          for (var x = 0; x < w; x++) {
+            var xx = x / w
+            ctx.fillStyle = Qt.rgba(1, (120 + 135 * xx) / 255, (40 + 215 * xx) / 255, 1)
+            ctx.fillRect(x, 0, 1, h)
+          }
+          var mx = frac * w
+          ctx.fillStyle = "#ffffff"
+          ctx.fillRect(mx - 1.5, 0, 3, h)
+        }
+      }
+
       RowLayout {
-        anchors.fill: parent
-        anchors.margins: 18
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 16
         spacing: 12
 
         Rectangle {

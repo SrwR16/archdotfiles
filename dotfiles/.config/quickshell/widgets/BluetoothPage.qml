@@ -186,13 +186,23 @@ ScrollView {
                   font.family: "Inter"
                   font.pixelSize: 10
                 }
-                Text {
-                  visible: modelData.batteryAvailable
-                  text: "· " + Math.round(modelData.battery * 100) + "%"
-                  color: Theme.subtext
-                  font.family: "Inter"
-                  font.pixelSize: 10
-                }
+              }
+            }
+
+            Item {
+              visible: modelData.batteryAvailable
+              implicitWidth: 26
+              implicitHeight: 26
+              ArcGauge {
+                anchors.fill: parent
+                value: modelData.battery
+                thickness: 3
+                fromDeg: -90
+                sweepDeg: 360
+                color: modelData.battery < 0.2 ? Theme.error : (modelData.battery < 0.5 ? Theme.warning : Theme.primary)
+                centerText: Math.round(modelData.battery * 100) + ""
+                centerSize: 9
+                centerColor: Theme.subtext
               }
             }
 

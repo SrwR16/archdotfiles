@@ -51,60 +51,79 @@ ColumnLayout {
 
   SystemClock { id: clock; precision: SystemClock.Minutes }
 
-  // ---- Header: clock + date ----
-  RowLayout {
+  // ---- Glass hero: clock + date + DND ----
+  Rectangle {
     Layout.fillWidth: true
-    spacing: 12
+    Layout.preferredHeight: 108
+    radius: 26
+    color: Theme.container
+    border.color: Theme.outline
+    border.width: 1
 
-    ColumnLayout {
-      spacing: 0
-      Text {
-        text: Qt.formatTime(clock.date, "h:mm AP")
-        color: Theme.text
-        font { family: "Inter"; pixelSize: 34; weight: 800 }
-      }
-      Text {
-        text: Qt.formatDate(clock.date, "dddd, MMMM d")
-        color: Theme.subtext
-        font { family: "Inter"; pixelSize: 11; weight: 500 }
-      }
+    // specular top edge (liquid-glass highlight)
+    Rectangle {
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 1.5
+      radius: 26
+      color: Qt.rgba(1, 1, 1, 0.10)
     }
 
-    Item { Layout.fillWidth: true }
+    RowLayout {
+      anchors.fill: parent
+      anchors.margins: 20
+      spacing: 12
 
-    // Do Not Disturb quick toggle
-    Rectangle {
-      implicitWidth: dndRow.implicitWidth + 16
-      implicitHeight: 32
-      radius: 16
-      color: doNotDisturb ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
-      border.color: doNotDisturb ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
-      border.width: 1
-      RowLayout {
-        id: dndRow
-        anchors.centerIn: parent
-        spacing: 6
+      ColumnLayout {
+        spacing: 0
         Text {
-          text: "󰂚"
-          color: doNotDisturb ? Theme.primary : Theme.subtext
-          font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
+          text: Qt.formatTime(clock.date, "h:mm AP")
+          color: Theme.text
+          font { family: "Inter"; pixelSize: 40; weight: 800 }
         }
         Text {
-          text: doNotDisturb ? "DND" : "Alerts"
-          color: doNotDisturb ? Theme.primary : Theme.subtext
-          font { family: "Inter"; pixelSize: 11; weight: 600 }
+          text: Qt.formatDate(clock.date, "dddd, MMMM d")
+          color: Theme.subtext
+          font { family: "Inter"; pixelSize: 12; weight: 500 }
         }
       }
-      MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: toggleDnd()
+
+      Item { Layout.fillWidth: true }
+
+      Rectangle {
+        implicitWidth: dndRow.implicitWidth + 18
+        implicitHeight: 36
+        radius: 18
+        color: doNotDisturb ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+        border.color: doNotDisturb ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+        border.width: 1
+        RowLayout {
+          id: dndRow
+          anchors.centerIn: parent
+          spacing: 6
+          Text {
+            text: "󰂚"
+            color: doNotDisturb ? Theme.primary : Theme.subtext
+            font { family: "JetBrainsMono Nerd Font"; pixelSize: 14 }
+          }
+          Text {
+            text: doNotDisturb ? "Do Not Disturb" : "Notifications"
+            color: doNotDisturb ? Theme.primary : Theme.subtext
+            font { family: "Inter"; pixelSize: 11; weight: 600 }
+          }
+        }
+        MouseArea {
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onClicked: toggleDnd()
+        }
       }
     }
   }
 
-  // ---- Quick toggles (3 columns) ----
+  // ---- Quick toggles (3-col bento) ----
   GridLayout {
     Layout.fillWidth: true
     columns: 3
@@ -275,17 +294,8 @@ ColumnLayout {
       anchors.fill: parent
       spacing: 8
       visible: !activePlayer?.trackTitle
-      Text {
-        text: "󰎆"
-        color: Theme.subtext
-        font { family: "JetBrainsMono Nerd Font"; pixelSize: 14 }
-      }
-      Text {
-        text: "Nothing playing"
-        color: Theme.text
-        opacity: 0.4
-        font { family: "Inter"; pixelSize: 12 }
-      }
+      Text { text: "󰎆"; color: Theme.subtext; font { family: "JetBrainsMono Nerd Font"; pixelSize: 14 } }
+      Text { text: "Nothing playing"; color: Theme.text; opacity: 0.4; font { family: "Inter"; pixelSize: 12 } }
     }
   }
 

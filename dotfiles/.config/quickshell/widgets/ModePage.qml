@@ -170,22 +170,28 @@ ScrollView {
           color: Theme.outline
           opacity: 0.5
         }
+        Item {
+          implicitWidth: 40
+          implicitHeight: 40
+          ArcGauge {
+            anchors.fill: parent
+            thickness: 5
+            value: cpuTemp > 0 ? Math.max(0, Math.min(1, (cpuTemp - 30) / 70)) : 0
+            color: cpuTemp >= 85 ? Theme.error : (cpuTemp >= 70 ? Theme.warning : Theme.primary)
+            centerText: cpuTemp > 0 ? Math.round(cpuTemp) + "°" : "—"
+            centerSize: 12
+            centerColor: cpuTemp >= 85 ? Theme.error : Theme.text
+          }
+        }
+
         ColumnLayout {
           spacing: 1
-
           Text {
-            text: "CPU"
+            text: "CPU temp"
             color: Theme.text
             opacity: 0.6
             font.family: "Inter"
             font.pixelSize: 10
-          }
-          Text {
-            text: cpuTemp > 0 ? Math.round(cpuTemp) + "°C" : "—°C"
-            color: cpuTemp >= 85 ? Theme.error : Theme.text
-            font.family: "Inter"
-            font.pixelSize: 14
-            font.weight: 700
           }
         }
       }

@@ -178,10 +178,18 @@ ScrollView {
           Layout.fillWidth: true
           spacing: 14
 
-          SignalBars {
-            signal: _connectedSignal
-            barColor: Theme.primary
-            implicitHeight: 34
+          Item {
+            implicitWidth: 48
+            implicitHeight: 48
+            ArcGauge {
+              anchors.fill: parent
+              value: _connectedSignal / 100
+              color: Theme.primary
+              thickness: 6
+              centerText: Math.round(_connectedSignal) + "%"
+              centerSize: 11
+              centerColor: Theme.text
+            }
           }
           ColumnLayout {
             spacing: 3

@@ -103,6 +103,22 @@ ScrollView {
             font.pixelSize: 13
             font.weight: 700
           }
+          RowLayout {
+            spacing: 3
+            Repeater {
+              model: 14
+              Rectangle {
+                required property int index
+                width: 4; height: 22; radius: 2
+                color: {
+                  var lit = (audioMuted ? 0 : audioVolume) * 14 > index
+                  if (!lit) return Theme.outline
+                  var f = index / 13
+                  return f > 0.85 ? Theme.error : (f > 0.65 ? Theme.warning : Theme.primary)
+                }
+              }
+            }
+          }
           Rectangle {
             width: 38; height: 38; radius: 12
             color: muteOut.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
@@ -264,6 +280,22 @@ ScrollView {
             font.family: "Inter"
             font.pixelSize: 13
             font.weight: 700
+          }
+          RowLayout {
+            spacing: 3
+            Repeater {
+              model: 14
+              Rectangle {
+                required property int index
+                width: 4; height: 22; radius: 2
+                color: {
+                  var lit = (audioSourceMuted ? 0 : audioSourceVolume) * 14 > index
+                  if (!lit) return Theme.outline
+                  var f = index / 13
+                  return f > 0.85 ? Theme.error : (f > 0.65 ? Theme.warning : Theme.primary)
+                }
+              }
+            }
           }
           Rectangle {
             width: 38; height: 38; radius: 12

@@ -22,12 +22,12 @@ Rectangle {
   implicitHeight: 38
   implicitWidth: row.implicitWidth + 28
   color: !btn.enabled ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
-    : btn.danger ? (btnMouse.containsMouse ? Theme.error : Qt.darker(Theme.error, 1.1))
+    : btn.danger ? (btnMouse.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.22) : Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.14))
     : btn.accent ? (btnMouse.containsMouse ? Theme.primary : Qt.darker(Theme.primary, 1.08))
     : btn.outline ? (btnMouse.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.6) : "transparent")
     : (btnMouse.containsMouse ? Theme.surfaceHover : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85))
-  border.width: btn.outline ? 1 : 0
-  border.color: Theme.outline
+  border.width: (btn.outline || btn.danger) ? 1 : 0
+  border.color: btn.danger ? Theme.error : Theme.outline
   opacity: btn.enabled ? 1.0 : 0.5
 
   Behavior on color { ColorAnimation { duration: Motion.durXS } }
@@ -44,12 +44,12 @@ Rectangle {
       color: btn.accent ? Theme.backgroundFg : Theme.text
       font { family: "JetBrainsMono Nerd Font"; pixelSize: 14 }
     }
-    Text {
-      visible: btn.text
-      text: btn.text
-      color: (btn.accent || btn.danger) ? Theme.backgroundFg : Theme.text
-      font { family: "Inter"; pixelSize: 12; weight: 600 }
-    }
+      Text {
+        visible: btn.text
+        text: btn.text
+        color: btn.danger ? Theme.error : (btn.accent ? Theme.backgroundFg : Theme.text)
+        font { family: "Inter"; pixelSize: 12; weight: 600 }
+      }
   }
 
   MouseArea {
