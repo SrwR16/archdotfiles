@@ -342,9 +342,10 @@ Item {
                 wifiSignal: controlCenter.wifiSvc.wifiSignal
                 wifiNetworks: controlCenter.wifiSvc.wifiNetworks
                 wifiScanning: controlCenter.wifiSvc.wifiScanning
-                wifiConnectingSsid: controlCenter.wifiSvc.wifiConnectingSsid
-                wifiPendingSsid: controlCenter.wifiSvc.wifiPendingSsid
+                wifiPhase: controlCenter.wifiSvc.wifiPhase
+                wifiActionSsid: controlCenter.wifiSvc.wifiActionSsid
                 wifiPendingSecurity: controlCenter.wifiSvc.wifiPendingSecurity
+                wifiActionIsNew: controlCenter.wifiSvc.wifiActionIsNew
                 wifiConnectError: controlCenter.wifiSvc.wifiConnectError
                 wifiCurrentPassword: controlCenter.wifiSvc.wifiCurrentPassword
                 wifiPasswordRevealed: controlCenter.wifiSvc.wifiPasswordRevealed
@@ -355,6 +356,7 @@ Item {
                 onConnectHidden: (ssid, pw) => controlCenter.wifiSvc.connectToWifi(ssid, "", pw)
                 onRequestPassword: (ssid, security) => controlCenter.wifiSvc.requestPassword(ssid, security)
                 onCancelPassword: controlCenter.wifiSvc.cancelPassword()
+                onCancelConnect: controlCenter.wifiSvc.cancelConnect()
                 onDisconnectWifi: controlCenter.wifiSvc.disconnectWifi()
                 onForgetWifi: (ssid) => controlCenter.wifiSvc.forgetWifi(ssid)
                 onLoadCurrentWifiPassword: controlCenter.wifiSvc.loadCurrentWifiPassword()
