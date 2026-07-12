@@ -29,24 +29,41 @@ ScrollView {
   readonly property bool _on: !!btAdapter && btAdapter.enabled
   readonly property var _paired: _on ? btDevices.filter(function (d) { return d.paired; }) : []
   readonly property var _available: _on ? btDevices.filter(function (d) { return !d.paired; }) : []
+  readonly property int _connectedCount: {
+    var c = 0; var d = _paired;
+    for (var i = 0; i < d.length; i++) if (d[i].state === BluetoothDeviceState.Connected) c++;
+    return c;
+  }
+
+  function _btIcon(name) {
+    var n = (name || "").toLowerCase();
+    if (n.indexOf("bud") >= 0 || n.indexOf("head") >= 0 || n.indexOf("ear") >= 0) return "󰋃";
+    if (n.indexOf("key") >= 0) return "󰌅";
+    if (n.indexOf("mouse") >= 0) return "󰕱";
+    if (n.indexOf("watch") >= 0) return "󰃀";
+    if (n.indexOf("phone") >= 0 || n.indexOf("pixel") >= 0) return "󰘟";
+    if (n.indexOf("speaker") >= 0) return "󰓃";
+    if (n.indexOf("laptop") >= 0 || n.indexOf("pc") >= 0 || n.indexOf("mac") >= 0) return "󰋊";
+    return "󰂯";
+  }
 
   ColumnLayout {
     width: parent.width
-    spacing: 12
+    spacing: 10
 
-    // ============ ENABLE CONTROL (title is in the panel header) ============
+    // ============ ENABLE ============
     Rectangle {
       Layout.fillWidth: true
-      Layout.preferredHeight: 50
+      Layout.preferredHeight: 48
       radius: 14
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
       opacity: 0
       SequentialAnimation on opacity {
-  PauseAnimation { duration: 0 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+        PauseAnimation { duration: 0 }
+        NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+      }
 
       RowLayout {
         anchors.fill: parent
@@ -65,7 +82,7 @@ ScrollView {
           }
         }
         Text {
-          text: _on ? "Enabled" : "Disabled"
+          text: _on ? "Bluetooth is on" : "Bluetooth is off"
           color: _on ? Theme.primary : Theme.subtext
           font.family: "Inter"
           font.pixelSize: 12
@@ -100,9 +117,9 @@ ScrollView {
       spacing: 8
       opacity: 0
       SequentialAnimation on opacity {
-  PauseAnimation { duration: 60 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+        PauseAnimation { duration: 60 }
+        NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+      }
 
       RowLayout {
         Layout.fillWidth: true
@@ -157,7 +174,7 @@ ScrollView {
 
           RowLayout {
             anchors.fill: parent
-            anchors.margins: 14
+            anchors.margins: 12
             spacing: 12
 
             Rectangle {
@@ -167,8 +184,7 @@ ScrollView {
                 : Theme.surfaceLight
               Text {
                 anchors.centerIn: parent
-                text: modelData.pairing ? "󰄉"
-                  : (modelData.state === BluetoothDeviceState.Connected ? "󰂱" : "󰂯")
+                text: _btIcon(modelData.name || modelData.deviceName)
                 color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.text
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 16
@@ -187,15 +203,12 @@ ScrollView {
                 font.pixelSize: 13
                 font.weight: 600
               }
-              RowLayout {
-                spacing: 6
-                Text {
-                  text: btDeviceSubtitle(btCard.modelData)
-                  color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.subtext
-                  opacity: modelData.state === BluetoothDeviceState.Connected ? 1 : 0.7
-                  font.family: "Inter"
-                  font.pixelSize: 10
-                }
+              Text {
+                text: btDeviceSubtitle(btCard.modelData)
+                color: modelData.state === BluetoothDeviceState.Connected ? Theme.primary : Theme.subtext
+                opacity: modelData.state === BluetoothDeviceState.Connected ? 1 : 0.7
+                font.family: "Inter"
+                font.pixelSize: 10
               }
             }
 
@@ -288,9 +301,9 @@ ScrollView {
       spacing: 8
       opacity: 0
       SequentialAnimation on opacity {
-  PauseAnimation { duration: 120 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+        PauseAnimation { duration: 120 }
+        NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+      }
 
       Text { text: "Available"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
 
@@ -308,7 +321,7 @@ ScrollView {
 
           RowLayout {
             anchors.fill: parent
-            anchors.margins: 14
+            anchors.margins: 12
             spacing: 12
 
             Rectangle {
@@ -316,7 +329,7 @@ ScrollView {
               color: Theme.surfaceLight
               Text {
                 anchors.centerIn: parent
-                text: "󰂯"
+                text: _btIcon(modelData.name || modelData.deviceName)
                 color: Theme.text
                 opacity: 0.7
                 font.family: "JetBrainsMono Nerd Font"

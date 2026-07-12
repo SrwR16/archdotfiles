@@ -73,26 +73,26 @@ ScrollView {
   function _isSecured(sec) { return sec && sec.length > 0 && sec !== "--"; }
   function _doConnect() {
     if (_hiddenMode) connectHidden(_hiddenSsid.trim(), wifiPwField.text);
-    else connectToWifi(wifiPendingSsid, wifiPendingSecurity, wifiPwField.text);
+    else connectToWifi(wifiPendingSsid || "", wifiPendingSecurity, wifiPwField.text);
   }
 
   ColumnLayout {
     width: parent.width
-    spacing: 12
+    spacing: 10
 
-    // ============ ENABLE CONTROL (title is in the panel header) ============
+    // ============ ENABLE ============
     Rectangle {
       Layout.fillWidth: true
-      Layout.preferredHeight: 50
+      Layout.preferredHeight: 48
       radius: 14
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
       opacity: 0
       SequentialAnimation on opacity {
-  PauseAnimation { duration: 0 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+        PauseAnimation { duration: 0 }
+        NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+      }
 
       RowLayout {
         anchors.fill: parent
@@ -111,7 +111,7 @@ ScrollView {
           }
         }
         Text {
-          text: wifiEnabled ? "Enabled" : "Disabled"
+          text: wifiEnabled ? "Wi-Fi is on" : "Wi-Fi is off"
           color: wifiEnabled ? Theme.primary : Theme.subtext
           font.family: "Inter"
           font.pixelSize: 12
@@ -139,11 +139,11 @@ ScrollView {
       }
     }
 
-    // ============ OFF STATE ============
+    // ============ OFF ============
     Rectangle {
       visible: !wifiEnabled
       Layout.fillWidth: true
-      Layout.preferredHeight: 200
+      Layout.preferredHeight: 160
       radius: 16
       color: Theme.surface
 
@@ -151,7 +151,7 @@ ScrollView {
         anchors.centerIn: parent
         spacing: 10
 
-        Text { text: "󰤮"; color: Theme.subtext; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 36 }
+        Text { text: "󰤮"; color: Theme.subtext; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 34 }
         Text { text: "Wi-Fi is off"; color: Theme.text; opacity: 0.5; font.family: "Inter"; font.pixelSize: 12 }
         QsButton {
           text: "Turn on"
@@ -164,12 +164,7 @@ ScrollView {
     Item {
       visible: _connected && wifiEnabled
       Layout.fillWidth: true
-      Layout.preferredHeight: heroCol.implicitHeight + 28
-      opacity: 0
-      SequentialAnimation on opacity {
-  PauseAnimation { duration: 60 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+      Layout.preferredHeight: heroCol.implicitHeight + 24
 
       Rectangle {
         anchors.fill: parent
@@ -178,38 +173,44 @@ ScrollView {
         border.color: Theme.primary
         border.width: 1
       }
+      // accent strip
+      Rectangle {
+        anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
+        width: 3
+        radius: 18
+        color: Theme.primary
+      }
       ColumnLayout {
         id: heroCol
         anchors.fill: parent
         anchors.margins: 16
-        spacing: 14
+        anchors.leftMargin: 22
+        spacing: 12
 
         RowLayout {
           Layout.fillWidth: true
           spacing: 14
 
-          Item {
-            implicitWidth: 48
-            implicitHeight: 48
-            ArcGauge {
-              anchors.fill: parent
-              value: _connectedSignal / 100
+          RowLayout {
+            spacing: 8
+            SignalBars { signal: _connectedSignal; barColor: Theme.primary; implicitHeight: 28 }
+            Text {
+              text: Math.round(_connectedSignal) + "%"
               color: Theme.primary
-              thickness: 6
-              centerText: Math.round(_connectedSignal) + "%"
-              centerSize: 11
-              centerColor: Theme.text
+              font.family: "Inter"
+              font.pixelSize: 13
+              font.weight: 700
             }
           }
           ColumnLayout {
-            spacing: 3
+            spacing: 2
             Layout.fillWidth: true
 
             Text {
               text: wifiName
               color: Theme.text
               font.family: "Inter"
-              font.pixelSize: 16
+              font.pixelSize: 15
               font.weight: 700
               elide: Text.ElideRight
               Layout.fillWidth: true
@@ -312,8 +313,8 @@ ScrollView {
         Image {
           visible: _revealPw && wifiQrPath.length > 0
           source: wifiQrPath
-          Layout.preferredWidth: 128
-          Layout.preferredHeight: 128
+          Layout.preferredWidth: 120
+          Layout.preferredHeight: 120
           Layout.alignment: Qt.AlignHCenter
           fillMode: Image.PreserveAspectFit
           smooth: false
@@ -324,9 +325,10 @@ ScrollView {
     // ============ PASSWORD SHEET ============
     Item {
       id: pwSheet
-      visible: wifiPendingSsid !== "" || _hiddenMode
+      visible: (wifiPendingSsid || "") !== "" || _hiddenMode
+      onVisibleChanged: if (visible) wifiPwField.forceActiveFocus()
       Layout.fillWidth: true
-      Layout.preferredHeight: pwCol.implicitHeight + 28
+      Layout.preferredHeight: pwCol.implicitHeight + 24
 
       Rectangle {
         anchors.fill: parent
@@ -342,7 +344,7 @@ ScrollView {
         spacing: 10
 
         Text {
-          text: _hiddenMode ? "Connect to hidden network" : ("Connect to " + wifiPendingSsid)
+          text: _hiddenMode ? "Connect to hidden network" : ("Connect to " + (wifiPendingSsid || ""))
           color: Theme.text; font.family: "Inter"; font.pixelSize: 13; font.weight: 700
           Layout.fillWidth: true; elide: Text.ElideRight
         }
@@ -374,7 +376,6 @@ ScrollView {
               echoMode: _pwReveal ? TextInput.Normal : TextInput.Password
               placeholderText: "Password"; placeholderTextColor: Theme.subtext
               background: null; font.family: "Inter"; font.pixelSize: 13
-              focus: pwSheet.visible
               onAccepted: _doConnect()
             }
             Text {
@@ -406,7 +407,7 @@ ScrollView {
             MouseArea {
               anchors.fill: parent; anchors.margins: -6
               cursorShape: Qt.PointingHandCursor
-              onClicked: { forgetWifi(wifiPendingSsid); _hiddenMode = false; }
+              onClicked: { forgetWifi(wifiPendingSsid || ""); _hiddenMode = false; }
             }
           }
           Item { Layout.fillWidth: true }
@@ -430,9 +431,9 @@ ScrollView {
       spacing: 10
       opacity: 0
       SequentialAnimation on opacity {
-  PauseAnimation { duration: 120 }
-  NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
-}
+        PauseAnimation { duration: 120 }
+        NumberAnimation { from: 0; to: 1; duration: Motion.durM; easing.type: Motion.easeStandard; objectName: "entrance" }
+      }
 
       RowLayout {
         Layout.fillWidth: true; spacing: 8
@@ -487,7 +488,7 @@ ScrollView {
         Rectangle {
           required property var modelData
           Layout.fillWidth: true
-          Layout.preferredHeight: 54
+          Layout.preferredHeight: 52
           radius: 14
           color: (modelData.ssid === wifiConnectingSsid)
             ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.14)
@@ -498,7 +499,7 @@ ScrollView {
 
           RowLayout {
             anchors.fill: parent
-            anchors.margins: 14
+            anchors.margins: 12
             spacing: 12
 
             SignalBars { signal: modelData.signal; barColor: Theme.text; implicitHeight: 18 }
@@ -566,7 +567,7 @@ ScrollView {
         Repeater {
           model: 3
           Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 54; radius: 14; color: Theme.surface
+            Layout.fillWidth: true; Layout.preferredHeight: 52; radius: 14; color: Theme.surface
             SequentialAnimation on opacity {
               running: true; loops: Animation.Infinite
               NumberAnimation { from: 1; to: 0.4; duration: 800; easing.type: Easing.InOutSine }

@@ -337,9 +337,9 @@ Item {
         controlCenter.wifiPendingSecurity = security || "";
         if (password && String(password).length > 0) {
             controlCenter.wifiShowPassword = true;
-            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid, "password", password];
+            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid || "", "password", password || ""];
         } else {
-            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid];
+            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid || ""];
         }
         controlCenter.wifiConnectProc.running = true;
         controlCenter.wifiConnectPoll.restart();
