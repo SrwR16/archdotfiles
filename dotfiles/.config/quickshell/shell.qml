@@ -95,7 +95,12 @@ ShellRoot {
         // it fixed at the island height reserves the top bar without shifting
         // anything when movie/wallpaper open.
         WlrLayershell.exclusiveZone: 46
-        WlrLayershell.keyboardFocus: root.overlayView === "island" ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
+        // Give the layer keyboard focus only when an overlay actually needs it
+        // (Control Center password entry, App Launcher search). Without this,
+        // TextInput fields can never receive keystrokes (the exact "can't type
+        // the Wi-Fi password" bug) because the island layer has no focus.
+        property bool keyboardNeeded: false
+        WlrLayershell.keyboardFocus: (root.overlayView === "island" && !keyboardNeeded) ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
         focusable: true
 
