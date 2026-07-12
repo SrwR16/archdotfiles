@@ -84,7 +84,7 @@ Item {
     // Embed Search (formerly AppLauncher) directly in the same scene graph
     Item {
         z: 20
-        width: 600; height: 240
+        width: 480; height: 240
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 10

@@ -371,11 +371,11 @@ Rectangle {
     },
     State {
       name: "appLauncher"
-      PropertyChanges { target: clockWidget; height: 240; width: 600; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 240; width: 480; radius: 28 }
     },
     State {
       name: "vpn"
-      PropertyChanges { target: clockWidget; height: 200; width: 600; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 200; width: 480; radius: 28 }
     },
     State {
       name: "powerSection"
@@ -383,11 +383,11 @@ Rectangle {
     },
     State {
       name: "tray"
-      PropertyChanges { target: clockWidget; height: 152; width: 600; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 152; width: 440; radius: 28 }
     },
     State {
       name: "sys"
-      PropertyChanges { target: clockWidget; height: 172; width: 600; radius: 28 }
+      PropertyChanges { target: clockWidget; height: 172; width: 480; radius: 28 }
     },
     State {
       name: "pomodoro"
@@ -395,11 +395,11 @@ Rectangle {
     },
     State {
       name: "notifAlert"
-      PropertyChanges { target: clockWidget; height: 92; width: 600; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 400; radius: 24 }
     },
     State {
       name: "batteryAlert"
-      PropertyChanges { target: clockWidget; height: 92; width: 600; radius: 24 }
+      PropertyChanges { target: clockWidget; height: 92; width: 360; radius: 24 }
     },
   ]
 

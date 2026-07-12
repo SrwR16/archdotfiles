@@ -8,7 +8,6 @@ import QtQuick.Layouts
 
 ScrollView {
   id: sv
-  visible: false
   padding: 0
   ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
   ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -32,29 +31,117 @@ ScrollView {
   signal setDefaultSink(var node)
   signal setDefaultSource(var node)
 
+  readonly property var _activeSink: audioSink
+    || (audioSinks.length ? audioSinks[0] : null)
+  readonly property var _activeSource: audioSource
+    || (audioSources.length ? audioSources[0] : null)
+
   ColumnLayout {
     width: parent.width
-    spacing: 10
+    spacing: 12
 
-    // ============ OUTPUT ============
-    RowLayout {
+    // ============ OUTPUT MASTER ============
+    Item {
       Layout.fillWidth: true
-      Layout.leftMargin: 4
-      spacing: 8
+      Layout.preferredHeight: outCol.implicitHeight + 28
 
-      Text {
-        text: "Output"
-        color: Theme.muted
-        font.family: "Inter"
-        font.pixelSize: 11
-        font.weight: 700
+      Rectangle {
+        anchors.fill: parent
+        radius: 16
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+        border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+        border.width: 1
       }
-      Item { Layout.fillWidth: true }
-      QsButton {
-        text: audioMuted ? "Unmute" : "Mute"
-        outline: true
-        onClicked: toggleMute()
+
+      ColumnLayout {
+        id: outCol
+        anchors.fill: parent
+        anchors.margins: 14
+        spacing: 10
+
+        RowLayout {
+          Layout.fillWidth: true
+          spacing: 12
+
+          Rectangle {
+            width: 42; height: 42; radius: 13
+            color: audioMuted ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.16)
+                                    : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
+            Text {
+              anchors.centerIn: parent
+              text: volumeIcon ? volumeIcon(audioVolume, audioMuted) : "󰓃"
+              color: audioMuted ? Theme.error : Theme.primary
+              font.family: "JetBrainsMono Nerd Font"
+              font.pixelSize: 20
+            }
+          }
+          ColumnLayout {
+            spacing: 1
+            Layout.fillWidth: true
+
+            Text {
+              text: "Output"
+              color: Theme.subtext
+              font.family: "Inter"
+              font.pixelSize: 10
+              font.weight: 600
+            }
+            Text {
+              text: _activeSink ? (_activeSink.description || _activeSink.name) : "No output"
+              color: Theme.text
+              elide: Text.ElideRight
+              Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 13
+              font.weight: 700
+            }
+          }
+          Text {
+            text: (audioMuted ? 0 : Math.round(audioVolume * 100)) + "%"
+            color: Theme.text
+            font.family: "Inter"
+            font.pixelSize: 13
+            font.weight: 700
+          }
+          Rectangle {
+            width: 38; height: 38; radius: 12
+            color: muteOut.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
+            Behavior on color { ColorAnimation { duration: Motion.durXS } }
+
+            Text {
+              anchors.centerIn: parent
+              text: audioMuted ? "󰝟" : "󰕾"
+              color: audioMuted ? Theme.error : Theme.text
+              font.family: "JetBrainsMono Nerd Font"
+              font.pixelSize: 16
+            }
+            MouseArea {
+              id: muteOut
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: toggleMute()
+            }
+          }
+        }
+
+        IconSlider {
+          Layout.fillWidth: true
+          iconText: ""
+          value: audioMuted ? 0 : audioVolume
+          onMoved: val => setVolume(val)
+        }
       }
+    }
+
+    // ============ OUTPUT DEVICES ============
+    Text {
+      text: "Output Devices"
+      color: Theme.muted
+      font.family: "Inter"
+      font.pixelSize: 11
+      font.weight: 700
+      leftPadding: 4
     }
 
     Repeater {
@@ -113,34 +200,110 @@ ScrollView {
       }
     }
 
-    IconSlider {
+    Item { Layout.preferredHeight: 6 }
+
+    // ============ INPUT MASTER ============
+    Item {
       Layout.fillWidth: true
-      iconText: volumeIcon ? volumeIcon(audioVolume, audioMuted) : ""
-      value: audioMuted ? 0 : audioVolume
-      onMoved: val => setVolume(val)
+      Layout.preferredHeight: inCol.implicitHeight + 28
+
+      Rectangle {
+        anchors.fill: parent
+        radius: 16
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+        border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+        border.width: 1
+      }
+
+      ColumnLayout {
+        id: inCol
+        anchors.fill: parent
+        anchors.margins: 14
+        spacing: 10
+
+        RowLayout {
+          Layout.fillWidth: true
+          spacing: 12
+
+          Rectangle {
+            width: 42; height: 42; radius: 13
+            color: audioSourceMuted ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.16)
+                                        : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
+            Text {
+              anchors.centerIn: parent
+              text: "󰍬"
+              color: audioSourceMuted ? Theme.error : Theme.primary
+              font.family: "JetBrainsMono Nerd Font"
+              font.pixelSize: 20
+            }
+          }
+          ColumnLayout {
+            spacing: 1
+            Layout.fillWidth: true
+
+            Text {
+              text: "Input"
+              color: Theme.subtext
+              font.family: "Inter"
+              font.pixelSize: 10
+              font.weight: 600
+            }
+            Text {
+              text: _activeSource ? (_activeSource.description || _activeSource.name) : "No input"
+              color: Theme.text
+              elide: Text.ElideRight
+              Layout.fillWidth: true
+              font.family: "Inter"
+              font.pixelSize: 13
+              font.weight: 700
+            }
+          }
+          Text {
+            text: (audioSourceMuted ? 0 : Math.round(audioSourceVolume * 100)) + "%"
+            color: Theme.text
+            font.family: "Inter"
+            font.pixelSize: 13
+            font.weight: 700
+          }
+          Rectangle {
+            width: 38; height: 38; radius: 12
+            color: muteIn.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
+            Behavior on color { ColorAnimation { duration: Motion.durXS } }
+
+            Text {
+              anchors.centerIn: parent
+              text: audioSourceMuted ? "󰝟" : "󰕾"
+              color: audioSourceMuted ? Theme.error : Theme.text
+              font.family: "JetBrainsMono Nerd Font"
+              font.pixelSize: 16
+            }
+            MouseArea {
+              id: muteIn
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: toggleAudioSourceMute()
+            }
+          }
+        }
+
+        IconSlider {
+          Layout.fillWidth: true
+          iconText: ""
+          value: audioSourceMuted ? 0 : audioSourceVolume
+          onMoved: val => setAudioSourceVolume(val)
+        }
+      }
     }
 
-    Item { Layout.preferredHeight: 8 }
-
-    // ============ INPUT ============
-    RowLayout {
-      Layout.fillWidth: true
-      Layout.leftMargin: 4
-      spacing: 8
-
-      Text {
-        text: "Input"
-        color: Theme.muted
-        font.family: "Inter"
-        font.pixelSize: 11
-        font.weight: 700
-      }
-      Item { Layout.fillWidth: true }
-      QsButton {
-        text: audioSourceMuted ? "Unmute" : "Mute"
-        outline: true
-        onClicked: toggleAudioSourceMute()
-      }
+    // ============ INPUT DEVICES ============
+    Text {
+      text: "Input Devices"
+      color: Theme.muted
+      font.family: "Inter"
+      font.pixelSize: 11
+      font.weight: 700
+      leftPadding: 4
     }
 
     Repeater {
@@ -197,13 +360,6 @@ ScrollView {
           }
         }
       }
-    }
-
-    IconSlider {
-      Layout.fillWidth: true
-      iconText: volumeIcon ? volumeIcon(audioSourceVolume, audioSourceMuted) : ""
-      value: audioSourceMuted ? 0 : audioSourceVolume
-      onMoved: val => setAudioSourceVolume(val)
     }
 
     Item { Layout.preferredHeight: 4 }

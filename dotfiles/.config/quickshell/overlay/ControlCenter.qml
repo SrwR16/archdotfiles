@@ -29,16 +29,9 @@ Item {
     property bool doNotDisturb: false
     property var storedNotifications: []
 
-    implicitHeight: Math.min(controlCenter.page === "main" ? mainPageHeightHint : 560, 800)
-    
-    property real mainPageHeightHint: 290
-        + (controlCenter.activePlayer && controlCenter.activePlayer.trackTitle ? 80 : 32)
-        + 30
-        + 50
-        + 30
-        + 80
-        + 60
-        + ((controlCenter.storedNotifications?.length ?? 0) > 0 ? 20: 0)
+    implicitHeight: Math.min(controlCenter.page === "main"
+      ? (mainPageItem ? mainPageItem.implicitHeight + 48 : 800)
+      : 560, 880)
 
     // --- Audio (Pipewire) ---
     property PwNode audioSink: Pipewire.defaultAudioSink
@@ -316,53 +309,20 @@ Item {
         onTriggered: controlCenter.scanWifi()
     }
 
-    // --- Connect flow (handles saved / password / switch / retry) ---
-    property string _wifiConnectPassword: ""
-    property bool _wifiUsingPassword: false
-    property string _lastConnectSsid: ""
-    property string _wifiPendingSecurity: ""
-
+    // --- Connect flow (robust: `nmcli device wifi connect` handles saved / unknown
+    //     credentials AND auto-switches away from the currently connected network) ---
     function connectToWifi(ssid, security, password) {
+        if (!ssid) return;
         controlCenter.wifiConnectError = "";
-        controlCenter._lastConnectSsid = ssid;
-        controlCenter._wifiPendingSecurity = security || "";
-        if (password && password.length > 0) {
-            controlCenter._wifiConnectPassword = password;
-            controlCenter._wifiUsingPassword = true;
-            controlCenter.wifiConnectingSsid = ssid;
-            controlCenter.wifiPendingSsid = ssid;
-            controlCenter.wifiShowPassword = true;
-            controlCenter.wifiConnectProc.command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password];
-            controlCenter.wifiConnectProc.running = true;
-            controlCenter.wifiConnectPoll.restart();
-        } else {
-            controlCenter._wifiConnectPassword = "";
-            controlCenter._wifiUsingPassword = false;
-            controlCenter.wifiConnectingSsid = ssid;
-            controlCenter.wifiCheckProc.command = ["sh", "-c", "nmcli -t -f NAME connection show 2>/dev/null | grep -qxF " + JSON.stringify(ssid) + " && echo known || echo unknown"];
-            controlCenter.wifiCheckProc.running = true;
-        }
-    }
-
-    Process {
-        id: wifiCheckProc
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var res = (this.text || "").trim();
-                if (res === "known") {
-                    controlCenter._wifiStartConnectSaved(controlCenter._lastConnectSsid);
-                } else {
-                    controlCenter.wifiConnectingSsid = "";
-                    controlCenter.wifiPendingSsid = controlCenter._lastConnectSsid;
-                    controlCenter.wifiShowPassword = true;
-                }
-            }
-        }
-    }
-
-    function _wifiStartConnectSaved(ssid) {
         controlCenter.wifiConnectingSsid = ssid;
-        controlCenter.wifiConnectProc.command = ["nmcli", "connection", "up", "id", ssid];
+        controlCenter.wifiPendingSsid = ssid;
+        controlCenter.wifiPendingSecurity = security || "";
+        if (password && String(password).length > 0) {
+            controlCenter.wifiShowPassword = true;
+            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid, "password", password];
+        } else {
+            controlCenter.wifiConnectProc.command = ["nmcli", "device", "wifi", "connect", ssid];
+        }
         controlCenter.wifiConnectProc.running = true;
         controlCenter.wifiConnectPoll.restart();
     }
@@ -373,16 +333,12 @@ Item {
         stderr: StdioCollector {
             onStreamFinished: {
                 var err = (this.text || "").toLowerCase();
-                if (err.indexOf("error") >= 0 || err.indexOf("fail") >= 0 || err.indexOf("secret") >= 0) {
-                    if (controlCenter._wifiUsingPassword) {
-                        controlCenter.wifiConnectError = "Incorrect password — try again.";
-                        controlCenter.wifiConnectingSsid = "";
-                        controlCenter.wifiShowPassword = true;
-                    } else {
-                        controlCenter.wifiConnectingSsid = "";
-                        controlCenter.wifiPendingSsid = controlCenter._lastConnectSsid;
-                        controlCenter.wifiShowPassword = true;
-                    }
+                if (err.indexOf("error") >= 0 || err.indexOf("fail") >= 0
+                        || err.indexOf("secret") >= 0 || err.indexOf("secrets") >= 0) {
+                    // Missing / wrong credentials: keep the password sheet open.
+                    controlCenter.wifiConnectError = "This network needs a password.";
+                    controlCenter.wifiConnectingSsid = "";
+                    controlCenter.wifiShowPassword = true;
                 }
                 // Success is confirmed by the status poll, not by exit text.
             }
@@ -406,13 +362,11 @@ Item {
                 controlCenter.wifiShowPassword = false;
                 elapsed = 0; stop();
                 controlCenter.scanWifi();
-            } else if (elapsed > 9000) {
-                controlCenter.wifiConnectError = controlCenter._wifiUsingPassword
-                    ? "Couldn't connect — check the password."
-                    : "Connection timed out.";
+            } else if (elapsed > 15000) {
+                if (!controlCenter.wifiShowPassword)
+                    controlCenter.wifiConnectError = "Connection timed out.";
                 controlCenter.wifiConnectingSsid = "";
                 elapsed = 0; stop();
-                if (controlCenter._wifiUsingPassword) controlCenter.wifiShowPassword = true;
             }
         }
         onRunningChanged: elapsed = 0
@@ -421,7 +375,7 @@ Item {
     function disconnectWifi() {
         if (!wifiName || wifiName === "No network" || wifiName === "Off") return;
         wifiDisconnectProc.command = ["sh", "-c",
-            "nmcli con down id " + JSON.stringify(controlCenter.wifiName) + " 2>/dev/null || " +
+            "nmcli con down id " + JSON.stringify(wifiName) + " 2>/dev/null || " +
             "(dev=$(nmcli -t -f DEVICE,TYPE device status 2>/dev/null | awk -F: '$2==\"wifi\"{print $1; exit}'); " +
             "[ -n \"$dev\" ] && nmcli dev disconnect \"$dev\")"];
         wifiDisconnectProc.running = true;
@@ -430,6 +384,7 @@ Item {
     Process { id: wifiDisconnectProc }
 
     function forgetWifi(ssid) {
+        if (!ssid) return;
         forgetProc.command = ["nmcli", "connection", "delete", "id", ssid];
         forgetProc.running = true;
         if (controlCenter.wifiPendingSsid === ssid) { controlCenter.wifiPendingSsid = ""; controlCenter.wifiShowPassword = false; }
@@ -438,11 +393,10 @@ Item {
     Process { id: forgetProc }
 
     function requestPassword(ssid, security) {
-        _lastConnectSsid = ssid;
-        _wifiPendingSecurity = security || "";
-        wifiPendingSsid = ssid;
-        wifiShowPassword = true;
-        wifiConnectError = "";
+        controlCenter.wifiPendingSsid = ssid;
+        controlCenter.wifiPendingSecurity = security || "";
+        controlCenter.wifiShowPassword = true;
+        controlCenter.wifiConnectError = "";
     }
 
     function cancelPassword() {
@@ -450,7 +404,6 @@ Item {
         wifiShowPassword = false;
         wifiConnectError = "";
         wifiConnectingSsid = "";
-        _wifiUsingPassword = false;
     }
 
     property string wifiCurrentPassword: ""
@@ -848,6 +801,7 @@ Item {
             }
 
             MainPage {
+                id: mainPageItem
                 visible: controlCenter.page === "main"
                 Layout.fillWidth: true
                 Layout.fillHeight: true

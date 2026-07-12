@@ -4,10 +4,11 @@ import "../services"
 import "../theme"
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Bluetooth
 
 ColumnLayout {
-  spacing: 12
+  spacing: 14
 
   property string page: ""
   property var modeSvc: null
@@ -34,13 +35,6 @@ ColumnLayout {
   property var activePlayer
   property string playerArt: ""
   property var storedNotifications: []
-  onStoredNotificationsChanged: {
-    var len = storedNotifications?.length ?? 0;
-    if (notifHist) {
-      notifHist.storedNotifications = storedNotifications;
-      notifHist.Layout.preferredHeight = len > 0 ? 200 : 0;
-    }
-  }
 
   signal navigateTo(string page)
   signal toggleWifi()
@@ -55,9 +49,67 @@ ColumnLayout {
   signal dismissNotif(var notifRef)
   signal clearNotifs()
 
+  SystemClock { id: clock; precision: SystemClock.Minutes }
+
+  // ---- Header: clock + date ----
   RowLayout {
     Layout.fillWidth: true
     spacing: 12
+
+    ColumnLayout {
+      spacing: 0
+      Text {
+        text: Qt.formatTime(clock.date, "h:mm AP")
+        color: Theme.text
+        font { family: "Inter"; pixelSize: 34; weight: 800 }
+      }
+      Text {
+        text: Qt.formatDate(clock.date, "dddd, MMMM d")
+        color: Theme.subtext
+        font { family: "Inter"; pixelSize: 11; weight: 500 }
+      }
+    }
+
+    Item { Layout.fillWidth: true }
+
+    // Do Not Disturb quick toggle
+    Rectangle {
+      implicitWidth: dndRow.implicitWidth + 16
+      implicitHeight: 32
+      radius: 16
+      color: doNotDisturb ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18) : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+      border.color: doNotDisturb ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+      border.width: 1
+      RowLayout {
+        id: dndRow
+        anchors.centerIn: parent
+        spacing: 6
+        Text {
+          text: "󰂚"
+          color: doNotDisturb ? Theme.primary : Theme.subtext
+          font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
+        }
+        Text {
+          text: doNotDisturb ? "DND" : "Alerts"
+          color: doNotDisturb ? Theme.primary : Theme.subtext
+          font { family: "Inter"; pixelSize: 11; weight: 600 }
+        }
+      }
+      MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: toggleDnd()
+      }
+    }
+  }
+
+  // ---- Quick toggles (3 columns) ----
+  GridLayout {
+    Layout.fillWidth: true
+    columns: 3
+    rowSpacing: 12
+    columnSpacing: 12
 
     ToggleTile {
       iconText: wifiEnabled ? "" : "󰖪"
@@ -66,13 +118,8 @@ ColumnLayout {
       active: wifiEnabled
       expandable: true
       onTapped: toggleWifi()
-      onExpandTapped: {
-        navigateTo("wifi");
-        scanWifi();
-        loadCurrentWifiPassword();
-      }
+      onExpandTapped: { navigateTo("wifi"); scanWifi(); loadCurrentWifiPassword(); }
     }
-
     ToggleTile {
       iconText: "󰂯"
       label: "Bluetooth"
@@ -82,7 +129,6 @@ ColumnLayout {
       onTapped: toggleBluetooth()
       onExpandTapped: navigateTo("bluetooth")
     }
-
     ToggleTile {
       iconText: volumeIcon(audioVolume, audioMuted)
       label: "Audio"
@@ -92,12 +138,6 @@ ColumnLayout {
       onTapped: toggleMute()
       onExpandTapped: navigateTo("audio")
     }
-  }
-
-  RowLayout {
-    Layout.fillWidth: true
-    spacing: 12
-
     ToggleTile {
       iconText: "󰂚"
       label: "Night Light"
@@ -107,7 +147,6 @@ ColumnLayout {
       onTapped: toggleNightLight()
       onExpandTapped: navigateTo("nightlight")
     }
-
     ToggleTile {
       iconText: "󱐋"
       label: "Performance"
@@ -116,7 +155,6 @@ ColumnLayout {
       expandable: true
       onExpandTapped: navigateTo("mode")
     }
-
     ToggleTile {
       iconText: ""
       label: "Peace"
@@ -126,41 +164,47 @@ ColumnLayout {
     }
   }
 
-  IconSlider {
-    iconText: volumeIcon(audioVolume, audioMuted)
-    value: audioMuted ? 0 : audioVolume
-    onMoved: val => setVolume(val)
-  }
-
-  IconSlider {
-    iconText: brightnessIcon(brightness)
-    value: brightness
-    onMoved: val => setBrightness(val)
+  // ---- Sliders (two-up) ----
+  RowLayout {
+    Layout.fillWidth: true
+    spacing: 12
+    IconSlider {
+      Layout.fillWidth: true
+      iconText: volumeIcon(audioVolume, audioMuted)
+      value: audioMuted ? 0 : audioVolume
+      onMoved: val => setVolume(val)
+    }
+    IconSlider {
+      Layout.fillWidth: true
+      iconText: brightnessIcon(brightness)
+      value: brightness
+      onMoved: val => setBrightness(val)
+    }
   }
 
   // ---- Media Player ----
   Item {
     Layout.fillWidth: true
-    Layout.preferredHeight: activePlayer?.trackTitle ? 80 : 32
+    Layout.preferredHeight: activePlayer?.trackTitle ? 88 : 40
 
     Behavior on Layout.preferredHeight { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
 
     Rectangle {
       anchors.fill: parent
-      radius: 14
-      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
-      border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+      radius: 16
+      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+      border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.55)
       border.width: 1
       visible: activePlayer?.trackTitle
       clip: true
 
       RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 12
         spacing: 12
 
         Rectangle {
-          width: 48; height: 48; radius: 10
+          width: 56; height: 56; radius: 14
           color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.85); clip: true
 
           Image {
@@ -168,13 +212,13 @@ ColumnLayout {
             source: playerArt || ""
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
-            sourceSize.width: 96; sourceSize.height: 96
+            sourceSize.width: 112; sourceSize.height: 112
 
             Rectangle {
               anchors.fill: parent
               color: Theme.surfaceLight
               visible: parent.status !== Image.Ready
-              Text { anchors.centerIn: parent; text: "󰎆"; color: Theme.primary; font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 } }
+              Text { anchors.centerIn: parent; text: "󰎆"; color: Theme.primary; font { family: "JetBrainsMono Nerd Font"; pixelSize: 22 } }
             }
           }
         }
@@ -189,7 +233,6 @@ ColumnLayout {
             font { family: "Inter"; pixelSize: 13; weight: 700 }
             elide: Text.ElideRight; Layout.fillWidth: true
           }
-
           Text {
             text: activePlayer?.trackArtist || ""
             color: Theme.text
@@ -199,26 +242,27 @@ ColumnLayout {
           }
 
           RowLayout {
-            spacing: 6
+            spacing: 8
+            Layout.topMargin: 4
             Text {
               text: "󰒮"; color: Theme.subtext
-              font { family: "JetBrainsMono Nerd Font"; pixelSize: 11 }
+              font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
               MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: activePlayer?.previous() }
             }
             Rectangle {
-              width: 24; height: 24; radius: 12; color: Theme.text
-              Text { anchors.centerIn: parent; text: activePlayer?.isPlaying ? "" : ""; color: Theme.surface; font { family: "JetBrainsMono Nerd Font"; pixelSize: 10 } }
+              width: 30; height: 30; radius: 15; color: Theme.text
+              Text { anchors.centerIn: parent; text: activePlayer?.isPlaying ? "" : ""; color: Theme.surface; font { family: "JetBrainsMono Nerd Font"; pixelSize: 12 } }
               MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: activePlayer?.togglePlaying() }
             }
             Text {
               text: "󰒭"; color: Theme.subtext
-              font { family: "JetBrainsMono Nerd Font"; pixelSize: 11 }
+              font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
               MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: activePlayer?.next() }
             }
             Rectangle {
-              Layout.fillWidth: true; height: 2; radius: 1; color: Theme.text; opacity: 0.15; Layout.alignment: Qt.AlignVCenter
+              Layout.fillWidth: true; height: 3; radius: 1.5; color: Theme.text; opacity: 0.18; Layout.alignment: Qt.AlignVCenter
               Rectangle {
-                height: parent.height; radius: 1; color: Theme.text
+                height: parent.height; radius: 1.5; color: Theme.text
                 width: parent.width * (activePlayer && activePlayer.length > 0 ? activePlayer.position / activePlayer.length : 0)
               }
             }
@@ -231,7 +275,6 @@ ColumnLayout {
       anchors.fill: parent
       spacing: 8
       visible: !activePlayer?.trackTitle
-
       Text {
         text: "󰎆"
         color: Theme.subtext
@@ -246,23 +289,15 @@ ColumnLayout {
     }
   }
 
+  // ---- Notifications ----
   NotificationHistory {
     id: notifHist
     Layout.fillWidth: true
     visible: true
-    onDismissNotif: (notifRef) => dismissNotif(notifRef)
+    storedNotifications: storedNotifications
+    Layout.preferredHeight: (storedNotifications?.length ?? 0) > 0 ? 240 : 72
+    onDismissNotif: (n) => dismissNotif(n)
     onClearAll: clearNotifs()
-  }
-
-  Text {
-    Layout.fillWidth: true
-    Layout.topMargin: 8
-    visible: storedNotifications.length === 0
-    text: "No notifications"
-    color: Theme.text
-    opacity: 0.3
-    horizontalAlignment: Text.AlignHCenter
-    font { family: "Inter"; pixelSize: 12 }
   }
 
   Item { Layout.fillHeight: true }

@@ -13,7 +13,6 @@ ScrollView {
   ScrollBar.vertical.policy: ScrollBar.AsNeeded
   contentWidth: width
 
-  // ---- State mirrored from ControlCenter ----
   property bool wifiEnabled: false
   property string wifiName: ""
   property string wifiSecurity: ""
@@ -41,11 +40,11 @@ ScrollView {
   signal generateWifiQr()
   signal backRequested()
 
-  // ---- Local UI state ----
   property bool _pwReveal: false
   property bool _hiddenMode: false
   property string _hiddenSsid: ""
   property bool _revealPw: false
+  property string _search: ""
 
   readonly property bool _connected: wifiName.length > 0
     && wifiName !== "Off" && wifiName !== "No network" && wifiName !== "Disconnected"
@@ -55,9 +54,16 @@ ScrollView {
       if (wifiNetworks[i].active) return wifiNetworks[i];
     return null;
   }
-  readonly property int _connectedSignal: {
-    var a = _activeNetwork();
-    return a ? a.signal : 80;
+  readonly property var _active: _activeNetwork()
+  readonly property int _connectedSignal: _active ? _active.signal : 80
+
+  readonly property var _available: {
+    var q = _search.toLowerCase().trim();
+    return wifiNetworks.filter(function (n) {
+      if (n.active) return false;
+      if (q.length && n.ssid.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
   }
   readonly property bool _pendingKnown: {
     for (var i = 0; i < wifiNetworks.length; i++)
@@ -65,7 +71,6 @@ ScrollView {
     return false;
   }
   function _isSecured(sec) { return sec && sec.length > 0 && sec !== "--"; }
-
   function _doConnect() {
     if (_hiddenMode) connectHidden(_hiddenSsid.trim(), wifiPwField.text);
     else connectToWifi(wifiPendingSsid, wifiPendingSecurity, wifiPwField.text);
@@ -73,49 +78,48 @@ ScrollView {
 
   ColumnLayout {
     width: parent.width
-    spacing: 10
+    spacing: 12
 
-    // ============ HEADER ============
+    // ============ ENABLE CONTROL (title is in the panel header) ============
     Rectangle {
       Layout.fillWidth: true
-      Layout.preferredHeight: 52
-      radius: 16
+      Layout.preferredHeight: 50
+      radius: 14
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
 
       RowLayout {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 10
+        anchors.margins: 12
+        spacing: 12
 
-        Text {
-          text: "Wi-Fi"
-          color: Theme.text
-          font.family: "Inter"
-          font.pixelSize: 14
-          font.weight: 700
+        Rectangle {
+          width: 26; height: 26; radius: 8
+          color: wifiEnabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18) : Theme.surfaceLight
+          Text {
+            anchors.centerIn: parent
+            text: "󰤯"
+            color: wifiEnabled ? Theme.primary : Theme.subtext
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 13
+          }
         }
-        Item { Layout.fillWidth: true }
         Text {
-          text: wifiEnabled ? "On" : "Off"
+          text: wifiEnabled ? "Enabled" : "Disabled"
           color: wifiEnabled ? Theme.primary : Theme.subtext
           font.family: "Inter"
-          font.pixelSize: 11
+          font.pixelSize: 12
           font.weight: 600
-          opacity: 0.8
         }
+        Item { Layout.fillWidth: true }
         Rectangle {
-          width: 46
-          height: 26
-          radius: 13
+          width: 44; height: 25; radius: 12
           color: wifiEnabled ? Theme.primary : Theme.border
           Behavior on color { ColorAnimation { duration: Motion.durXS } }
 
           Rectangle {
-            width: 20
-            height: 20
-            radius: 10
+            width: 19; height: 19; radius: 9
             color: Theme.backgroundFg
             anchors.verticalCenter: parent.verticalCenter
             x: wifiEnabled ? parent.width - width - 3 : 3
@@ -130,129 +134,137 @@ ScrollView {
       }
     }
 
-    // ============ CONNECTED HERO ============
+    // ============ OFF STATE ============
     Rectangle {
+      visible: !wifiEnabled
       Layout.fillWidth: true
-      visible: _connected && wifiEnabled
-      Layout.preferredHeight: heroCol.implicitHeight + 28
+      Layout.preferredHeight: 200
       radius: 16
-      color: Theme.container
-      border.color: Theme.primary
-      border.width: 1
-      opacity: visible ? 1 : 0
-      Behavior on opacity { NumberAnimation { duration: Motion.durM; easing.type: Motion.easeStandard } }
+      color: Theme.surface
 
+      ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 10
+
+        Text { text: "󰤮"; color: Theme.subtext; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 36 }
+        Text { text: "Wi-Fi is off"; color: Theme.text; opacity: 0.5; font.family: "Inter"; font.pixelSize: 12 }
+        QsButton {
+          text: "Turn on"
+          onClicked: toggleWifi()
+        }
+      }
+    }
+
+    // ============ CONNECTED HERO ============
+    Item {
+      visible: _connected && wifiEnabled
+      Layout.fillWidth: true
+      Layout.preferredHeight: heroCol.implicitHeight + 28
+
+      Rectangle {
+        anchors.fill: parent
+        radius: 18
+        color: Theme.container
+        border.color: Theme.primary
+        border.width: 1
+      }
       ColumnLayout {
         id: heroCol
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 8
+        anchors.margins: 16
+        spacing: 14
 
         RowLayout {
           Layout.fillWidth: true
-          spacing: 12
+          spacing: 14
 
           SignalBars {
             signal: _connectedSignal
             barColor: Theme.primary
-            implicitHeight: 22
+            implicitHeight: 34
           }
           ColumnLayout {
-            spacing: 0
+            spacing: 3
             Layout.fillWidth: true
 
             Text {
               text: wifiName
               color: Theme.text
               font.family: "Inter"
-              font.pixelSize: 14
+              font.pixelSize: 16
               font.weight: 700
               elide: Text.ElideRight
               Layout.fillWidth: true
             }
-            Text {
-              text: "Connected" + (wifiSpeed ? "  ·  " + wifiSpeed : "")
-              color: Theme.primary
-              font.family: "Inter"
-              font.pixelSize: 11
-              opacity: 0.9
+            RowLayout {
+              spacing: 6
+              Text { text: "Connected"; color: Theme.primary; font.family: "Inter"; font.pixelSize: 11; font.weight: 600 }
+              Text {
+                visible: wifiSpeed.length > 0
+                text: "· " + wifiSpeed
+                color: Theme.primary; opacity: 0.85
+                font.family: "Inter"; font.pixelSize: 11
+              }
+              Text {
+                visible: _isSecured(wifiSecurity)
+                text: "· Secured"
+                color: Theme.subtext
+                font.family: "Inter"; font.pixelSize: 11
+              }
             }
           }
-          Item { Layout.fillWidth: true }
-          Rectangle {
-            Layout.preferredWidth: 78
-            Layout.preferredHeight: 26
-            radius: 13
-            color: Theme.surfaceLight
-
-            Text {
-              anchors.centerIn: parent
-              text: "Disconnect"
-              color: Theme.text
-              opacity: 0.8
-              font.family: "Inter"
-              font.pixelSize: 11
-              font.weight: 600
-            }
-            MouseArea {
-              anchors.fill: parent
-              anchors.margins: -6
-              cursorShape: Qt.PointingHandCursor
-              onClicked: disconnectWifi()
-            }
+          QsButton {
+            text: "Disconnect"
+            danger: true
+            onClicked: disconnectWifi()
           }
         }
 
-        Text {
-          visible: wifiIp.length > 0
-          text: "IP " + wifiIp
-          color: Theme.subtext
-          font.family: "JetBrains Mono"
-          font.pixelSize: 11
-        }
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outline; opacity: 0.5 }
 
         RowLayout {
           Layout.fillWidth: true
-          spacing: 8
+          spacing: 14
 
-          Text {
-            text: "Password:"
-            color: Theme.text
-            opacity: 0.7
-            font.family: "Inter"
-            font.pixelSize: 12
-          }
-          Text {
+          ColumnLayout {
+            spacing: 3
             Layout.fillWidth: true
-            text: _revealPw ? (wifiCurrentPassword.length ? wifiCurrentPassword : "—") : "•".repeat(Math.max(6, wifiCurrentPassword.length))
-            color: Theme.text
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 12
-            elide: Text.ElideRight
-          }
-          Rectangle {
-            width: 30
-            height: 30
-            radius: 8
-            color: pwRevealBtn.containsMouse ? Theme.surfaceHover : "transparent"
-            Behavior on color { ColorAnimation { duration: Motion.durXS } }
-
+            Text { text: "IP address"; color: Theme.subtext; font.family: "Inter"; font.pixelSize: 10 }
             Text {
-              anchors.centerIn: parent
-              text: _revealPw ? "󰋭" : "󰋬"
-              color: Theme.text
-              font.family: "JetBrainsMono Nerd Font"
-              font.pixelSize: 13
+              text: wifiIp.length ? wifiIp : "—"
+              color: Theme.text; font.family: "JetBrains Mono"; font.pixelSize: 12
+              elide: Text.ElideRight; Layout.fillWidth: true
             }
-            MouseArea {
-              id: pwRevealBtn
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                _revealPw = !_revealPw;
-                if (_revealPw) loadCurrentWifiPassword();
-                else generateWifiQr();
+          }
+          Rectangle { width: 1; height: 28; color: Theme.outline; opacity: 0.5 }
+          ColumnLayout {
+            spacing: 3
+            Layout.fillWidth: true
+
+            Text { text: "Password"; color: Theme.subtext; font.family: "Inter"; font.pixelSize: 10 }
+            RowLayout {
+              spacing: 6
+              Layout.fillWidth: true
+              Text {
+                Layout.fillWidth: true
+                text: _revealPw ? (wifiCurrentPassword.length ? wifiCurrentPassword : "—") : "•".repeat(Math.max(6, wifiCurrentPassword.length))
+                color: Theme.text; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 12
+                elide: Text.ElideRight
+              }
+              Text {
+                text: _revealPw ? "󰋭" : "󰋬"
+                color: Theme.text; opacity: 0.7
+                font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13
+
+                MouseArea {
+                  anchors.fill: parent; anchors.margins: -6
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: {
+                    _revealPw = !_revealPw;
+                    if (_revealPw) loadCurrentWifiPassword();
+                    else generateWifiQr();
+                  }
+                }
               }
             }
           }
@@ -261,386 +273,274 @@ ScrollView {
         Image {
           visible: _revealPw && wifiQrPath.length > 0
           source: wifiQrPath
-          Layout.preferredWidth: 132
-          Layout.preferredHeight: 132
+          Layout.preferredWidth: 128
+          Layout.preferredHeight: 128
           Layout.alignment: Qt.AlignHCenter
           fillMode: Image.PreserveAspectFit
           smooth: false
-          opacity: visible ? 1 : 0
-          Behavior on opacity { NumberAnimation { duration: Motion.durM } }
         }
       }
     }
 
     // ============ PASSWORD SHEET ============
-    Rectangle {
+    Item {
       id: pwSheet
-      Layout.fillWidth: true
-      Layout.topMargin: 6
       visible: wifiPendingSsid !== "" || _hiddenMode
+      Layout.fillWidth: true
       Layout.preferredHeight: pwCol.implicitHeight + 28
-      radius: 16
-      color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.92)
-      border.color: Theme.primary
-      border.width: 1
-      opacity: visible ? 1 : 0
-      y: visible ? 0 : -10
-      Behavior on opacity { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
-      Behavior on y { NumberAnimation { duration: Motion.durS; easing.type: Motion.easeStandard } }
 
+      Rectangle {
+        anchors.fill: parent
+        radius: 18
+        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.92)
+        border.color: Theme.primary
+        border.width: 1
+      }
       ColumnLayout {
         id: pwCol
         anchors.fill: parent
-        anchors.margins: 14
+        anchors.margins: 16
         spacing: 10
 
         Text {
           text: _hiddenMode ? "Connect to hidden network" : ("Connect to " + wifiPendingSsid)
-          color: Theme.text
-          font.family: "Inter"
-          font.pixelSize: 13
-          font.weight: 700
-          Layout.fillWidth: true
-          elide: Text.ElideRight
+          color: Theme.text; font.family: "Inter"; font.pixelSize: 13; font.weight: 700
+          Layout.fillWidth: true; elide: Text.ElideRight
         }
-
         Rectangle {
           visible: _hiddenMode
-          Layout.fillWidth: true
-          height: 42
-          radius: 10
-          color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.8)
-          border.color: Theme.border
-          border.width: 1
+          Layout.fillWidth: true; height: 42; radius: 10
+          color: Theme.surface; border.color: Theme.border; border.width: 1
 
           TextField {
             id: hiddenField
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
+            anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
             verticalAlignment: TextInput.AlignVCenter
-            color: Theme.text
-            font.family: "Inter"
-            font.pixelSize: 13
-            placeholderText: "Network name (SSID)"
-            placeholderTextColor: Theme.subtext
-            background: null
-            text: _hiddenSsid
+            color: Theme.text; font.family: "Inter"; font.pixelSize: 13
+            placeholderText: "Network name (SSID)"; placeholderTextColor: Theme.subtext
+            background: null; text: _hiddenSsid
             onTextChanged: _hiddenSsid = text
           }
         }
-
         Rectangle {
-          Layout.fillWidth: true
-          height: 42
-          radius: 10
-          color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.8)
-          border.color: Theme.border
-          border.width: 1
+          Layout.fillWidth: true; height: 42; radius: 10
+          color: Theme.surface; border.color: Theme.border; border.width: 1
 
           RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 6
-            spacing: 6
-
+            anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 6; spacing: 6
             TextField {
               id: wifiPwField
               Layout.fillWidth: true
               color: Theme.text
               echoMode: _pwReveal ? TextInput.Normal : TextInput.Password
-              placeholderText: "Password"
-              placeholderTextColor: Theme.subtext
-              background: null
-              font.family: "Inter"
-              font.pixelSize: 13
+              placeholderText: "Password"; placeholderTextColor: Theme.subtext
+              background: null; font.family: "Inter"; font.pixelSize: 13
               focus: pwSheet.visible
               onAccepted: _doConnect()
             }
-            Rectangle {
-              width: 30
-              height: 30
-              radius: 8
-              color: pwRevealBtn2.containsMouse ? Theme.surfaceHover : "transparent"
+            Text {
+              text: _pwReveal ? "󰋭" : "󰋬"
+              color: Theme.text; opacity: 0.7
+              font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13
 
-              Text {
-                anchors.centerIn: parent
-                text: _pwReveal ? "󰋭" : "󰋬"
-                color: Theme.text
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 13
-              }
               MouseArea {
-                id: pwRevealBtn2
-                anchors.fill: parent
-                hoverEnabled: true
+                anchors.fill: parent; anchors.margins: -6
                 cursorShape: Qt.PointingHandCursor
                 onClicked: _pwReveal = !_pwReveal
               }
             }
           }
         }
-
         Text {
           visible: wifiConnectError.length > 0
           text: wifiConnectError
-          color: Theme.error
-          font.family: "Inter"
-          font.pixelSize: 11
-          Layout.fillWidth: true
-          wrapMode: Text.WordWrap
+          color: Theme.error; font.family: "Inter"; font.pixelSize: 11
+          Layout.fillWidth: true; wrapMode: Text.WordWrap
         }
-
         RowLayout {
-          Layout.fillWidth: true
-          spacing: 8
-
+          Layout.fillWidth: true; spacing: 8
           Text {
             visible: !_hiddenMode && _pendingKnown
-            text: "Forget"
-            color: Theme.error
-            opacity: 0.85
-            font.family: "Inter"
-            font.pixelSize: 11
-            font.weight: 600
+            text: "Forget"; color: Theme.error; opacity: 0.85
+            font.family: "Inter"; font.pixelSize: 11; font.weight: 600
 
             MouseArea {
-              anchors.fill: parent
-              anchors.margins: -6
+              anchors.fill: parent; anchors.margins: -6
               cursorShape: Qt.PointingHandCursor
               onClicked: { forgetWifi(wifiPendingSsid); _hiddenMode = false; }
             }
           }
           Item { Layout.fillWidth: true }
-          Rectangle {
-            Layout.preferredWidth: 90
-            Layout.preferredHeight: 38
-            radius: 12
-            color: cancelBtn2.containsMouse ? Theme.surfaceHover : Theme.surface
-
-            Text {
-              anchors.centerIn: parent
-              text: "Cancel"
-              color: Theme.text
-              font.family: "Inter"
-              font.pixelSize: 12
-              font.weight: 600
-            }
-            MouseArea {
-              id: cancelBtn2
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: { cancelPassword(); _hiddenMode = false; _hiddenSsid = ""; }
-            }
+          QsButton {
+            text: "Cancel"
+            outline: true
+            onClicked: { cancelPassword(); _hiddenMode = false; _hiddenSsid = ""; }
           }
-          Rectangle {
-            Layout.preferredWidth: 110
-            Layout.preferredHeight: 38
-            radius: 12
-            color: connectBtn2.containsMouse ? Theme.primary : Qt.darker(Theme.primary, 1.1)
-            Behavior on color { ColorAnimation { duration: Motion.durXS } }
-
-            Text {
-              anchors.centerIn: parent
-              text: "Connect"
-              color: Theme.backgroundFg
-              font.family: "Inter"
-              font.pixelSize: 12
-              font.weight: 700
-            }
-            MouseArea {
-              id: connectBtn2
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: _doConnect()
-            }
+          QsButton {
+            text: "Connect"
+            onClicked: _doConnect()
           }
         }
       }
     }
 
-    // ============ NETWORKS HEADER ============
-    RowLayout {
+    // ============ NETWORKS ============
+    ColumnLayout {
+      visible: wifiEnabled
       Layout.fillWidth: true
-      Layout.topMargin: 4
+      spacing: 10
 
-      Text {
-        text: "Networks"
-        color: Theme.text
-        opacity: 0.7
-        font.family: "Inter"
-        font.pixelSize: 12
-        font.weight: 700
-      }
-      Item { Layout.fillWidth: true }
       RowLayout {
-        spacing: 6
+        Layout.fillWidth: true; spacing: 8
+        Text { text: "Networks"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
+        Item { Layout.fillWidth: true }
+        RowLayout {
+          spacing: 6
+          Spinner { visible: wifiScanning; running: wifiScanning; size: 14; color: Theme.primary }
+          Text {
+            id: wifiScanLbl
+            text: wifiScanning ? "Scanning…" : "Refresh"
+            color: Theme.primary; font.family: "Inter"; font.pixelSize: 11; font.weight: 600
 
-        Spinner {
-          visible: wifiScanning
-          running: wifiScanning
-          size: 14
-          color: Theme.primary
-        }
-        Text {
-          text: wifiScanning ? "Scanning…" : "Refresh"
-          color: Theme.primary
-          font.family: "Inter"
-          font.pixelSize: 11
-          font.weight: 600
+            SequentialAnimation on opacity {
+              running: wifiScanning; loops: Animation.Infinite
+              NumberAnimation { from: 1; to: 0.4; duration: 700; easing.type: Easing.InOutSine }
+              NumberAnimation { from: 0.4; to: 1; duration: 700; easing.type: Easing.InOutSine }
+            }
+            onOpacityChanged: if (!wifiScanning) opacity = 1
 
-          MouseArea {
-            anchors.fill: parent
-            anchors.margins: -6
-            cursorShape: Qt.PointingHandCursor
-            onClicked: scanWifi()
+            MouseArea {
+              anchors.fill: parent; anchors.margins: -6
+              cursorShape: Qt.PointingHandCursor
+              onClicked: if (!wifiScanning) scanWifi()
+            }
           }
         }
       }
-    }
 
-    // ============ NETWORK LIST ============
-    Repeater {
-      model: wifiEnabled ? wifiNetworks : []
-
-      delegate: Rectangle {
-        required property var modelData
-        Layout.fillWidth: true
-        Layout.preferredHeight: 52
-        radius: 14
-        color: (modelData.active || modelData.ssid === wifiConnectingSsid)
-          ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.14)
-          : Theme.surface
-        border.color: modelData.active ? Theme.primary : "transparent"
-        border.width: modelData.active ? 1.5 : 0
-        Behavior on color { ColorAnimation { duration: Motion.durXS } }
+      Rectangle {
+        Layout.fillWidth: true; height: 38; radius: 12
+        color: Theme.surface; border.color: searchField.activeFocus ? Theme.primary : Theme.border
+        border.width: searchField.activeFocus ? 1.5 : 1
+        Behavior on border.color { ColorAnimation { duration: Motion.durXS } }
 
         RowLayout {
-          anchors.fill: parent
-          anchors.margins: 14
-          spacing: 12
-
-          SignalBars {
-            signal: modelData.signal
-            barColor: modelData.active ? Theme.primary : Theme.text
-            implicitHeight: 18
-          }
-
-          ColumnLayout {
-            spacing: 0
+          anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 10; spacing: 8
+          Text { text: "󰍉"; color: Theme.subtext; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13 }
+          TextField {
+            id: searchField
             Layout.fillWidth: true
-
-            Text {
-              text: modelData.ssid
-              color: Theme.text
-              elide: Text.ElideRight
-              Layout.fillWidth: true
-              font.family: "Inter"
-              font.pixelSize: 13
-              font.weight: 600
-            }
-            RowLayout {
-              spacing: 6
-
-              Text {
-                text: modelData.active ? "Connected" : (_isSecured(modelData.security) ? "Secured" : "Open")
-                color: modelData.active ? Theme.primary : Theme.text
-                opacity: modelData.active ? 1 : 0.6
-                font.family: "Inter"
-                font.pixelSize: 10
-              }
-              Text {
-                visible: modelData.known && !modelData.active
-                text: "· Saved"
-                color: Theme.subtext
-                font.family: "Inter"
-                font.pixelSize: 10
-              }
-            }
-          }
-
-          Spinner {
-            visible: modelData.ssid === wifiConnectingSsid
-            running: modelData.ssid === wifiConnectingSsid
-            size: 16
-            color: Theme.primary
-          }
-
-          Text {
-            visible: modelData.active
-            text: "󰄬"
-            color: Theme.primary
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 14
-          }
-
-          Text {
-            visible: _isSecured(modelData.security) && !modelData.active
-            text: "󰲛"
-            color: Theme.text
-            opacity: 0.5
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 13
+            color: Theme.text; placeholderText: "Filter networks"; placeholderTextColor: Theme.subtext
+            background: null; font.family: "Inter"; font.pixelSize: 12
+            text: _search; onTextChanged: _search = text
           }
         }
+      }
 
+      Repeater {
+        model: _available
+
+        Rectangle {
+          required property var modelData
+          Layout.fillWidth: true
+          Layout.preferredHeight: 54
+          radius: 14
+          color: (modelData.ssid === wifiConnectingSsid)
+            ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.14)
+            : (netMouse.containsMouse ? Theme.surfaceHover : Theme.surface)
+          border.color: modelData.ssid === wifiConnectingSsid ? Theme.primary : "transparent"
+          border.width: modelData.ssid === wifiConnectingSsid ? 1.5 : 0
+          Behavior on color { ColorAnimation { duration: Motion.durXS } }
+
+          RowLayout {
+            anchors.fill: parent
+            anchors.margins: 14
+            spacing: 12
+
+            SignalBars { signal: modelData.signal; barColor: Theme.text; implicitHeight: 18 }
+            ColumnLayout {
+              spacing: 1
+              Layout.fillWidth: true
+
+              Text {
+                text: modelData.ssid
+                color: Theme.text; elide: Text.ElideRight; Layout.fillWidth: true
+                font.family: "Inter"; font.pixelSize: 13; font.weight: 600
+              }
+              RowLayout {
+                spacing: 5
+                Text {
+                  text: _isSecured(modelData.security) ? "Secured" : "Open"
+                  color: Theme.subtext; opacity: 0.7
+                  font.family: "Inter"; font.pixelSize: 10
+                }
+                Text {
+                  visible: modelData.known
+                  text: "· Saved"
+                  color: Theme.subtext
+                  font.family: "Inter"; font.pixelSize: 10
+                }
+              }
+            }
+            Spinner {
+              visible: modelData.ssid === wifiConnectingSsid
+              running: modelData.ssid === wifiConnectingSsid
+              size: 16; color: Theme.primary
+            }
+            Text {
+              visible: _isSecured(modelData.security) && modelData.ssid !== wifiConnectingSsid
+              text: "󰲛"; color: Theme.text; opacity: 0.4
+              font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 13
+            }
+          }
+          MouseArea {
+            id: netMouse
+            anchors.fill: parent; hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: connectToWifi(modelData.ssid, modelData.security, "")
+          }
+        }
+      }
+
+      Text {
+        visible: wifiEnabled && _available.length === 0 && !wifiScanning
+        text: _search.length ? "No networks match “" + _search + "”" : "No networks found"
+        color: Theme.text; opacity: 0.4
+        Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 8
+        font.family: "Inter"; font.pixelSize: 12
+      }
+      ColumnLayout {
+        visible: wifiEnabled && wifiScanning && _available.length === 0
+        Layout.fillWidth: true; spacing: 8
+
+        Repeater {
+          model: 3
+          Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 54; radius: 14; color: Theme.surface
+            SequentialAnimation on opacity {
+              running: true; loops: Animation.Infinite
+              NumberAnimation { from: 1; to: 0.4; duration: 800; easing.type: Easing.InOutSine }
+              NumberAnimation { from: 0.4; to: 1; duration: 800; easing.type: Easing.InOutSine }
+            }
+          }
+        }
+      }
+
+      Rectangle {
+        visible: !_hiddenMode
+        Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 14
+        color: "transparent"; border.color: Theme.outline; border.width: 1
+
+        Text {
+          anchors.centerIn: parent
+          text: "Connect to hidden network"
+          color: Theme.subtext; font.family: "Inter"; font.pixelSize: 12; font.weight: 600
+        }
         MouseArea {
           anchors.fill: parent
           cursorShape: Qt.PointingHandCursor
-          onClicked: {
-            if (modelData.active) return;
-            connectToWifi(modelData.ssid, modelData.security, "");
-          }
+          onClicked: { _hiddenMode = true; _hiddenSsid = ""; }
         }
-      }
-    }
-
-    // Empty / offline states
-    Text {
-      visible: wifiEnabled && wifiNetworks.length === 0 && !wifiScanning
-      text: "No networks found"
-      color: Theme.text
-      opacity: 0.4
-      Layout.alignment: Qt.AlignHCenter
-      Layout.topMargin: 12
-      font.family: "Inter"
-      font.pixelSize: 12
-    }
-    Text {
-      visible: !wifiEnabled
-      text: "Wi-Fi is off"
-      color: Theme.text
-      opacity: 0.4
-      Layout.alignment: Qt.AlignHCenter
-      Layout.topMargin: 12
-      font.family: "Inter"
-      font.pixelSize: 12
-    }
-
-    // Hidden network entry
-    Rectangle {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 44
-      radius: 14
-      color: "transparent"
-      border.color: Theme.outline
-      border.width: 1
-      visible: wifiEnabled && !_hiddenMode
-
-      Text {
-        anchors.centerIn: parent
-        text: "Connect to hidden network"
-        color: Theme.subtext
-        font.family: "Inter"
-        font.pixelSize: 12
-        font.weight: 600
-      }
-      MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: { _hiddenMode = true; _hiddenSsid = ""; }
       }
     }
 

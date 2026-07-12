@@ -13,6 +13,7 @@ Rectangle {
   property string icon: ""
   property bool accent: false
   property bool outline: false
+  property bool danger: false
   property bool enabled: true
   property int radiusPx: 12
   signal clicked()
@@ -21,6 +22,7 @@ Rectangle {
   implicitHeight: 38
   implicitWidth: row.implicitWidth + 28
   color: !btn.enabled ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+    : btn.danger ? (btnMouse.containsMouse ? Theme.error : Qt.darker(Theme.error, 1.1))
     : btn.accent ? (btnMouse.containsMouse ? Theme.primary : Qt.darker(Theme.primary, 1.08))
     : btn.outline ? (btnMouse.containsMouse ? Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.6) : "transparent")
     : (btnMouse.containsMouse ? Theme.surfaceHover : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85))
@@ -45,7 +47,7 @@ Rectangle {
     Text {
       visible: btn.text
       text: btn.text
-      color: btn.accent ? Theme.backgroundFg : Theme.text
+      color: (btn.accent || btn.danger) ? Theme.backgroundFg : Theme.text
       font { family: "Inter"; pixelSize: 12; weight: 600 }
     }
   }

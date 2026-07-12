@@ -24,47 +24,56 @@ ScrollView {
   signal applyNightLight()
   signal saveNightLight()
 
+  function _warm(t) {
+    var x = Math.max(0, Math.min(1, (t - 1000) / 7000));
+    return Qt.rgba(1, (120 + 135 * x) / 255, (40 + 215 * x) / 255, 1);
+  }
+  readonly property color _preview: _warm(nlMode === "auto" ? nlNightTemp : nlTemp)
+
   ColumnLayout {
     width: parent.width
-    spacing: 10
+    spacing: 12
 
-    // ============ ENABLE HEADER ============
+    // ============ ENABLE CONTROL (title is in the panel header) ============
     Rectangle {
       Layout.fillWidth: true
-      Layout.preferredHeight: 52
-      radius: 16
+      Layout.preferredHeight: 50
+      radius: 14
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
       border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
       border.width: 1
 
       RowLayout {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 10
+        anchors.margins: 12
+        spacing: 12
 
-        Text {
-          text: "Night Light"
-          color: Theme.text
-          font.family: "Inter"
-          font.pixelSize: 14
-          font.weight: 700
+        Rectangle {
+          width: 26; height: 26; radius: 8
+          color: nlEnabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18) : Theme.surfaceLight
+          Text {
+            anchors.centerIn: parent
+            text: "󰖔"
+            color: nlEnabled ? Theme.primary : Theme.subtext
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 13
+          }
         }
-        Item { Layout.fillWidth: true }
         Text {
-          text: nlEnabled ? "On" : "Off"
+          text: nlEnabled ? "Enabled" : "Disabled"
           color: nlEnabled ? Theme.primary : Theme.subtext
           font.family: "Inter"
-          font.pixelSize: 11
+          font.pixelSize: 12
           font.weight: 600
-          opacity: 0.8
         }
+        Item { Layout.fillWidth: true }
         Rectangle {
-          width: 46; height: 26; radius: 13
+          width: 44; height: 25; radius: 12
           color: nlEnabled ? Theme.primary : Theme.border
           Behavior on color { ColorAnimation { duration: Motion.durXS } }
 
           Rectangle {
-            width: 20; height: 20; radius: 10
+            width: 19; height: 19; radius: 9
             color: Theme.backgroundFg
             anchors.verticalCenter: parent.verticalCenter
             x: nlEnabled ? parent.width - width - 3 : 3
@@ -79,25 +88,70 @@ ScrollView {
       }
     }
 
-    // ============ MODE SEGMENTED CONTROL ============
-    Text {
-      text: "Mode"
-      color: Theme.muted
-      font.family: "Inter"
-      font.pixelSize: 11
-      font.weight: 700
-      leftPadding: 4
+    // ============ LIVE PREVIEW ============
+    Rectangle {
+      visible: nlEnabled
+      Layout.fillWidth: true
+      Layout.preferredHeight: 88
+      radius: 18
+      clip: true
+      color: _preview
+      opacity: 0.95
+      Behavior on color { ColorAnimation { duration: Motion.durL } }
+
+      RowLayout {
+        anchors.fill: parent
+        anchors.margins: 18
+        spacing: 12
+
+        Rectangle {
+          width: 46; height: 46; radius: 14
+          color: "#000000"
+          opacity: 0.12
+          Text {
+            anchors.centerIn: parent
+            text: "󰖔"
+            color: "#000000"
+            opacity: 0.5
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 22
+          }
+        }
+        ColumnLayout {
+          spacing: 2
+          Layout.fillWidth: true
+
+          Text {
+            text: "Warmth preview"
+            color: "#1a1205"
+            opacity: 0.75
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: 600
+          }
+          Text {
+            text: nlMode === "auto"
+              ? "Following sunset — " + nlNightTemp + "K at night"
+              : (nlTemp + "K")
+            color: "#1a1205"
+            font.family: "Inter"
+            font.pixelSize: 14
+            font.weight: 700
+          }
+        }
+      }
     }
 
+    // ============ MODE ============
     Rectangle {
-      id: seg
+      visible: nlEnabled
       Layout.fillWidth: true
-      height: 40
+      Layout.preferredHeight: 44
       radius: 14
       color: Theme.surfaceLight
 
       Rectangle {
-        id: segIndicator
+        id: nlSeg
         width: parent.width / 2
         height: parent.height
         radius: 14
@@ -149,103 +203,77 @@ ScrollView {
       }
     }
 
-    // Temperature slider for manual mode
+    // ============ MANUAL ============
     ColumnLayout {
-      visible: nlMode === "manual"
+      visible: nlEnabled && nlMode === "manual"
       Layout.fillWidth: true
       spacing: 6
 
-      Text {
-        text: "Temperature"
-        color: Theme.muted
-        font.family: "Inter"
-        font.pixelSize: 11
-        font.weight: 700
-        leftPadding: 4
-      }
-
-      Item { height: 4 }
-
+      Text { text: "Temperature"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
       IconSlider {
         iconText: "󰂚"
         value: (nlTemp - 1000) / 7000
         onMoved: val => setNightLightTemp(1000 + Math.round(val * 7000))
       }
-
-      Text {
-        text: nlTemp + "K"
-        color: Theme.text
-        font.family: "Inter"
-        font.pixelSize: 11
-        horizontalAlignment: Text.AlignHCenter
-        Layout.fillWidth: true
-      }
+      Text { text: nlTemp + "K"; color: Theme.text; font.family: "Inter"; font.pixelSize: 11; horizontalAlignment: Text.AlignHCenter; Layout.fillWidth: true }
     }
 
-    // Temperature sliders for auto mode
+    // ============ AUTO ============
     ColumnLayout {
-      visible: nlMode === "auto"
+      visible: nlEnabled && nlMode === "auto"
       Layout.fillWidth: true
       spacing: 6
 
-      Text {
-        text: "Day Temperature"
-        color: Theme.muted
-        font.family: "Inter"
-        font.pixelSize: 11
-        font.weight: 700
-        leftPadding: 4
-      }
-
+      Text { text: "Day Temperature"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
       IconSlider {
         iconText: "󰖕"
         value: (nlDayTemp - 1000) / 7000
         onMoved: val => setNightLightAutoTemp(1000 + Math.round(val * 7000), nlNightTemp)
       }
-
-      Text {
-        text: nlDayTemp + "K"
-        color: Theme.text
-        font.family: "Inter"
-        font.pixelSize: 11
-        horizontalAlignment: Text.AlignHCenter
-        Layout.fillWidth: true
-      }
+      Text { text: nlDayTemp + "K"; color: Theme.text; font.pixelSize: 11; horizontalAlignment: Text.AlignHCenter; Layout.fillWidth: true }
 
       Item { height: 4 }
-
-      Text {
-        text: "Night Temperature"
-        color: Theme.muted
-        font.family: "Inter"
-        font.pixelSize: 11
-        font.weight: 700
-        leftPadding: 4
-      }
-
+      Text { text: "Night Temperature"; color: Theme.muted; font.family: "Inter"; font.pixelSize: 11; font.weight: 700; leftPadding: 4 }
       IconSlider {
         iconText: "󰖔"
         value: (nlNightTemp - 1000) / 7000
         onMoved: val => setNightLightAutoTemp(nlDayTemp, 1000 + Math.round(val * 7000))
       }
-
+      Text { text: nlNightTemp + "K"; color: Theme.text; font.pixelSize: 11; horizontalAlignment: Text.AlignHCenter; Layout.fillWidth: true }
       Text {
-        text: nlNightTemp + "K"
-        color: Theme.text
-        font.family: "Inter"
-        font.pixelSize: 11
-        horizontalAlignment: Text.AlignHCenter
-        Layout.fillWidth: true
-      }
-
-      Text {
-        text: "Requires geoclue2 service for sunset/sunrise"
+        text: "Requires geoclue2 for sunset / sunrise scheduling"
         color: Theme.subtext
         font.family: "Inter"
         font.pixelSize: 9
         horizontalAlignment: Text.AlignHCenter
         Layout.fillWidth: true
         Layout.topMargin: 4
+      }
+    }
+
+    // ============ SAVE ============
+    Rectangle {
+      visible: nlEnabled
+      Layout.fillWidth: true
+      Layout.preferredHeight: 44
+      radius: 14
+      color: saveBtn.containsMouse ? Theme.surfaceHover : Theme.surfaceLight
+      Behavior on color { ColorAnimation { duration: Motion.durXS } }
+
+      Text {
+        anchors.centerIn: parent
+        text: "Save"
+        color: Theme.primary
+        font.family: "Inter"
+        font.pixelSize: 12
+        font.weight: 700
+      }
+      MouseArea {
+        id: saveBtn
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: { applyNightLight(); saveNightLight(); }
       }
     }
 

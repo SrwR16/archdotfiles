@@ -91,32 +91,34 @@ Item {
     }
   }
 
-  function dismissNotif(item) {
-    if (!item) return;
+  function dismissNotif(itemOrId) {
+    // Accept either a stored notification object or a raw id.
+    var id = (typeof itemOrId === "object" && itemOrId !== null)
+      ? itemOrId.id
+      : itemOrId;
+    if (id === undefined || id === null) return;
 
-    if (item.ref)
-      item.ref.dismiss();
-    else if (item.dismiss)
-      item.dismiss();
+    // Dismiss the live notification on the server (release its retain lock).
+    if (typeof itemOrId === "object" && itemOrId) {
+      try {
+        if (itemOrId.ref && typeof itemOrId.ref.dismiss === "function")
+          itemOrId.ref.dismiss();
+        else if (typeof itemOrId.dismiss === "function")
+          itemOrId.dismiss();
+      } catch (e) {}
+    }
 
-    var itemId = item.id;
-    if (itemId === undefined) return;
-
-    notifService._releaseLockById(itemId);
+    notifService._releaseLockById(id);
 
     var arr = storedNotifications.slice();
-    var idx = -1;
     for (var i = 0; i < arr.length; i++) {
-      if (arr[i].id === itemId) { idx = i; break; }
-    }
-    if (idx >= 0) {
-      arr.splice(idx, 1);
+      if (arr[i].id === id) { arr.splice(i, 1); break; }
     }
     storedNotifications = arr;
 
-    if (latestNotificationData && latestNotificationData.id === itemId)
+    if (latestNotificationData && latestNotificationData.id === id)
       latestNotificationData = null;
-    if (latestNotification && latestNotification.id === itemId)
+    if (latestNotification && latestNotification.id === id)
       latestNotification = null;
   }
 

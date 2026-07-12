@@ -5,14 +5,14 @@ import "../theme"
 import QtQuick
 
 // Lightweight indeterminate spinner. A rotating arc drawn on a Canvas, sized to
-// `size`. Pauses its rotation animation when `running` is false (e.g. hidden).
+// `size`. Loops continuously while `running` is true (never freezes).
 Item {
   id: root
   property int size: 16
   property color color: Theme.primary
   property int lineWidth: 2
   property bool running: true
-  property int period: 800     // ms per rotation
+  property int period: 800     // ms per full rotation
 
   implicitWidth: size
   implicitHeight: size
@@ -33,11 +33,20 @@ Item {
       ctx.arc(cx, cy, r, 0, Math.PI * 1.4);
       ctx.stroke();
     }
-    Behavior on rotation { NumberAnimation { duration: root.period; easing.type: Motion.easeStandard } }
-    rotation: root.running ? 360 : 0
-    Component.onCompleted: { cv.requestPaint(); }
+    Component.onCompleted: cv.requestPaint()
   }
 
+  RotationAnimation {
+    target: cv
+    from: 0
+    to: 360
+    duration: root.period
+    loops: Animation.Infinite
+    running: root.running
+    easing.type: Easing.Linear
+  }
+
+  onRunningChanged: if (!root.running) cv.rotation = 0
   onColorChanged: cv.requestPaint()
   onSizeChanged: cv.requestPaint()
 }

@@ -16,9 +16,9 @@ Rectangle {
   signal dismissNotif(var notifRef)
   signal clearAll()
 
-  radius: 16
-  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
-  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.85)
+  radius: 18
+  color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
+  border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.55)
   border.width: 1
   clip: true
 
@@ -58,13 +58,14 @@ Rectangle {
     if (!ts) return "";
     var diff = Date.now() - ts;
     if (diff < 60000) return "now";
-    if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
-    if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
+    if (diff < 3600000) return Math.floor(diff / 60000) + "m";
+    if (diff < 86400000) return Math.floor(diff / 3600000) + "h";
     var days = Math.floor(diff / 86400000);
-    return days === 1 ? "Yesterday" : days + "d ago";
+    return days === 1 ? "1d" : days + "d";
   }
 
   readonly property var groupedNotifs: buildGroups(storedNotifications)
+  readonly property int totalCount: (storedNotifications?.length ?? 0)
 
   function safeActions(actions) {
     if (!actions) return [];
@@ -80,26 +81,52 @@ Rectangle {
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 14
-    spacing: 10
+    spacing: 12
 
+    // ---- Header ----
     RowLayout {
       Layout.fillWidth: true
       spacing: 8
 
-      Text {
-        text: "Notifications"
-        color: Theme.text
-        opacity: 0.7
-        font { family: "Inter"; pixelSize: 11; weight: 700 }
-        Layout.fillWidth: true
+      Rectangle {
+        width: 26; height: 26; radius: 13
+        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
+        Text {
+          anchors.centerIn: parent
+          text: "󰔞"
+          color: Theme.primary
+          font { family: "JetBrainsMono Nerd Font"; pixelSize: 13 }
+        }
       }
 
       Text {
-        text: "Clear all"
-        color: Theme.primary
-        font { family: "Inter"; pixelSize: 11; weight: 600 }
-        visible: (historyRoot.storedNotifications?.length ?? 0) > 1
+        text: "Notifications"
+        color: Theme.text
+        font { family: "Inter"; pixelSize: 13; weight: 700 }
+      }
 
+      Rectangle {
+        visible: totalCount > 0
+        implicitWidth: countBadge.implicitWidth + 10
+        implicitHeight: 18
+        radius: 9
+        color: Qt.rgba(Theme.surfaceBright.r, Theme.surfaceBright.g, Theme.surfaceBright.b, 0.7)
+        Text {
+          id: countBadge
+          anchors.centerIn: parent
+          text: totalCount
+          color: Theme.subtext
+          font { family: "Inter"; pixelSize: 10; weight: 700 }
+        }
+      }
+
+      Item { Layout.fillWidth: true }
+
+      Text {
+        text: "Clear all"
+        color: totalCount > 0 ? Theme.primary : Theme.muted
+        font { family: "Inter"; pixelSize: 11; weight: 600 }
+        visible: totalCount > 0
         MouseArea {
           anchors.fill: parent
           anchors.margins: -6
@@ -109,15 +136,42 @@ Rectangle {
       }
     }
 
+    // ---- Empty state ----
+    Item {
+      visible: totalCount === 0
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+      ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 8
+        Text {
+          text: "󰔞"
+          color: Theme.muted
+          font { family: "JetBrainsMono Nerd Font"; pixelSize: 34 }
+          Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+          text: "You're all caught up"
+          color: Theme.subtext
+          font { family: "Inter"; pixelSize: 12; weight: 600 }
+          Layout.alignment: Qt.AlignHCenter
+        }
+      }
+    }
+
+    // ---- List ----
     ScrollView {
       id: notifScroll
       Layout.fillWidth: true
       Layout.fillHeight: true
-      visible: (storedNotifications?.length ?? 0) > 0
+      visible: totalCount > 0
       clip: true
+      ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+      ScrollBar.vertical.policy: ScrollBar.AsNeeded
+      contentWidth: width
 
       Column {
-        spacing: 8
+        spacing: 10
         width: notifScroll.availableWidth
 
         Repeater {
@@ -127,9 +181,12 @@ Rectangle {
             id: groupCard
             required property var modelData
             width: parent.width
-            implicitHeight: groupBody.visible ? groupBody.implicitHeight + headerRow.implicitHeight + 24 + 8 : headerRow.implicitHeight + 24
-            radius: 14
-            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.85)
+            implicitHeight: headerRow.implicitHeight + 20
+              + (bodyCol.visible ? bodyCol.implicitHeight + 8 : 0)
+            radius: 16
+            color: Qt.rgba(Theme.surfaceLight.r, Theme.surfaceLight.g, Theme.surfaceLight.b, 0.4)
+            border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+            border.width: 1
 
             property string groupAppName: modelData.appName
             property bool groupExpanded: historyRoot.isGroupExpanded(groupAppName)
@@ -138,14 +195,15 @@ Rectangle {
               anchors.fill: parent
               spacing: 0
 
+              // Group header (always visible)
               RowLayout {
                 id: headerRow
                 Layout.fillWidth: true
-                Layout.margins: 14
-                spacing: 8
+                Layout.margins: 10
+                spacing: 10
 
                 NotifIcon {
-                  iconSize: 20
+                  iconSize: 22
                   appIcon: modelData.appIcon || ""
                   appName: modelData.appName || ""
                 }
@@ -159,14 +217,13 @@ Rectangle {
                 }
 
                 Rectangle {
-                  implicitWidth: countText.implicitWidth + 10
+                  implicitWidth: grpCount.implicitWidth + 10
                   implicitHeight: 18
                   radius: 9
                   color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
                   visible: modelData.items.length > 1
-
                   Text {
-                    id: countText
+                    id: grpCount
                     anchors.centerIn: parent
                     text: modelData.items.length
                     color: Theme.muted
@@ -175,24 +232,27 @@ Rectangle {
                 }
 
                 Text {
-                  text: groupCard.groupExpanded ? "" : ""
+                  text: groupCard.groupExpanded ? "󰒍" : "󰒌"
                   color: Theme.subtext
                   font { family: "JetBrainsMono Nerd Font"; pixelSize: 12 }
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: historyRoot.toggleGroup(groupCard.groupAppName)
+                  MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: historyRoot.toggleGroup(groupCard.groupAppName)
+                  }
                 }
               }
 
+              // Grouped items (revealed on expand); single-item groups show directly
               Column {
-                id: groupBody
-                visible: groupCard.groupExpanded
+                id: bodyCol
                 Layout.fillWidth: true
-                spacing: 6
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.bottomMargin: 8
+                spacing: 6
+                visible: groupCard.groupExpanded || modelData.items.length === 1
 
                 Repeater {
                   model: modelData.items
@@ -201,16 +261,18 @@ Rectangle {
                     id: notifCard
                     required property var modelData
                     width: parent.width
-                    implicitHeight: notifRow.implicitHeight + 16
-                    radius: 10
-                    color: "transparent"
+                    implicitHeight: row.implicitHeight + 16
+                    radius: 12
+                    color: modelData.urgency === NotificationUrgency.Critical
+                      ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                      : "transparent"
                     readonly property var _actions: historyRoot.safeActions(modelData.actions)
 
                     RowLayout {
-                      id: notifRow
+                      id: row
                       anchors.fill: parent
-                      anchors.margins: 14
-                      spacing: 8
+                      anchors.margins: 8
+                      spacing: 10
 
                       Rectangle {
                         visible: modelData.urgency === NotificationUrgency.Critical
@@ -223,7 +285,7 @@ Rectangle {
 
                       ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 1
+                        spacing: 2
 
                         RowLayout {
                           Layout.fillWidth: true
@@ -242,7 +304,7 @@ Rectangle {
                             text: historyRoot.relTime(modelData.timestamp)
                             color: Theme.muted
                             font { family: "Inter"; pixelSize: 9; weight: 500 }
-                            opacity: 0.6
+                            opacity: 0.7
                           }
                         }
 
@@ -253,7 +315,7 @@ Rectangle {
                           font { family: "Inter"; pixelSize: 10 }
                           Layout.fillWidth: true
                           Layout.topMargin: 1
-                          maximumLineCount: 2
+                          maximumLineCount: 3
                           wrapMode: Text.WordWrap
                         }
 
@@ -267,10 +329,10 @@ Rectangle {
 
                             delegate: Rectangle {
                               required property var modelData
-                              implicitWidth: actText.implicitWidth + 12
-                              implicitHeight: 20
-                              radius: 10
-                              color: actHover.containsMouse ? Theme.surfaceHover : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.85)
+                              implicitWidth: actText.implicitWidth + 14
+                              implicitHeight: 22
+                              radius: 11
+                              color: actHover.containsMouse ? Theme.surfaceHover : Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.9)
                               scale: actHover.pressed ? 0.94 : 1.0
                               Behavior on color { ColorAnimation { duration: Motion.durXS } }
                               Behavior on scale { NumberAnimation { duration: Motion.durXS; easing.type: Motion.easeStandard } }
@@ -297,16 +359,24 @@ Rectangle {
                         }
                       }
 
-                      Text {
+                      // Close button (reliably wired)
+                      Rectangle {
                         Layout.alignment: Qt.AlignTop
-                        text: "✕"
-                        color: Theme.subtext
-                        font { family: "Inter"; pixelSize: 11 }
+                        width: 24; height: 24; radius: 12
+                        color: closeHover.containsMouse ? Theme.surfaceHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: Motion.durXS } }
+                        Text {
+                          anchors.centerIn: parent
+                          text: "✕"
+                          color: closeHover.containsMouse ? Theme.text : Theme.muted
+                          font { family: "Inter"; pixelSize: 10 }
+                        }
                         MouseArea {
+                          id: closeHover
                           anchors.fill: parent
-                          anchors.margins: -6
+                          hoverEnabled: true
                           cursorShape: Qt.PointingHandCursor
-                          onClicked: historyRoot.dismissNotif(modelData)
+                          onClicked: historyRoot.dismissNotif(modelData.id)
                         }
                       }
                     }
